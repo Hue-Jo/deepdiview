@@ -17,11 +17,11 @@ import org.springframework.web.client.RestTemplate;
 @Service
 @RequiredArgsConstructor
 @Slf4j
-public class GenreService {
+public class GenreApiService {
 
   @Value("${tmdb.key}")
   private String tmdbKey;
-  private final String TMDB_API_URL = "https://api.themoviedb.org/3/genre/movie/list?language=ko-KR&api_key=";
+  private final String TMDB_GENRE_API_URL = "https://api.themoviedb.org/3/genre/movie/list?language=ko-KR&api_key=";
 
   private final GenreRepository genreRepository;
   private final RestTemplate restTemplate;
@@ -31,7 +31,7 @@ public class GenreService {
     try {
       // API 호출
       log.info("API 호출 시도");
-      ResponseEntity<GenreResponse> response = restTemplate.getForEntity(TMDB_API_URL + tmdbKey, GenreResponse.class);
+      ResponseEntity<GenreResponse> response = restTemplate.getForEntity(TMDB_GENRE_API_URL + tmdbKey, GenreResponse.class);
 
       if (response.getStatusCode().is2xxSuccessful() && response.getBody() != null) {
         log.info("API로부터 성공적으로 응답 받았습니다.");
