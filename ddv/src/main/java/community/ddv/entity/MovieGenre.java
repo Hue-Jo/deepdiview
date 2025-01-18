@@ -8,6 +8,7 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import lombok.AllArgsConstructor;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 @Entity
@@ -26,5 +27,10 @@ public class MovieGenre {
   @ManyToOne(fetch = FetchType.LAZY)
   @JoinColumn(name = "genre_id")
   private Genre genre;
+
+  public MovieGenre(Movie movie, Genre genre) {
+    this.movie = movie;
+    this.genre = genre;
+  }
 
 }

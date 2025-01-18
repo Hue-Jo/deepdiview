@@ -1,11 +1,15 @@
 package community.ddv.entity;
 
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.OneToMany;
 import java.time.LocalDate;
+import java.util.HashSet;
+import java.util.Set;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -34,4 +38,11 @@ public class Movie {
   private String posterPath;     // 포스터 url
   private String backdropPath;   // 백드롭이미지 url
 
+  @OneToMany(mappedBy = "movie", cascade = CascadeType.ALL)
+  private final Set<MovieGenre> movieGenres = new HashSet<>();
+
+  public void addGenre(Genre genre) {
+    MovieGenre movieGenre = new MovieGenre(this, genre);
+    movieGenres.add(movieGenre);
+  }
 }

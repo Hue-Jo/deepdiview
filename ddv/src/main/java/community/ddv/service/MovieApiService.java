@@ -27,6 +27,7 @@ public class MovieApiService {
   private final String TMDB_MOVIE_API_URL = "https://api.themoviedb.org/3/discover/movie?include_adult=true&include_video=false&language=ko-KR&region=KR&sort_by=popularity.desc&watch_region=KR&with_watch_providers=8&api_key=";
 
   private final MovieRepository movieRepository;
+  private final GenreRepository genreRepository;
   private final RestTemplate restTemplate;
 
   public void fetchAndSaveMovies() {
@@ -73,7 +74,7 @@ public class MovieApiService {
   }
 
   private Movie toEntity(MovieDTO movieDTO) {
-    return Movie.builder()
+    Movie movie = Movie.builder()
         .timdbId(movieDTO.getId())
         .title(movieDTO.getTitle())
         .originalTitle(movieDTO.getOriginal_title())
@@ -83,6 +84,12 @@ public class MovieApiService {
         .posterPath(movieDTO.getPoster_path())
         .backdropPath(movieDTO.getBackdrop_path())
         .build();
+
+    for (Long genreId : movieDTO.getGenre_ids()) {
+      Genre genre = genreRepository.findById(genreId).orElseThrow(() -> new RuntimeException("장르를 찾을 수 없습니다."));
+      movie.addGenre(genre);
+    }
+    return movie;
   }
 
 }
