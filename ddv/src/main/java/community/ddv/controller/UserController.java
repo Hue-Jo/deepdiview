@@ -60,4 +60,14 @@ public class UserController {
     userService.updateAccount(email, accountUpdateDto);
     return ResponseEntity.ok().build();
   }
+
+  @PutMapping("/me/intro")
+  public ResponseEntity<Void> updateIntro(
+      @AuthenticationPrincipal UserDetails userDetails,
+      @RequestBody AccountUpdateDto accountUpdateDto
+  ) {
+    String email = userDetails.getUsername();
+    userService.updateOneLineIntro(email, accountUpdateDto);
+    return ResponseEntity.ok().build();
+  }
 }

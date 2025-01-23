@@ -202,5 +202,39 @@ public class UserService {
     String regex = "\\w{8,}";
     return Pattern.compile(regex).matcher(password).matches();
   }
+
+  /**
+   * 한줄소개 설정/수정/삭제
+   * @param accountUpdateDto
+   */
+  @Transactional
+  public void updateOneLineIntro(String email, AccountUpdateDto accountUpdateDto) {
+    log.info("한줄소개 수정 시도 : {}", email);
+
+    User user = userRepository.findByEmail(email)
+        .orElseThrow(() -> new DeepdiviewException(ErrorCode.USER_NOT_FOUND));
+
+    String newOneLineIntro = accountUpdateDto.getOneLineIntro();
+
+    // 기존의 한줄소개가 없었던 경우
+    if (user.getOneLineIntroduction() == null) {
+      if (!newOneLineIntro.isEmpty()) {
+        user.setOneLineIntroduction(newOneLineIntro);
+        log.info("한줄소개 설정 완료");
+      }
+    } else {
+      // 기존의 한줄 소개가 존재하는 경우
+      if (newOneLineIntro.isEmpty()) {
+        user.setOneLineIntroduction(null);
+        log.info("한줄소개 삭제 완료");
+      } else {
+        user.setOneLineIntroduction(newOneLineIntro);
+        log.info("한줄소개 수정 완료");
+      }
+    }
+    user.setUpdatedAt(LocalDateTime.now());
+    userRepository.save(user);
+  }
+
 }
 
