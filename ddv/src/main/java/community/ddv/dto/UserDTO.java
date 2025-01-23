@@ -52,6 +52,8 @@ public class UserDTO {
 
     private String newPassword;
     private String newConfirmPassword;
+
+    private String oneLineIntro;
   }
 
 

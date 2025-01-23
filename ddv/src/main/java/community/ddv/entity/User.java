@@ -34,6 +34,7 @@ public class User {
   private Role role;
 
   private String profileImageUrl;
+  private String oneLineIntroduction;
 
   private LocalDateTime createdAt;
   private LocalDateTime updatedAt;
