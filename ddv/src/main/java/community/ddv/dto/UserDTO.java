@@ -44,4 +44,15 @@ public class UserDTO {
     @NotBlank(message = "비밀번호를 입력해주세요")
     private String password;
   }
+
+  @Getter
+  public static class AccountUpdateDto {
+
+    private String newNickname;
+
+    private String newPassword;
+    private String newConfirmPassword;
+  }
+
+
 }

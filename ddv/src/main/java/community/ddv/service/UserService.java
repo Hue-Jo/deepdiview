@@ -4,6 +4,7 @@ import community.ddv.component.JwtProvider;
 import community.ddv.constant.ErrorCode;
 import community.ddv.constant.Role;
 import community.ddv.dto.UserDTO.AccountDeleteDto;
+import community.ddv.dto.UserDTO.AccountUpdateDto;
 import community.ddv.dto.UserDTO.LoginDto;
 import community.ddv.dto.UserDTO.SignUpDto;
 import community.ddv.entity.RefreshToken;
@@ -14,6 +15,7 @@ import community.ddv.repository.UserRepository;
 import community.ddv.response.LoginResponse;
 import java.time.LocalDateTime;
 import java.util.Optional;
+import java.util.regex.Pattern;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -141,5 +143,64 @@ public class UserService {
     log.info("회원탈퇴 완료");
   }
 
+  /**
+   * 회원정보 수정 (닉네임, 비밀번호)
+   * @param accountUpdateDto
+   */
+  @Transactional
+  public void updateAccount(String email, AccountUpdateDto accountUpdateDto) {
+    log.info("회원정보 수정시도 : {}", email);
+
+    User user = userRepository.findByEmail(email)
+        .orElseThrow(() -> new DeepdiviewException(ErrorCode.USER_NOT_FOUND));
+
+    String newNickname = accountUpdateDto.getNewNickname();
+    String newPassword = accountUpdateDto.getNewPassword();
+    String newConfirmPassword = accountUpdateDto.getNewConfirmPassword();
+
+    // 닉네임 변경 시도
+    if (!newNickname.isBlank()) {
+      log.info("닉네임 변경시도 {} -> {}", user.getNickname(), newNickname);
+
+      // 이미 존재하는 닉네임으로는 변경 불가 (자신이 예전에 쓰던 닉네임 포함)
+      if (userRepository.findByNickname(newNickname).isPresent()) {
+        log.info("이미 존재하는 닉네임이 있어 해당 닉네임으로 변경 불가");
+        throw new DeepdiviewException(ErrorCode.ALREADY_EXIST_NICKNAME);
+      }
+
+      // 존재하지 않는 닉네임일 시, 닉네임 변경 성공
+      user.setNickname(newNickname);
+      log.info("닉네임 변경성공");
+    }
+
+    if (!newPassword.isBlank()) {
+      log.info("비밀번호 변경시도");
+
+      if (!isValidPassword(newPassword)) {
+        log.info("8자 이상 입력하지 않았기 때문에 비밀번호 변경 실패");
+        throw new DeepdiviewException(ErrorCode.NOT_ENOUGH_PASSWORD);
+      } else {
+        if (!newPassword.equals(newConfirmPassword)) {
+          log.info("비밀번호 확인 번호와 일치 하지 않기 떄문에 비밀번호 변경 실패");
+          throw new DeepdiviewException(ErrorCode.NOT_VALID_PASSWORD);
+        }
+      }
+
+      user.setPassword(passwordEncoder.encode(newPassword));
+      log.info("비밀번호 변경성공");
+    }
+
+    user.setUpdatedAt(LocalDateTime.now());
+    userRepository.save(user);
+    log.info("회원정보 수정완료");
+
+
+  }
+
+  // 비밀번호 8자 이상 작성해야 유효
+  private boolean isValidPassword(String password) {
+    String regex = "\\w{8,}";
+    return Pattern.compile(regex).matcher(password).matches();
+  }
 }
 
