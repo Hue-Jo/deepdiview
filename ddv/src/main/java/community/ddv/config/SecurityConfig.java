@@ -31,8 +31,8 @@ public class SecurityConfig {
       "/swagger-ui/**",
       "/api/users/signup",
       "/api/users/login",
-      "/api/fetch-genres",
-      "/api/fetch-movies,"
+      "/api/fetch/genres",
+      "/api/fetch/movies"
   };
 
   @Bean
