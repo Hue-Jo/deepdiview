@@ -14,6 +14,7 @@ import lombok.NoArgsConstructor;
 @Entity
 @AllArgsConstructor
 @NoArgsConstructor
+@Getter
 public class MovieGenre {
 
   @Id

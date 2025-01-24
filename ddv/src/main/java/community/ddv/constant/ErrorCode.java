@@ -13,7 +13,8 @@ public enum ErrorCode {
   NOT_VALID_PASSWORD("비밀번호가 일치하지 않습니다. 비밀번호를 다시 확인해주세요", HttpStatus.BAD_REQUEST),
   NOT_ENOUGH_PASSWORD("비밀번호는 8자 이상으로 설정해야 합니다.", HttpStatus.BAD_REQUEST),
   USER_NOT_FOUND("존재하지 않는 사용자입니다.", HttpStatus.NOT_FOUND),
-  INVALID_REFRESH_TOKEN("유효하지 않은 토큰입니다.", HttpStatus.BAD_REQUEST);
+  INVALID_REFRESH_TOKEN("유효하지 않은 토큰입니다.", HttpStatus.BAD_REQUEST),
+  MOVIE_NOT_FOUND("존재하지 않는 영화입니다.", HttpStatus.NOT_FOUND);
 
   private final String description;
   private final HttpStatus httpStatus;
