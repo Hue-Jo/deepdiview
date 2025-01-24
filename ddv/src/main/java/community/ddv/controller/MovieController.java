@@ -6,6 +6,7 @@ import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -29,9 +30,9 @@ public class MovieController {
     return ResponseEntity.ok(movies);
   }
 
-  @GetMapping("/search")
-  public ResponseEntity<MovieDTO> getMovieByTitle(@RequestParam("title") String title) {
-    MovieDTO movie = movieService.getMovieInfoByTitle(title);
-    return ResponseEntity.ok(movie);
+  @GetMapping("/{movieId}")
+  public ResponseEntity<MovieDTO> getMovieDetail(@PathVariable Long movieId) {
+    MovieDTO movieDetails = movieService.getMovieDetailsById(movieId);
+    return ResponseEntity.ok(movieDetails);
   }
 }

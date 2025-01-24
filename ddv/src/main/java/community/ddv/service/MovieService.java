@@ -53,34 +53,33 @@ public class MovieService {
   }
 
   /**
-   * 특정 영화의 세부정보 조회 _ 공백 무시 가능
-   * @param title
+   * 특정 영화 id로 해당 영화의 세부정보 조회
+   * @param movieId
    */
-  public MovieDTO getMovieInfoByTitle(String title) {
-    Optional<Movie> movie = movieRepository.findByTitle(title);
-    if (movie.isPresent()) {
-      movie.ifPresent(this::convertToDTO);
-    } else {
-      throw new DeepdiviewException(ErrorCode.MOVIE_NOT_FOUND);
-    }
-    return convertToDTO(movie.get());
+  public MovieDTO getMovieDetailsById(Long movieId) {
+    return movieRepository.findById(movieId)
+        .map(this::convertToDTO)
+        .orElseThrow(() -> new DeepdiviewException(ErrorCode.MOVIE_NOT_FOUND));
   }
 
 
   private MovieDTO convertToDTO(Movie movie) {
 
-    return new MovieDTO(
-        movie.getId(),
-        movie.getTitle(),
-        movie.getOriginalTitle(),
-        movie.getOverview(),
-        movie.getReleaseDate(),
-        movie.getPopularity(),
-        movie.getPosterPath(),
-        movie.getBackdropPath(),
-        movie.getMovieGenres().stream()
+    return MovieDTO.builder()
+        .id(movie.getTmdbId())
+        .title(movie.getTitle())
+        .original_title(movie.getOriginalTitle())
+        .overview(movie.getOverview())
+        .release_date(movie.getReleaseDate())
+        .popularity(movie.getPopularity())
+        .poster_path(movie.getPosterPath())
+        .backdrop_path(movie.getBackdropPath())
+        .genre_ids(movie.getMovieGenres().stream()
             .map(movieGenre -> movieGenre.getGenre().getId())
-            .collect(Collectors.toList())
-    );
+            .collect(Collectors.toList()))
+        .genre_names(movie.getMovieGenres().stream()
+            .map(movieGenre -> movieGenre.getGenre().getName())
+            .collect(Collectors.toList()))
+        .build();
   }
 }
