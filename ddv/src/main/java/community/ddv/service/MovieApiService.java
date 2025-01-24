@@ -75,7 +75,7 @@ public class MovieApiService {
 
   private Movie toEntity(MovieDTO movieDTO) {
     Movie movie = Movie.builder()
-        .timdbId(movieDTO.getId())
+        .tmdbId(movieDTO.getId())
         .title(movieDTO.getTitle())
         .originalTitle(movieDTO.getOriginal_title())
         .overview(movieDTO.getOverview())

@@ -26,7 +26,7 @@ public class Movie {
   @GeneratedValue(strategy = GenerationType.IDENTITY)
   private Long id; // 본 서비스에서 사용하는 id
 
-  private Long timdbId;       // tmdb에서 제공하는 id
+  private Long tmdbId;       // tmdb에서 제공하는 id
   private String title;          // 제목
   private String originalTitle;  // 원어 제목
 
