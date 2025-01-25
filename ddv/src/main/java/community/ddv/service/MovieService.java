@@ -54,10 +54,10 @@ public class MovieService {
 
   /**
    * 특정 영화 id로 해당 영화의 세부정보 조회
-   * @param movieId
+   * @param tmdbId
    */
-  public MovieDTO getMovieDetailsById(Long movieId) {
-    return movieRepository.findById(movieId)
+  public MovieDTO getMovieDetailsById(Long tmdbId) {
+    return movieRepository.findByTmdbId(tmdbId)
         .map(this::convertToDTO)
         .orElseThrow(() -> new DeepdiviewException(ErrorCode.MOVIE_NOT_FOUND));
   }

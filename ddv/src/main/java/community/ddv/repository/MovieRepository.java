@@ -24,4 +24,5 @@ public interface MovieRepository extends JpaRepository<Movie, Long> {
   @Query("SELECT m FROM Movie m WHERE REPLACE(m.title, ' ', '') LIKE CONCAT('%', REPLACE(:title, ' ', ''), '%') ORDER BY m.popularity DESC")
   Optional<Movie> findByTitle(@Param("title") String title);
 
+  Optional<Movie> findByTmdbId(Long tmdbId);
 }
