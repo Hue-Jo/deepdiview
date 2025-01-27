@@ -6,6 +6,7 @@ import community.ddv.dto.UserDTO.LoginDto;
 import community.ddv.dto.UserDTO.SignUpDto;
 import community.ddv.response.LoginResponse;
 import community.ddv.service.UserService;
+import io.swagger.v3.oas.annotations.Operation;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -26,6 +27,7 @@ public class UserController {
   private final UserService userService;
 
   // 회원가입 API
+  @Operation(summary = "회원가입")
   @PostMapping("/signup")
   public ResponseEntity<Void> signup(@RequestBody @Valid SignUpDto signUpDto) {
     userService.signUp(signUpDto);
@@ -33,6 +35,7 @@ public class UserController {
   }
 
   // 로그인 API
+  @Operation(summary = "로그인")
   @PostMapping("/login")
   public ResponseEntity<LoginResponse> login(@RequestBody @Valid LoginDto loginDto) {
     LoginResponse loginResponse = userService.logIn(loginDto);
@@ -40,6 +43,7 @@ public class UserController {
   }
 
   // 회원탈퇴 API
+  @Operation(summary = "회원탈퇴")
   @DeleteMapping("/me")
   public ResponseEntity<Void> deleteAccount(
       @AuthenticationPrincipal UserDetails userDetails,
@@ -51,6 +55,7 @@ public class UserController {
   }
 
   // 회원정보 수정 API
+  @Operation(summary = "회원정보 수정")
   @PutMapping("/me")
   public ResponseEntity<Void> updateAccount(
       @AuthenticationPrincipal UserDetails userDetails,
@@ -61,6 +66,7 @@ public class UserController {
     return ResponseEntity.ok().build();
   }
 
+  @Operation(summary = "한줄소개 설정/수정", description = "회원가입 직후에는 새롭게 설정, 설정된 이후에는 수정")
   @PutMapping("/me/intro")
   public ResponseEntity<Void> updateIntro(
       @AuthenticationPrincipal UserDetails userDetails,
