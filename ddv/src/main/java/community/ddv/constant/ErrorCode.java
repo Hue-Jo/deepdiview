@@ -14,8 +14,10 @@ public enum ErrorCode {
   NOT_ENOUGH_PASSWORD("비밀번호는 8자 이상으로 설정해야 합니다.", HttpStatus.BAD_REQUEST),
   USER_NOT_FOUND("존재하지 않는 사용자입니다.", HttpStatus.NOT_FOUND),
   INVALID_REFRESH_TOKEN("유효하지 않은 토큰입니다.", HttpStatus.BAD_REQUEST),
-  MOVIE_NOT_FOUND("존재하지 않는 영화입니다.", HttpStatus.NOT_FOUND);
-
+  MOVIE_NOT_FOUND("존재하지 않는 영화입니다.", HttpStatus.NOT_FOUND),
+  ALREADY_COMMITED_REVIEW("이미 해당 영화에 대한 리뷰를 작성했습니다.", HttpStatus.BAD_REQUEST),
+  REVIEW_NOT_FOUND("존재하지 않는 리뷰입니다.", HttpStatus.BAD_REQUEST),
+  INVALID_USER("작성자만 가능합니다.", HttpStatus.FORBIDDEN);
   private final String description;
   private final HttpStatus httpStatus;
 }
