@@ -4,6 +4,7 @@ import community.ddv.dto.ReviewDTO;
 import community.ddv.dto.ReviewDTO.ReviewUpdateDTO;
 import community.ddv.response.ReviewResponse;
 import community.ddv.service.ReviewService;
+import io.swagger.v3.oas.annotations.Operation;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -25,6 +26,7 @@ public class ReviewController {
 
   private final ReviewService reviewService;
 
+  @Operation(summary = "리뷰글 작성")
   @PostMapping
   public ResponseEntity<ReviewResponse> createReview(
       @AuthenticationPrincipal UserDetails userDetails,
@@ -35,6 +37,7 @@ public class ReviewController {
     return ResponseEntity.status(HttpStatus.CREATED).body(response);
   }
 
+  @Operation(summary = "리뷰글 삭제")
   @DeleteMapping("/{reviewId}")
   public ResponseEntity<Void> deleteReview(
       @AuthenticationPrincipal UserDetails userDetails,
@@ -45,6 +48,7 @@ public class ReviewController {
     return ResponseEntity.noContent().build();
   }
 
+  @Operation(summary = "리뷰글 수정")
   @PutMapping("/{reviewId}")
   public ResponseEntity<ReviewResponse> updateReview(
       @AuthenticationPrincipal UserDetails userDetails,
