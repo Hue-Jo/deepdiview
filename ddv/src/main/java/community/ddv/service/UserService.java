@@ -18,6 +18,7 @@ import java.util.Optional;
 import java.util.regex.Pattern;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -234,6 +235,15 @@ public class UserService {
     }
     user.setUpdatedAt(LocalDateTime.now());
     userRepository.save(user);
+  }
+
+  public User getLoginUser() {
+
+    String email = SecurityContextHolder.getContext()
+        .getAuthentication().getName();
+
+    return userRepository.findByEmail(email)
+        .orElseThrow(() -> new DeepdiviewException(ErrorCode.USER_NOT_FOUND));
   }
 
 }
