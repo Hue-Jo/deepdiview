@@ -28,6 +28,7 @@ public class CommentService {
    * @param reviewId
    * @param commentRequestDto
    */
+  @Transactional
   public CommentResponseDto createComment(Long reviewId, CommentRequestDto commentRequestDto) {
 
     log.info("댓글 작성 요청");
@@ -54,7 +55,7 @@ public class CommentService {
     log.info("댓글 수정 요청");
     User user = userService.getLoginUser();
 
-    Review review = reviewRepository.findById(reviewId)
+    reviewRepository.findById(reviewId)
         .orElseThrow(() -> new DeepdiviewException(ErrorCode.REVIEW_NOT_FOUND));
 
     Comment comment = commentRepository.findById(commentId)
@@ -67,6 +68,32 @@ public class CommentService {
     comment.updateContent(commentRequestDto.getContent());
     log.info("댓글 수정 완료");
     return mapToResponse(comment);
+  }
+
+
+  @Transactional
+  public void deleteComment(Long reviewId, Long commentId) {
+    log.info("댓글 삭제 요청");
+
+    User user = userService.getLoginUser();
+
+    Review review = reviewRepository.findById(reviewId)
+        .orElseThrow(() -> new DeepdiviewException(ErrorCode.REVIEW_NOT_FOUND));
+
+    Comment comment = commentRepository.findById(commentId)
+        .orElseThrow(() -> new DeepdiviewException(ErrorCode.COMMENT_NOT_FOUND));
+
+    if (!comment.getUser().getId().equals(user.getId())) {
+      throw new DeepdiviewException(ErrorCode.INVALID_USER);
+    }
+
+    if (!comment.getReview().getId().equals(review.getId())) {
+      throw new DeepdiviewException(ErrorCode.NOT_MATCHED_CONTENT);
+    }
+
+    log.info("댓글 삭제 완료");
+    commentRepository.delete(comment);
+
   }
 
 
