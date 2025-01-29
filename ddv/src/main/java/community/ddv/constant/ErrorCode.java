@@ -20,8 +20,8 @@ public enum ErrorCode {
   INVALID_USER("작성자만 가능합니다.", HttpStatus.FORBIDDEN),
   COMMENT_NOT_FOUND("댓글이 존재하지 않습니다.", HttpStatus.BAD_REQUEST),
   NOT_MATCHED_CONTENT("유효하지 않은 내용입니다.", HttpStatus.BAD_REQUEST),
-  UNAUTHORIZED("로그인되어 있지 않은 사용자입니다.", HttpStatus.UNAUTHORIZED
-      );
+  UNAUTHORIZED("로그인되어 있지 않은 사용자입니다.", HttpStatus.UNAUTHORIZED),
+  ALREADY_EXIST_ADMIN("관리자는 한 명만 가능합니다.", HttpStatus.FORBIDDEN);
   private final String description;
   private final HttpStatus httpStatus;
 }

@@ -2,6 +2,7 @@ package community.ddv.controller;
 
 import community.ddv.dto.UserDTO.AccountDeleteDto;
 import community.ddv.dto.UserDTO.AccountUpdateDto;
+import community.ddv.dto.UserDTO.AdminDto;
 import community.ddv.dto.UserDTO.LoginDto;
 import community.ddv.dto.UserDTO.SignUpDto;
 import community.ddv.response.LoginResponse;
@@ -74,6 +75,15 @@ public class UserController {
   ) {
     String email = userDetails.getUsername();
     userService.updateOneLineIntro(email, accountUpdateDto);
+    return ResponseEntity.ok().build();
+  }
+
+  @Operation(summary = "관리자 생성", description = "단 한 명의 관리자만 존재할 수 있습니다.")
+  @PostMapping("/admin")
+  public ResponseEntity<Void> createAdmin(
+      @RequestBody AdminDto adminDto
+  ) {
+    userService.createAdmin(adminDto);
     return ResponseEntity.ok().build();
   }
 }
