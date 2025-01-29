@@ -18,6 +18,8 @@ import java.util.Optional;
 import java.util.regex.Pattern;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -234,6 +236,23 @@ public class UserService {
     }
     user.setUpdatedAt(LocalDateTime.now());
     userRepository.save(user);
+  }
+
+
+  // 로그인 여부 확인 메서드
+  @Transactional(readOnly = true)
+  public User getLoginUser() {
+
+    Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+
+    if (authentication == null || !authentication.isAuthenticated()) {
+      throw new DeepdiviewException(ErrorCode.UNAUTHORIZED);
+    }
+
+    String email = authentication.getName();
+
+    return userRepository.findByEmail(email)
+        .orElseThrow(() -> new DeepdiviewException(ErrorCode.USER_NOT_FOUND));
   }
 
 }
