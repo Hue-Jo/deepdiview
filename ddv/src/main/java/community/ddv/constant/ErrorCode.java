@@ -17,7 +17,8 @@ public enum ErrorCode {
   MOVIE_NOT_FOUND("존재하지 않는 영화입니다.", HttpStatus.NOT_FOUND),
   ALREADY_COMMITED_REVIEW("이미 해당 영화에 대한 리뷰를 작성했습니다.", HttpStatus.BAD_REQUEST),
   REVIEW_NOT_FOUND("존재하지 않는 리뷰입니다.", HttpStatus.BAD_REQUEST),
-  INVALID_USER("작성자만 가능합니다.", HttpStatus.FORBIDDEN);
+  INVALID_USER("작성자만 가능합니다.", HttpStatus.FORBIDDEN),
+  COMMENT_NOT_FOUND("댓글이 존재하지 않습니다.", HttpStatus.BAD_REQUEST);
   private final String description;
   private final HttpStatus httpStatus;
 }

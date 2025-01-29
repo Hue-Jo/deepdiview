@@ -43,4 +43,9 @@ public class Comment {
   private LocalDateTime createdAt;
   @LastModifiedDate
   private LocalDateTime updatedAt;
+
+  // 댓글 내용 수정
+  public void updateContent(String content) {
+    this.content = content;
+  }
 }
