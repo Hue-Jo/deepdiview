@@ -77,13 +77,4 @@ public class UserController {
     userService.updateOneLineIntro(email, accountUpdateDto);
     return ResponseEntity.ok().build();
   }
-
-  @Operation(summary = "관리자 생성", description = "단 한 명의 관리자만 존재할 수 있습니다.")
-  @PostMapping("/admin")
-  public ResponseEntity<Void> createAdmin(
-      @RequestBody AdminDto adminDto
-  ) {
-    userService.createAdmin(adminDto);
-    return ResponseEntity.ok().build();
-  }
 }

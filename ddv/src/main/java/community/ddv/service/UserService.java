@@ -256,27 +256,5 @@ public class UserService {
         .orElseThrow(() -> new DeepdiviewException(ErrorCode.USER_NOT_FOUND));
   }
 
-
-  // 관리자 생성
-  @Transactional
-  public void createAdmin(AdminDto adminDto) {
-
-    if (userRepository.existsByRole(Role.ADMIN)) {
-      throw new DeepdiviewException(ErrorCode.ALREADY_EXIST_ADMIN);
-    }
-
-    User admin = User.builder()
-        .email(adminDto.getEmail())
-        .password(passwordEncoder.encode(adminDto.getPassword()))
-        .role(Role.ADMIN)
-        .build();
-
-    userRepository.save(admin);
-
-  }
-
-  // 관리자 삭제 로직 필요 여부 확인 후 작성
-
-
 }
 
