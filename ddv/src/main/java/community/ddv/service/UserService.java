@@ -5,7 +5,6 @@ import community.ddv.constant.ErrorCode;
 import community.ddv.constant.Role;
 import community.ddv.dto.UserDTO.AccountDeleteDto;
 import community.ddv.dto.UserDTO.AccountUpdateDto;
-import community.ddv.dto.UserDTO.AdminDto;
 import community.ddv.dto.UserDTO.LoginDto;
 import community.ddv.dto.UserDTO.SignUpDto;
 import community.ddv.entity.RefreshToken;
@@ -85,7 +84,7 @@ public class UserService {
     }
 
     // 엑세스 토큰 생성
-    String accessToken = jwtProvider.generateAccessToken(user.getEmail());
+    String accessToken = jwtProvider.generateAccessToken(user.getEmail(), user.getRole());
 
     // 기존 리프레시 토큰 조회 -> 유효한 경우 기존 토큰 사용, 만료된 경우나 없는 경우 새로 생성
     String refreshToken;

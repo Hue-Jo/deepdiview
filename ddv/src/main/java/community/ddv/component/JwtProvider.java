@@ -1,9 +1,13 @@
 package community.ddv.component;
 
+import community.ddv.constant.Role;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
+import io.jsonwebtoken.io.Decoders;
+import io.jsonwebtoken.security.Keys;
+import java.security.Key;
 import java.util.Date;
 import javax.crypto.spec.SecretKeySpec;
 import lombok.RequiredArgsConstructor;
@@ -28,17 +32,28 @@ public class JwtProvider {
 
 
   // 엑세스 토큰 생성
-  public String generateAccessToken(String email) {
+  public String generateAccessToken(String email, Role role) {
 
     SecretKeySpec key = new SecretKeySpec(secretKey.getBytes(), algorithm.getJcaName());
     String accessToken = Jwts.builder()
         .subject(email)
+        .claim("role", role.name())
         .issuedAt(new Date()) // 토큰 발행시간
         .expiration(new Date(System.currentTimeMillis() + ACCESS_TOKEN_EXPIRED_TIME)) // 만료시간
         .signWith(key)
         .compact();
     log.info("엑세스 토큰 : {}", accessToken);
     return accessToken;
+  }
+
+  public Role getRoleFromToken(String token) {
+    SecretKeySpec key = new SecretKeySpec(secretKey.getBytes(), algorithm.getJcaName());
+    Claims claims = Jwts.parser().
+        setSigningKey(key)
+        .build()
+        .parseClaimsJws(token)
+        .getBody();
+    return Role.valueOf(claims.get("role", String.class));
   }
 
 

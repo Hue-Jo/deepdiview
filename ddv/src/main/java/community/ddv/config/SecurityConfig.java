@@ -47,7 +47,7 @@ public class SecurityConfig {
         .httpBasic(AbstractHttpConfigurer::disable)
         .authorizeHttpRequests(auth -> auth
             .requestMatchers(AUTH_WHITELIST).permitAll() // 로그인 없이도 할 수 있는 기능
-            .requestMatchers(HttpMethod.POST, "/api/votes/create").hasRole("ADMIN") // 관리자만 투표생성 가능
+            .requestMatchers(HttpMethod.POST, "/api/votes").hasAuthority("ADMIN") // 관리자만 투표 생성 가능
             .anyRequest().authenticated()
         )
         .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class) // jwt 필터
