@@ -16,6 +16,9 @@ public interface MovieRepository extends JpaRepository<Movie, Long> {
   // 넷플 내 인기도 상위 20개의 영화 정보 조회 (페이징처리)
   Page<Movie> findTop20ByOrderByPopularityDesc(Pageable pageable);
 
+  // 넷플 내 인기도 상위 5개의 영화 조회
+  Page<Movie> findTop5ByOrderByPopularityDesc(Pageable pageable);
+
   // 특정 단어가 포함된 영화 정보 리스트 조회(공백 무시)
   @Query("SELECT m FROM Movie m WHERE REPLACE(m.title, ' ', '') LIKE CONCAT('%', REPLACE(:title, ' ', ''), '%') ORDER BY m.popularity DESC")
   List<Movie> findByTitleFlexible(@Param("title") String title);

@@ -21,7 +21,12 @@ public enum ErrorCode {
   COMMENT_NOT_FOUND("댓글이 존재하지 않습니다.", HttpStatus.BAD_REQUEST),
   NOT_MATCHED_CONTENT("유효하지 않은 내용입니다.", HttpStatus.BAD_REQUEST),
   UNAUTHORIZED("로그인되어 있지 않은 사용자입니다.", HttpStatus.UNAUTHORIZED),
-  ALREADY_EXIST_ADMIN("관리자는 한 명만 가능합니다.", HttpStatus.FORBIDDEN);
+  ALREADY_EXIST_ADMIN("관리자는 한 명만 가능합니다.", HttpStatus.FORBIDDEN),
+  ONLY_ADMIN_CAN("관리자만 할 수 있는 기능입니다.", HttpStatus.FORBIDDEN),
+  INVALID_REQUEST("잘못된 요청입니다. 다시 확인해주세요", HttpStatus.BAD_REQUEST),
+  INVALID_VOTE_CREAT_DATE("투표 생성은 일,월요일에만 가능합니다.", HttpStatus.BAD_REQUEST);
+
+
   private final String description;
   private final HttpStatus httpStatus;
 }
