@@ -56,5 +56,12 @@ public class UserDTO {
     private String oneLineIntro;
   }
 
+  @Getter
+  public static class AdminDto{
+
+    private String email;
+    private String password;
+  }
+
 
 }

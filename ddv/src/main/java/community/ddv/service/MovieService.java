@@ -33,6 +33,17 @@ public class MovieService {
         .collect(Collectors.toList());
   }
 
+  /**
+   * 넷플릭스 내 인기도 탑 5 영화 세부정보 조회
+   */
+  public List<MovieDTO> getTop5Movies() {
+    Pageable pageable = PageRequest.of(0, 5);
+    Page<Movie> top5Movies = movieRepository.findTop5ByOrderByPopularityDesc(pageable);
+    return top5Movies.stream()
+        .map(this::convertToDTO)
+        .collect(Collectors.toList());
+  }
+
 
   /**
    * 영화 제목으로 해당 영화의 세부정보 조회 _ 공백 무시 가능 & 특정 글자가 포함되는 조회됨 & 넷플 인기도 순 정렬

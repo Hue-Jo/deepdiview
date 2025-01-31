@@ -1,14 +1,17 @@
 package community.ddv.component;
 
+import community.ddv.constant.Role;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.util.Collections;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -35,9 +38,10 @@ public class JwtFilter extends OncePerRequestFilter {
     // jwt 토큰이 있고 유효한 경우, 인증 처리
     if (token != null && jwtProvider.validateToken(token, jwtProvider.extractEmail(token))) {
       String email = jwtProvider.extractEmail(token);
+      Role role = jwtProvider.getRoleFromToken(token);
       UserDetails userDetails = userDetailsService.loadUserByUsername(email);
       Authentication authentication = new UsernamePasswordAuthenticationToken(userDetails, null,
-          userDetails.getAuthorities());
+          Collections.singletonList(new SimpleGrantedAuthority(role.name())));
       SecurityContextHolder.getContext().setAuthentication(authentication);
       log.info("인증된 유저. 토큰 : {}", token);
     }
