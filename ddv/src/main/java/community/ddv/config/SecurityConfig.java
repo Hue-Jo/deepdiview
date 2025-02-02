@@ -5,6 +5,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -48,6 +49,8 @@ public class SecurityConfig {
         .authorizeHttpRequests(auth -> auth
             .requestMatchers(AUTH_WHITELIST).permitAll() // 로그인 없이도 할 수 있는 기능
             .requestMatchers(HttpMethod.POST, "/api/votes").hasAuthority("ADMIN") // 관리자만 투표 생성 가능
+            .requestMatchers(HttpMethod.GET, "/api/certifications/admin/**").hasAuthority("ADMIN")
+            .requestMatchers(HttpMethod.POST, "/api/certifications/admin/**").hasAuthority("ADMIN")
             .anyRequest().authenticated()
         )
         .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class) // jwt 필터
