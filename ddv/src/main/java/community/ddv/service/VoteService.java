@@ -5,12 +5,15 @@ import community.ddv.constant.Role;
 import community.ddv.dto.MovieDTO;
 import community.ddv.dto.VoteDTO.VoteRequestDto;
 import community.ddv.dto.VoteDTO.VoteResponseDTO;
+import community.ddv.dto.VoteParticipationDTO.VoteParticipationRequestDto;
+import community.ddv.dto.VoteParticipationDTO.VoteParticipationResponseDto;
 import community.ddv.entity.Movie;
 import community.ddv.entity.User;
 import community.ddv.entity.Vote;
+import community.ddv.entity.VoteParticipation;
 import community.ddv.exception.DeepdiviewException;
 import community.ddv.repository.MovieRepository;
-import community.ddv.repository.UserRepository;
+import community.ddv.repository.VoteParticipationRepository;
 import community.ddv.repository.VoteRepository;
 import java.time.DayOfWeek;
 import java.time.LocalDateTime;
@@ -28,7 +31,7 @@ import org.springframework.transaction.annotation.Transactional;
 public class VoteService {
 
   private final VoteRepository voteRepository;
-  private final UserRepository userRepository;
+  private final VoteParticipationRepository voteParticipationRepository;
   private final MovieRepository movieRepository;
   private final UserService userService;
   private final MovieService movieService;
@@ -48,12 +51,14 @@ public class VoteService {
       throw new DeepdiviewException(ErrorCode.ONLY_ADMIN_CAN);
     }
 
-    // 투표 생성은 일요일,월요일만 가능
+    // 투표 생성은 일요일만 가능
     LocalDateTime today = LocalDateTime.now();
-    if (today.getDayOfWeek() != DayOfWeek.THURSDAY && today.getDayOfWeek() != DayOfWeek.MONDAY) {
-      log.error("투표 생성은 일요일, 월요일만 가능합니다.");
+    if (today.getDayOfWeek() != DayOfWeek.SUNDAY) {
+      log.error("투표 생성은 일요일만 가능합니다.");
       throw new DeepdiviewException(ErrorCode.INVALID_VOTE_CREAT_DATE);
     }
+
+    // 투표 생성은 일요일이어도 투표 시작은 월요일 0시 0분부터 가능하도록 수정
 
     // 투표 종료일 : 토요일 23시 59분 59초
     LocalDateTime endDate = today.with(TemporalAdjusters.next(DayOfWeek.SATURDAY))
@@ -81,12 +86,71 @@ public class VoteService {
 
   }
 
-  // 일반 사용자의 투표 여부 확인
-  public boolean hasVoted(Long userId) {
-    User user = userService.getLoginUser();
-    userRepository.findById(userId)
-        .orElseThrow(() -> new DeepdiviewException(ErrorCode.USER_NOT_FOUND));
-    return voteRepository.existsByUser(user);
+  /**
+   * 현재 진행중인 투표의 선택지 조회
+   */
+  @Transactional(readOnly = true)
+  public VoteResponseDTO getVoteChoices() {
+
+    userService.getLoginUser();
+    log.info("투표 선택지 조회 시도");
+
+    // 현재 진행중인 투표 조회
+    LocalDateTime today = LocalDateTime.now();
+    Vote activatingVote = voteRepository.findByStartDateBeforeAndEndDateAfter(today, today)
+        .orElseThrow(() -> new DeepdiviewException(ErrorCode.INVALID_VOTE_PERIOD));
+    log.info("투표 선택지 조회 완료");
+    return new VoteResponseDTO(activatingVote);
   }
+
+  /**
+   * 일반 사용자의 투표 참여
+   * @param voteId
+   * @param voteParticipationRequestDto
+   */
+  @Transactional
+  public VoteParticipationResponseDto participateVote(Long voteId, VoteParticipationRequestDto voteParticipationRequestDto) {
+    User user = userService.getLoginUser();
+    log.info("투표 시도 : {} ", user.getId());
+
+    Vote vote = voteRepository.findById(voteId)
+        .orElseThrow(() -> new DeepdiviewException(ErrorCode.VOTE_NOT_FOUND));
+
+    // 중복참여 불가
+    boolean alreadyParticipated = voteParticipationRepository.existsByUserAndVote(user, vote);
+    if (alreadyParticipated) {
+      log.error("이미 참여한 사용자");
+      throw new DeepdiviewException(ErrorCode.AlREADY_VOTED);
+    }
+
+    // 투표 기간 내에만 참여가능
+    LocalDateTime now = LocalDateTime.now();
+    if (now.isAfter(vote.getEndDate())) {
+      log.error("이미 종료된 투표입니다.");
+      throw new DeepdiviewException(ErrorCode.INVALID_VOTE_PERIOD_ENDED);
+    }
+    if (now.isBefore(vote.getStartDate())) {
+      log.error("아직 시작되지 않은 투표입니다.");
+      throw new DeepdiviewException(ErrorCode.INVALID_VOTE_PERIOD_NOT_STARTED);
+    }
+
+    // 영화 선택
+    Movie selectedMovie = movieRepository.findByTmdbId(voteParticipationRequestDto.getTmdbId())
+        .orElseThrow(() -> new DeepdiviewException(ErrorCode.MOVIE_NOT_FOUND));
+
+    // 투표 저장
+    VoteParticipation voteParticipation = VoteParticipation.builder()
+        .user(user)
+        .vote(vote)
+        .selectedMovie(selectedMovie)
+        .build();
+    voteParticipationRepository.save(voteParticipation);
+
+    log.info("투표 참여 완료: 사용자 ID = {}, 영화 ID = {}", user.getId(), selectedMovie.getId());
+    return new VoteParticipationResponseDto(true);
+  }
+
+  // 특정 투표에서 어떤 영화가 몇 표를 얻었는지 조회
+
 
 }
