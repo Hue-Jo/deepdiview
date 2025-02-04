@@ -3,7 +3,7 @@ package community.ddv.service;
 import community.ddv.constant.ErrorCode;
 import community.ddv.constant.Role;
 import community.ddv.dto.MovieDTO;
-import community.ddv.dto.VoteDTO.VoteResponseDTO;
+import community.ddv.dto.VoteDTO.VoteCreatedDTO;
 import community.ddv.dto.VoteParticipationDTO.VoteParticipationRequestDto;
 import community.ddv.dto.VoteParticipationDTO.VoteParticipationResponseDto;
 import community.ddv.entity.Movie;
@@ -42,7 +42,7 @@ public class VoteService {
    * 투표 종료일 : 해당 주 토요일 23시 59분 59초
    */
   @Transactional
-  public VoteResponseDTO createVote() {
+  public VoteCreatedDTO createVote() {
 
     // 로그인된 관리자만 투표 생성 가능
     User admin = userService.getLoginUser();
@@ -82,7 +82,7 @@ public class VoteService {
         .build();
     Vote savedVote = voteRepository.save(vote);
     log.info("투표 생성 완료");
-    return new VoteResponseDTO(savedVote);
+    return new VoteCreatedDTO(savedVote);
 
   }
 
@@ -90,7 +90,7 @@ public class VoteService {
    * 현재 진행중인 투표의 선택지 조회
    */
   @Transactional(readOnly = true)
-  public VoteResponseDTO getVoteChoices() {
+  public VoteCreatedDTO getVoteChoices() {
 
     userService.getLoginUser();
     log.info("투표 선택지 조회 시도");
@@ -100,7 +100,7 @@ public class VoteService {
     Vote activatingVote = voteRepository.findByStartDateBeforeAndEndDateAfter(today, today)
         .orElseThrow(() -> new DeepdiviewException(ErrorCode.INVALID_VOTE_PERIOD));
     log.info("투표 선택지 조회 완료");
-    return new VoteResponseDTO(activatingVote);
+    return new VoteCreatedDTO(activatingVote);
   }
 
   /**
@@ -148,7 +148,9 @@ public class VoteService {
 
     log.info("투표 참여 완료: 사용자 ID = {}, 영화 ID = {}", user.getId(), selectedMovie.getId());
     return new VoteParticipationResponseDto(true);
+
+    //return getVoteResult(vote.getId());
   }
 
-  // 투표 결과 조회
+  // 투표 결과 조회 (투표가 진행중인 경우 실시간으로 반환, 종료된 경우에는 최종결과 반환)
 }

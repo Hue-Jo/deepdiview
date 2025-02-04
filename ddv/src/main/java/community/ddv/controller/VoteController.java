@@ -1,6 +1,6 @@
 package community.ddv.controller;
 
-import community.ddv.dto.VoteDTO.VoteResponseDTO;
+import community.ddv.dto.VoteDTO.VoteCreatedDTO;
 import community.ddv.dto.VoteParticipationDTO.VoteParticipationRequestDto;
 import community.ddv.dto.VoteParticipationDTO.VoteParticipationResponseDto;
 import community.ddv.service.VoteService;
@@ -24,15 +24,15 @@ public class VoteController {
 
   @Operation(summary = "투표 생성", description = "관리자 전용, 일/월요일만 투표 생성 가능")
   @PostMapping
-  public ResponseEntity<VoteResponseDTO> createVote() {
-    VoteResponseDTO responseDTO = voteService.createVote();
+  public ResponseEntity<VoteCreatedDTO> createVote() {
+    VoteCreatedDTO responseDTO = voteService.createVote();
     return ResponseEntity.status(HttpStatus.CREATED).body(responseDTO);
   }
 
   @Operation(summary = "현재 진행중인 투표의 선택지 조회")
   @GetMapping("/activate")
-  public ResponseEntity<VoteResponseDTO> getActivatingVote() {
-    VoteResponseDTO responseDTO = voteService.getVoteChoices();
+  public ResponseEntity<VoteCreatedDTO> getActivatingVote() {
+    VoteCreatedDTO responseDTO = voteService.getVoteChoices();
     return ResponseEntity.status(HttpStatus.OK).body(responseDTO);
   }
 

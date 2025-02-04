@@ -5,14 +5,17 @@ import community.ddv.entity.Vote;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 
-
+// 투표 생성 & 결과 관련 DTO
 @Getter
 public class VoteDTO {
 
   @Getter
-  public static class VoteResponseDTO {
+  public static class VoteCreatedDTO {
+
     private Long voteId;
     private String title; // 투표 제목
     private LocalDateTime startDate;
@@ -21,7 +24,7 @@ public class VoteDTO {
     private List<MovieVoteDto> movieDetails = new ArrayList<>();  // tmdbIds, 등수, 투표수,
 
 
-    public VoteResponseDTO(Vote vote) {
+    public VoteCreatedDTO(Vote vote) {
       voteId = vote.getId();
       title = vote.getTitle();
       startDate = vote.getStartDate();
@@ -44,4 +47,24 @@ public class VoteDTO {
     }
   }
 
+  @Getter
+  @AllArgsConstructor
+  public static class VoteResultDTO {
+
+    private String title;
+    private LocalDateTime startDate;
+    private LocalDateTime endDate;
+    private List<VoteCount> results;
+
+    @Getter
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class VoteCount {
+
+      private String movieTitle;
+      private Long voteCount;
+      private LocalDateTime latestVoteTime; // 마지막 득표 시간
+    }
+
+  }
 }
