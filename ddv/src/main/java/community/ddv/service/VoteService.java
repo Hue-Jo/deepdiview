@@ -3,7 +3,6 @@ package community.ddv.service;
 import community.ddv.constant.ErrorCode;
 import community.ddv.constant.Role;
 import community.ddv.dto.MovieDTO;
-import community.ddv.dto.VoteDTO.VoteRequestDto;
 import community.ddv.dto.VoteDTO.VoteResponseDTO;
 import community.ddv.dto.VoteParticipationDTO.VoteParticipationRequestDto;
 import community.ddv.dto.VoteParticipationDTO.VoteParticipationResponseDto;
@@ -17,6 +16,7 @@ import community.ddv.repository.VoteParticipationRepository;
 import community.ddv.repository.VoteRepository;
 import java.time.DayOfWeek;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.time.temporal.TemporalAdjusters;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -38,10 +38,11 @@ public class VoteService {
 
   /**
    * 관리자의 투표 생성
-   * @param voteRequestDTO
+   * 투표 생성은 일요일만 가능하지만, 실제 투표 시작은 월요일 0시 0분부터
+   * 투표 종료일 : 해당 주 토요일 23시 59분 59초
    */
   @Transactional
-  public VoteResponseDTO createVote(VoteRequestDto voteRequestDTO) {
+  public VoteResponseDTO createVote() {
 
     // 로그인된 관리자만 투표 생성 가능
     User admin = userService.getLoginUser();
@@ -52,16 +53,15 @@ public class VoteService {
     }
 
     // 투표 생성은 일요일만 가능
-    LocalDateTime today = LocalDateTime.now();
-    if (today.getDayOfWeek() != DayOfWeek.SUNDAY) {
+    LocalDateTime now = LocalDateTime.now();
+    if (now.getDayOfWeek() != DayOfWeek.TUESDAY) {
       log.error("투표 생성은 일요일만 가능합니다.");
       throw new DeepdiviewException(ErrorCode.INVALID_VOTE_CREAT_DATE);
     }
-
-    // 투표 생성은 일요일이어도 투표 시작은 월요일 0시 0분부터 가능하도록 수정
-
+    // 투표 시작일 : 생성 다음날(월요일) 자정(0시 0분)
+    LocalDateTime startDate = now.plusDays(1).with(LocalTime.MIDNIGHT);
     // 투표 종료일 : 토요일 23시 59분 59초
-    LocalDateTime endDate = today.with(TemporalAdjusters.next(DayOfWeek.SATURDAY))
+    LocalDateTime endDate = now.with(TemporalAdjusters.next(DayOfWeek.SATURDAY))
         .withHour(23).withMinute(23).withSecond(59);
 
     // 인기도 탑 5의 영화 세부 정보 가져오기
@@ -75,9 +75,9 @@ public class VoteService {
         .collect(Collectors.toList());
 
     Vote vote = Vote.builder()
-        .title(voteRequestDTO.getTitle())
+        .title("다음주의 영화를 선택해주세요")
         .movies(selectedMovies)
-        .startDate(today)
+        .startDate(startDate)
         .endDate(endDate)
         .build();
     Vote savedVote = voteRepository.save(vote);
@@ -150,7 +150,5 @@ public class VoteService {
     return new VoteParticipationResponseDto(true);
   }
 
-  // 특정 투표에서 어떤 영화가 몇 표를 얻었는지 조회
-
-
+  // 투표 결과 조회
 }
