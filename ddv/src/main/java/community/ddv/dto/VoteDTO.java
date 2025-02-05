@@ -2,6 +2,7 @@ package community.ddv.dto;
 
 import community.ddv.entity.Movie;
 import community.ddv.entity.Vote;
+import community.ddv.entity.VoteMovie;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -31,7 +32,7 @@ public class VoteDTO {
       endDate = vote.getEndDate();
 
       int rank = 1;
-      for (Movie movie : vote.getMovies()) {
+      for (Movie movie : vote.getVoteMovies().stream().map(VoteMovie::getMovie).toList()) {
         MovieVoteDto movieVoteDto = new MovieVoteDto(
             movie.getTmdbId(),
             0,

@@ -4,21 +4,27 @@ import community.ddv.constant.ErrorCode;
 import community.ddv.constant.Role;
 import community.ddv.dto.MovieDTO;
 import community.ddv.dto.VoteDTO.VoteCreatedDTO;
+import community.ddv.dto.VoteDTO.VoteResultDTO;
 import community.ddv.dto.VoteParticipationDTO.VoteParticipationRequestDto;
 import community.ddv.dto.VoteParticipationDTO.VoteParticipationResponseDto;
 import community.ddv.entity.Movie;
 import community.ddv.entity.User;
 import community.ddv.entity.Vote;
+import community.ddv.entity.VoteMovie;
 import community.ddv.entity.VoteParticipation;
 import community.ddv.exception.DeepdiviewException;
 import community.ddv.repository.MovieRepository;
+import community.ddv.repository.VoteMovieRepository;
 import community.ddv.repository.VoteParticipationRepository;
 import community.ddv.repository.VoteRepository;
 import java.time.DayOfWeek;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.temporal.TemporalAdjusters;
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -31,6 +37,7 @@ import org.springframework.transaction.annotation.Transactional;
 public class VoteService {
 
   private final VoteRepository voteRepository;
+  private final VoteMovieRepository voteMovieRepository;
   private final VoteParticipationRepository voteParticipationRepository;
   private final MovieRepository movieRepository;
   private final UserService userService;
@@ -52,9 +59,9 @@ public class VoteService {
       throw new DeepdiviewException(ErrorCode.ONLY_ADMIN_CAN);
     }
 
-    // 투표 생성은 일요일만 가능
+    // 투표 생성은 일요일만 가능, 한 주에 한 번만 가능
     LocalDateTime now = LocalDateTime.now();
-    if (now.getDayOfWeek() != DayOfWeek.TUESDAY) {
+    if (now.getDayOfWeek() != DayOfWeek.WEDNESDAY) {
       log.error("투표 생성은 일요일만 가능합니다.");
       throw new DeepdiviewException(ErrorCode.INVALID_VOTE_CREAT_DATE);
     }
@@ -69,18 +76,32 @@ public class VoteService {
     log.info("인기도 탑5의 영화를 가져왔습니다.");
 
     // 인기도 탑5 영화 목록에서 Movie 객체를 리스트로 변환
-    List<Movie> selectedMovies = top5Movies.stream()
-        .map(movieDTO -> movieRepository.findByTmdbId(movieDTO.getId())
-            .orElseThrow(() -> new DeepdiviewException(ErrorCode.MOVIE_NOT_FOUND)))
-        .collect(Collectors.toList());
+//    List<Movie> selectedMovies = top5Movies.stream()
+//        .map(movieDTO -> movieRepository.findByTmdbId(movieDTO.getId())
+//            .orElseThrow(() -> new DeepdiviewException(ErrorCode.MOVIE_NOT_FOUND)))
+//        .collect(Collectors.toList());
 
     Vote vote = Vote.builder()
         .title("다음주의 영화를 선택해주세요")
-        .movies(selectedMovies)
-        .startDate(startDate)
+        //.movies(selectedMovies)
+        .startDate(now)
+        //.startDate(startDate)
         .endDate(endDate)
+        .voteMovies(new ArrayList<>())
         .build();
+
+    // 선택된 영화들을 VoteMovie 테이블에 저장
+    for (MovieDTO movieDTO : top5Movies) {
+      Movie movie = movieRepository.findByTmdbId(movieDTO.getId())
+          .orElseThrow(() -> new DeepdiviewException(ErrorCode.MOVIE_NOT_FOUND));
+      VoteMovie voteMovie = VoteMovie.builder()
+          .vote(vote)
+          .movie(movie)
+          .build();
+      vote.getVoteMovies().add(voteMovie);
+    }
     Vote savedVote = voteRepository.save(vote);
+
     log.info("투표 생성 완료");
     return new VoteCreatedDTO(savedVote);
 
@@ -143,6 +164,7 @@ public class VoteService {
         .user(user)
         .vote(vote)
         .selectedMovie(selectedMovie)
+        .votedAt(now)
         .build();
     voteParticipationRepository.save(voteParticipation);
 
@@ -151,6 +173,4 @@ public class VoteService {
 
     //return getVoteResult(vote.getId());
   }
-
-  // 투표 결과 조회 (투표가 진행중인 경우 실시간으로 반환, 종료된 경우에는 최종결과 반환)
 }

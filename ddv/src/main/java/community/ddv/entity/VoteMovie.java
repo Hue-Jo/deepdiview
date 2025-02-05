@@ -7,35 +7,27 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
-import java.time.LocalDateTime;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 @Entity
+@Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@Builder
 @Getter
-public class VoteParticipation {
+public class VoteMovie {
 
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
   private Long id;
 
   @ManyToOne(fetch = FetchType.LAZY)
-  @JoinColumn(name = "user_id")
-  private User user;
-
-  @ManyToOne(fetch = FetchType.LAZY)
-  @JoinColumn(name = "vote_Id")
+  @JoinColumn(name = "vote_id")
   private Vote vote;
 
   @ManyToOne(fetch = FetchType.LAZY)
   @JoinColumn(name = "movie_id")
-  private Movie selectedMovie;
-
-  private LocalDateTime votedAt;
-
+  private Movie movie;
 }
