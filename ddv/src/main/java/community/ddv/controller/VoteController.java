@@ -1,6 +1,7 @@
 package community.ddv.controller;
 
 import community.ddv.dto.VoteDTO.VoteCreatedDTO;
+import community.ddv.dto.VoteDTO.VoteResultDTO;
 import community.ddv.dto.VoteParticipationDTO.VoteOptionsDto;
 import community.ddv.dto.VoteParticipationDTO.VoteParticipationRequestDto;
 import community.ddv.dto.VoteParticipationDTO.VoteParticipationResponseDto;
@@ -44,5 +45,12 @@ public class VoteController {
       @RequestBody VoteParticipationRequestDto voteParticipationRequestDto) {
     VoteParticipationResponseDto responseDTO = voteService.participateVote(voteId, voteParticipationRequestDto);
     return ResponseEntity.status(HttpStatus.OK).body(responseDTO);
+  }
+
+  @GetMapping("/{voteId}/result")
+  public ResponseEntity<VoteResultDTO> getVoteResult(
+      @PathVariable Long voteId) {
+    VoteResultDTO voteResultDTO = voteService.getVoteResult(voteId);
+    return ResponseEntity.ok(voteResultDTO);
   }
 }

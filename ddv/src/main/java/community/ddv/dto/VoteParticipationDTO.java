@@ -3,28 +3,27 @@ package community.ddv.dto;
 import java.util.List;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
-import lombok.NoArgsConstructor;
 
 public class VoteParticipationDTO {
 
   @Getter
   @AllArgsConstructor
   public static class VoteOptionsDto {
-    private List<Long> tmdbIds;
+    private List<Long> tmdbIds; // 5개 선택지
   }
 
   @Getter
   public static class VoteParticipationRequestDto {
 
-    private Long tmdbId;
+    private Long tmdbId; // 사용자가 선택한 영화
   }
 
   @Getter
   @AllArgsConstructor
   public static class VoteParticipationResponseDto {
 
-    private boolean voteSuccess;
-    private Long timdbId;
+    private boolean voteSuccess; // 성공여부
+    private Long timdbId; // 선택한 영화
 
   }
 
