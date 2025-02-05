@@ -1,6 +1,7 @@
 package community.ddv.controller;
 
 import community.ddv.dto.VoteDTO.VoteCreatedDTO;
+import community.ddv.dto.VoteParticipationDTO.VoteOptionsDto;
 import community.ddv.dto.VoteParticipationDTO.VoteParticipationRequestDto;
 import community.ddv.dto.VoteParticipationDTO.VoteParticipationResponseDto;
 import community.ddv.service.VoteService;
@@ -30,10 +31,10 @@ public class VoteController {
   }
 
   @Operation(summary = "현재 진행중인 투표의 선택지 조회")
-  @GetMapping("/activate")
-  public ResponseEntity<VoteCreatedDTO> getActivatingVote() {
-    VoteCreatedDTO responseDTO = voteService.getVoteChoices();
-    return ResponseEntity.status(HttpStatus.OK).body(responseDTO);
+  @GetMapping("/options")
+  public ResponseEntity<VoteOptionsDto> getActivatingVote() {
+    VoteOptionsDto options = voteService.getVoteChoices();
+    return ResponseEntity.status(HttpStatus.OK).body(options);
   }
 
   @Operation(summary = "투표 참여")

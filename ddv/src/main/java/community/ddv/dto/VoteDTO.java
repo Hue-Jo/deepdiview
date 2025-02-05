@@ -52,18 +52,19 @@ public class VoteDTO {
   @AllArgsConstructor
   public static class VoteResultDTO {
 
-    private String title;
+    private Long voteId;
     private LocalDateTime startDate;
     private LocalDateTime endDate;
-    private List<VoteCount> results;
+    private List<MovieVoteDto> results; // 영화별 투표 결과 리스트
 
     @Getter
     @NoArgsConstructor
     @AllArgsConstructor
-    public static class VoteCount {
+    public static class MovieResultDTO {
 
-      private String movieTitle;
-      private Long voteCount;
+      private String timdbId; // tmdb id
+      private int voteCount; // 해당 영화가 받은 득표수
+      private int rank; // 등수
       private LocalDateTime latestVoteTime; // 마지막 득표 시간
     }
 

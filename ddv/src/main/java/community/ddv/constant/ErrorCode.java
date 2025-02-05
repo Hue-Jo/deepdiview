@@ -32,7 +32,8 @@ public enum ErrorCode {
   INVALID_VOTE_PERIOD("투표 기간이 아닙니다.", HttpStatus.BAD_REQUEST),
   INVALID_VOTE_PERIOD_ENDED("이미 종료된 투표입니다.", HttpStatus.BAD_REQUEST),
   INVALID_VOTE_PERIOD_NOT_STARTED("아직 진행중인 투표가 없습니다.", HttpStatus.BAD_REQUEST),
-  DUPLICATION_NOT_ALLOW("한 개만 선택할 수 있습니다. ", HttpStatus.MULTIPLE_CHOICES);
+  DUPLICATION_NOT_ALLOW("한 개만 선택할 수 있습니다. ", HttpStatus.MULTIPLE_CHOICES),
+  ALREADY_EXIST_VOTE("이미 이번주에 생성한 투표가 있습니다.", HttpStatus.BAD_REQUEST);
 
 
   private final String description;
