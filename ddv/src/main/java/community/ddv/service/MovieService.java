@@ -74,7 +74,7 @@ public class MovieService {
   }
 
 
-  private MovieDTO convertToDTO(Movie movie) {
+  public MovieDTO convertToDTO(Movie movie) {
 
     return MovieDTO.builder()
         .id(movie.getTmdbId())

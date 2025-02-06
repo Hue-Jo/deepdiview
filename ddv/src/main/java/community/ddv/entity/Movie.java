@@ -9,6 +9,7 @@ import jakarta.persistence.Id;
 import jakarta.persistence.OneToMany;
 import java.time.LocalDate;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -45,4 +46,8 @@ public class Movie {
     MovieGenre movieGenre = new MovieGenre(this, genre);
     movieGenres.add(movieGenre);
   }
+
+  @OneToMany(mappedBy = "movie", cascade = CascadeType.ALL)
+  private List<VoteMovie> voteMovies;
+
 }

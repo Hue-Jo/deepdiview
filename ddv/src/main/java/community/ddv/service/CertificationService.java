@@ -3,14 +3,11 @@ package community.ddv.service;
 import community.ddv.constant.CertificationStatus;
 import community.ddv.constant.ErrorCode;
 import community.ddv.constant.RejectionReason;
-import community.ddv.dto.CertificationDTO;
 import community.ddv.dto.CertificationDTO.CertificationResponseDto;
 import community.ddv.entity.Certification;
 import community.ddv.entity.User;
 import community.ddv.exception.DeepdiviewException;
 import community.ddv.repository.CertificationRepository;
-import community.ddv.repository.UserRepository;
-import community.ddv.repository.VoteRepository;
 import java.io.IOException;
 import java.time.LocalDateTime;
 import lombok.RequiredArgsConstructor;
@@ -28,9 +25,7 @@ public class CertificationService {
 
   private final CertificationRepository certificationRepository;
   private final FileStorageService fileStorageService;
-  private final UserRepository userRepository;
   private final UserService userService;
-  private final VoteRepository voteRepository;
 
   /**
    * 일반사용자 _ 영화를 봤는지 인증을 위한 인증샷 제출 (특정 영화의 리뷰에 참여하기 위함)
