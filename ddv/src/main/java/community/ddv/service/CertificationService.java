@@ -63,20 +63,54 @@ public class CertificationService {
         .build();
   }
 
+//  /**
+//   * 관리자 _ 인증 대기 목록 조회
+//   * @param pageable
+//   * @return
+//   */
+//  public Page<CertificationResponseDto> getPendingCertifications(Pageable pageable) {
+//    userService.getLoginUser();
+//    return certificationRepository.findByStatus(CertificationStatus.PENDING, pageable)
+//        .map(certification -> CertificationResponseDto.builder()
+//            .id(certification.getId())
+//            .userId(certification.getUser().getId())
+//            .certificationUrl(certification.getCertificationUrl())
+//            .createdAt(certification.getCreatedAt())
+//            .build());
+//  }
+
   /**
-   * 관리자 _ 인증 대기 목록 조회
+   * 관리자 _ 인증 목록 조회 (인증 상태에 따른 필터링 가능)
+   * @param status (인증상태 PENDING, APPROVED, REJECTED)
    * @param pageable
-   * @return
    */
-  public Page<CertificationResponseDto> getPendingCertifications(Pageable pageable) {
+  public Page<CertificationResponseDto> getCertificationsByStatus(CertificationStatus status, Pageable pageable) {
     userService.getLoginUser();
-    return certificationRepository.findByStatus(CertificationStatus.PENDING, pageable)
-        .map(certification -> CertificationResponseDto.builder()
-            .id(certification.getId())
-            .userId(certification.getUser().getId())
-            .certificationUrl(certification.getCertificationUrl())
-            .createdAt(certification.getCreatedAt())
-            .build());
+
+    if (status == null) {
+      // 전체 조회
+      return certificationRepository.findAll(pageable)
+          .map(certification -> CertificationResponseDto.builder()
+              .id(certification.getId())
+              .userId(certification.getUser().getId())
+              .certificationUrl(certification.getCertificationUrl())
+              .status(certification.getStatus())
+              .rejectionReason(certification.getRejectionReason())
+              .createdAt(certification.getCreatedAt())
+              .build());
+    } else {
+      // 인증 상태에 따른 조회
+      return certificationRepository.findByStatus(status, pageable)
+          .map(certification -> CertificationResponseDto.builder()
+              .id(certification.getId())
+              .userId(certification.getUser().getId())
+              .certificationUrl(certification.getCertificationUrl())
+              .status(certification.getStatus())
+              .rejectionReason(certification.getRejectionReason())
+              .createdAt(certification.getCreatedAt())
+              .build());
+    }
+
   }
 
   /**
@@ -111,8 +145,10 @@ public class CertificationService {
     Certification certification = certificationRepository.findById(certificationId)
         .orElseThrow(() -> new DeepdiviewException(ErrorCode.CERTIFICATION_NOT_FOUND));
 
+    log.info("인증 상태 : {}", certification.getStatus());
     certification.setStatus(approve ? CertificationStatus.APPROVED : CertificationStatus.REJECTED,
                             approve ? RejectionReason.NONE : rejectionReason);
+    log.info("인증 상태 변경 : {}", certification.getStatus());
     certificationRepository.save(certification);
   }
 

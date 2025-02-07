@@ -4,12 +4,16 @@ import com.amazonaws.AmazonServiceException;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.model.ObjectMetadata;
 import com.amazonaws.services.s3.model.PutObjectRequest;
+import community.ddv.constant.ErrorCode;
+import community.ddv.exception.DeepdiviewException;
 import java.io.IOException;
+import java.util.List;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
 
 @Service
@@ -25,6 +29,9 @@ public class FileStorageService {
   @Value("${cloud.aws.region.static}")
   private String region;
 
+  // 허용된 확장자 리스트
+  private static final List<String> ALLOWED_EXTENSIONS = List.of("jpg", "jpeg", "png", "gif");
+
   /**
    * S3에 이미지 업로드
    * @param file
@@ -33,6 +40,11 @@ public class FileStorageService {
 
     if (file.isEmpty()) {
       throw new IOException("파일이 존재하지 않습니다.");
+    }
+
+    String fileExtension = StringUtils.getFilenameExtension(file.getOriginalFilename());
+    if (fileExtension == null || !ALLOWED_EXTENSIONS.contains(fileExtension.toLowerCase())) {
+      throw new DeepdiviewException(ErrorCode.IMAGE_FILE_ONLY);
     }
 
     String fileName = UUID.randomUUID() + "_" + file.getOriginalFilename(); // 고유한 파일 이름 생성
