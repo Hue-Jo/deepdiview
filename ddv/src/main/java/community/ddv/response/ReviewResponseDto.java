@@ -10,7 +10,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @Builder
 @Getter
-public class ReviewResponse {
+public class ReviewResponseDto {
 
   private Long reviewId;
   private Long userId;

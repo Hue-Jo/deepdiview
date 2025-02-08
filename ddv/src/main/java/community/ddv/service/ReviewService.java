@@ -10,7 +10,7 @@ import community.ddv.exception.DeepdiviewException;
 import community.ddv.repository.MovieRepository;
 import community.ddv.repository.ReviewRepository;
 import community.ddv.repository.UserRepository;
-import community.ddv.response.ReviewResponse;
+import community.ddv.response.ReviewResponseDto;
 import java.time.LocalDateTime;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -25,13 +25,15 @@ public class ReviewService {
   private final ReviewRepository reviewRepository;
   private final UserRepository userRepository;
   private final MovieRepository movieRepository;
+  private final UserService userService;
+  private final VoteService voteService;
 
   /**
    * 영화 리뷰 작성 _ 유저는 특정 영화에 대해 한 번만 리뷰 작성 가능
    * @param reviewDTO
    */
   @Transactional
-  public ReviewResponse createReview(String email, ReviewDTO reviewDTO) {
+  public ReviewResponseDto createReview(String email, ReviewDTO reviewDTO) {
     log.info("리뷰 작성 시도, 유저: {}", email);
 
     User user = userRepository.findByEmail(email)
@@ -58,7 +60,7 @@ public class ReviewService {
 
     Review savedReview = reviewRepository.save(review);
     log.info("리뷰 작성 성공");
-    return convertToResponse(savedReview);
+    return convertToResponseDto(savedReview);
   }
 
 
@@ -92,7 +94,7 @@ public class ReviewService {
    * @return
    */
   @Transactional
-  public ReviewResponse updateReview(String email, Long reviewId, ReviewUpdateDTO reviewUpdateDTO) {
+  public ReviewResponseDto updateReview(String email, Long reviewId, ReviewUpdateDTO reviewUpdateDTO) {
     log.info("리뷰 수정 시도, 유저: {}", email);
 
     User user = userRepository.findByEmail(email)
@@ -121,12 +123,17 @@ public class ReviewService {
     Review updatedReview = reviewRepository.save(review);
     log.info("리뷰 수정 완료");
 
-    return convertToResponse(updatedReview);
+    return convertToResponseDto(updatedReview);
+  }
+
+  @Transactional
+  public ReviewResponseDto certifiedReview(ReviewDTO reviewDTO) {
+    return null;
   }
 
 
-    private ReviewResponse convertToResponse(Review review) {
-    return ReviewResponse.builder()
+    private ReviewResponseDto convertToResponseDto(Review review) {
+    return ReviewResponseDto.builder()
         .reviewId(review.getId())
         .userId(review.getUser().getId())
         .movieId(review.getMovie().getId())

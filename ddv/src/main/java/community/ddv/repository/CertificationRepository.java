@@ -5,6 +5,8 @@ import community.ddv.entity.Certification;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
+import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
 @Repository
@@ -12,4 +14,8 @@ public interface CertificationRepository extends JpaRepository<Certification, Lo
 
   boolean existsByUser_IdAndStatus(Long userId, CertificationStatus status);
   Page<Certification> findByStatus(CertificationStatus status, Pageable pageable);
+
+  @Modifying
+  @Query("UPDATE Certification c SET c.status = NULL")
+  int resetAllCertifications();
 }

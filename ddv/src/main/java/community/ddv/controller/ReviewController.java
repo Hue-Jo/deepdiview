@@ -2,7 +2,7 @@ package community.ddv.controller;
 
 import community.ddv.dto.ReviewDTO;
 import community.ddv.dto.ReviewDTO.ReviewUpdateDTO;
-import community.ddv.response.ReviewResponse;
+import community.ddv.response.ReviewResponseDto;
 import community.ddv.service.ReviewService;
 import io.swagger.v3.oas.annotations.Operation;
 import jakarta.validation.Valid;
@@ -28,12 +28,12 @@ public class ReviewController {
 
   @Operation(summary = "리뷰글 작성")
   @PostMapping
-  public ResponseEntity<ReviewResponse> createReview(
+  public ResponseEntity<ReviewResponseDto> createReview(
       @AuthenticationPrincipal UserDetails userDetails,
       @RequestBody @Valid ReviewDTO reviewDTO) {
 
     String email = userDetails.getUsername();
-    ReviewResponse response = reviewService.createReview(email, reviewDTO);
+    ReviewResponseDto response = reviewService.createReview(email, reviewDTO);
     return ResponseEntity.status(HttpStatus.CREATED).body(response);
   }
 
@@ -50,13 +50,13 @@ public class ReviewController {
 
   @Operation(summary = "리뷰글 수정")
   @PutMapping("/{reviewId}")
-  public ResponseEntity<ReviewResponse> updateReview(
+  public ResponseEntity<ReviewResponseDto> updateReview(
       @AuthenticationPrincipal UserDetails userDetails,
       @PathVariable Long reviewId,
       @RequestBody @Valid ReviewUpdateDTO reviewUpdateDTO
   ) {
     String email = userDetails.getUsername();
-    ReviewResponse response = reviewService.updateReview(email, reviewId, reviewUpdateDTO);
+    ReviewResponseDto response = reviewService.updateReview(email, reviewId, reviewUpdateDTO);
     return ResponseEntity.ok(response);
 
   }
