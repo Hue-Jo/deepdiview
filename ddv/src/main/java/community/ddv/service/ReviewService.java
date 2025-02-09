@@ -10,7 +10,7 @@ import community.ddv.exception.DeepdiviewException;
 import community.ddv.repository.MovieRepository;
 import community.ddv.repository.ReviewRepository;
 import community.ddv.repository.UserRepository;
-import community.ddv.response.ReviewResponseDto;
+import community.ddv.dto.ReviewResponseDTO;
 import java.time.LocalDateTime;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -33,7 +33,7 @@ public class ReviewService {
    * @param reviewDTO
    */
   @Transactional
-  public ReviewResponseDto createReview(String email, ReviewDTO reviewDTO) {
+  public ReviewResponseDTO createReview(String email, ReviewDTO reviewDTO) {
     log.info("리뷰 작성 시도, 유저: {}", email);
 
     User user = userRepository.findByEmail(email)
@@ -94,7 +94,7 @@ public class ReviewService {
    * @return
    */
   @Transactional
-  public ReviewResponseDto updateReview(String email, Long reviewId, ReviewUpdateDTO reviewUpdateDTO) {
+  public ReviewResponseDTO updateReview(String email, Long reviewId, ReviewUpdateDTO reviewUpdateDTO) {
     log.info("리뷰 수정 시도, 유저: {}", email);
 
     User user = userRepository.findByEmail(email)
@@ -127,13 +127,13 @@ public class ReviewService {
   }
 
   @Transactional
-  public ReviewResponseDto certifiedReview(ReviewDTO reviewDTO) {
+  public ReviewResponseDTO certifiedReview(ReviewDTO reviewDTO) {
     return null;
   }
 
 
-    private ReviewResponseDto convertToResponseDto(Review review) {
-    return ReviewResponseDto.builder()
+    private ReviewResponseDTO convertToResponseDto(Review review) {
+    return ReviewResponseDTO.builder()
         .reviewId(review.getId())
         .userId(review.getUser().getId())
         .movieId(review.getMovie().getId())

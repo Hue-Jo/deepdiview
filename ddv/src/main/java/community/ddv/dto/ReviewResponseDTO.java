@@ -1,4 +1,4 @@
-package community.ddv.response;
+package community.ddv.dto;
 
 import java.time.LocalDateTime;
 import lombok.AllArgsConstructor;
@@ -10,7 +10,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @Builder
 @Getter
-public class ReviewResponseDto {
+public class ReviewResponseDTO {
 
   private Long reviewId;
   private Long userId;
