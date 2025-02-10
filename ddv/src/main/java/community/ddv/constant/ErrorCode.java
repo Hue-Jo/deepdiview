@@ -34,7 +34,8 @@ public enum ErrorCode {
   INVALID_VOTE_PERIOD_NOT_STARTED("아직 진행중인 투표가 없습니다.", HttpStatus.BAD_REQUEST),
   DUPLICATION_NOT_ALLOW("한 개만 선택할 수 있습니다. ", HttpStatus.MULTIPLE_CHOICES),
   ALREADY_EXIST_VOTE("이미 이번주에 생성한 투표가 있습니다.", HttpStatus.BAD_REQUEST),
-  IMAGE_FILE_ONLY("이미지 파일(jpg, jpeg, png, gif)만 업로드 가능합니다.", HttpStatus.BAD_REQUEST);
+  IMAGE_FILE_ONLY("이미지 파일(jpg, jpeg, png, gif)만 업로드 가능합니다.", HttpStatus.BAD_REQUEST),
+  VOTE_RESULT_NOT_FOUND("투표 결과가 존재하지 않습니다.", HttpStatus.NOT_FOUND);
 
 
   private final String description;

@@ -1,8 +1,10 @@
 package community.ddv.service;
 
 import community.ddv.constant.ErrorCode;
+import community.ddv.dto.CommentDTO.CommentResponseDto;
 import community.ddv.dto.ReviewDTO;
 import community.ddv.dto.ReviewDTO.ReviewUpdateDTO;
+import community.ddv.entity.Comment;
 import community.ddv.entity.Movie;
 import community.ddv.entity.Review;
 import community.ddv.entity.User;
@@ -10,8 +12,10 @@ import community.ddv.exception.DeepdiviewException;
 import community.ddv.repository.MovieRepository;
 import community.ddv.repository.ReviewRepository;
 import community.ddv.repository.UserRepository;
-import community.ddv.response.ReviewResponse;
+import community.ddv.dto.ReviewResponseDTO;
 import java.time.LocalDateTime;
+import java.util.List;
+import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -31,7 +35,7 @@ public class ReviewService {
    * @param reviewDTO
    */
   @Transactional
-  public ReviewResponse createReview(String email, ReviewDTO reviewDTO) {
+  public ReviewResponseDTO createReview(String email, ReviewDTO reviewDTO) {
     log.info("리뷰 작성 시도, 유저: {}", email);
 
     User user = userRepository.findByEmail(email)
@@ -58,7 +62,7 @@ public class ReviewService {
 
     Review savedReview = reviewRepository.save(review);
     log.info("리뷰 작성 성공");
-    return convertToResponse(savedReview);
+    return convertToResponseDto(savedReview);
   }
 
 
@@ -92,7 +96,7 @@ public class ReviewService {
    * @return
    */
   @Transactional
-  public ReviewResponse updateReview(String email, Long reviewId, ReviewUpdateDTO reviewUpdateDTO) {
+  public ReviewResponseDTO updateReview(String email, Long reviewId, ReviewUpdateDTO reviewUpdateDTO) {
     log.info("리뷰 수정 시도, 유저: {}", email);
 
     User user = userRepository.findByEmail(email)
@@ -121,22 +125,58 @@ public class ReviewService {
     Review updatedReview = reviewRepository.save(review);
     log.info("리뷰 수정 완료");
 
-    return convertToResponse(updatedReview);
+    return convertToResponseDto(updatedReview);
   }
 
+  @Transactional(readOnly = true)
+  public List<ReviewResponseDTO> getReviewByMovieId(Long tmdbId) {
+    log.info("영화리뷰 조회 시도");
+    Movie movie = movieRepository.findByTmdbId(tmdbId)
+        .orElseThrow(() -> new DeepdiviewException(ErrorCode.MOVIE_NOT_FOUND));
 
-    private ReviewResponse convertToResponse(Review review) {
-    return ReviewResponse.builder()
+    List<Review> reviews = reviewRepository.findByMovie(movie);
+
+    log.info("영화리뷰 조회 완료");
+    return reviews.stream()
+        .map(this::convertToResponseDto)
+        .collect(Collectors.toList());
+  }
+
+  private ReviewResponseDTO convertToResponseDto(Review review) {
+    return ReviewResponseDTO.builder()
         .reviewId(review.getId())
         .userId(review.getUser().getId())
-        .movieId(review.getMovie().getId())
-        .tmdbId(review.getMovie().getTmdbId())
-        .movieTitle(review.getMovie().getTitle())
         .reviewTitle(review.getTitle())
         .reviewContent(review.getContent())
         .rating(review.getRating())
         .createdAt(review.getCreatedAt())
         .updatedAt(review.getUpdatedAt())
+        .build();
+  }
+
+  private ReviewResponseDTO convertToResponseWithCommentsDto(Review review) {
+    return ReviewResponseDTO.builder()
+        .reviewId(review.getId())
+        .userId(review.getUser().getId())
+        .reviewTitle(review.getTitle())
+        .reviewContent(review.getContent())
+        .rating(review.getRating())
+        .createdAt(review.getCreatedAt())
+        .updatedAt(review.getUpdatedAt())
+        .comments(review.getComments().stream()
+            .map(this::convertToCommentDto)
+            .collect(Collectors.toList()))
+        .build();
+  }
+
+  private CommentResponseDto convertToCommentDto(Comment comment) {
+    return CommentResponseDto.builder()
+        .id(comment.getId())
+        .reviewId(comment.getReview().getId())
+        .content(comment.getContent())
+        .userNickname(comment.getUser().getNickname())
+        .createdAt(comment.getCreatedAt())
+        .updatedAt(comment.getUpdatedAt())
         .build();
   }
 }

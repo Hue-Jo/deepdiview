@@ -3,14 +3,18 @@ package community.ddv.service;
 import community.ddv.component.JwtProvider;
 import community.ddv.constant.ErrorCode;
 import community.ddv.constant.Role;
+import community.ddv.dto.UserDTO;
 import community.ddv.dto.UserDTO.AccountDeleteDto;
 import community.ddv.dto.UserDTO.AccountUpdateDto;
 import community.ddv.dto.UserDTO.LoginDto;
 import community.ddv.dto.UserDTO.SignUpDto;
+import community.ddv.dto.UserDTO.UserInfoDto;
 import community.ddv.entity.RefreshToken;
 import community.ddv.entity.User;
 import community.ddv.exception.DeepdiviewException;
+import community.ddv.repository.CommentRepository;
 import community.ddv.repository.RefreshTokenRepository;
+import community.ddv.repository.ReviewRepository;
 import community.ddv.repository.UserRepository;
 import community.ddv.response.LoginResponse;
 import java.time.LocalDateTime;
@@ -33,6 +37,8 @@ public class UserService {
   private final RefreshTokenRepository refreshTokenRepository;
   private final PasswordEncoder passwordEncoder;
   private final JwtProvider jwtProvider;
+  private final ReviewRepository reviewRepository;
+  private final CommentRepository commentRepository;
 
   /**
    * 회원가입
@@ -238,6 +244,46 @@ public class UserService {
     userRepository.save(user);
   }
 
+
+  // 내 정보 확인
+  @Transactional(readOnly = true)
+  public UserInfoDto getMyInfo() {
+
+    User user = getLoginUser();
+
+    int reviewCount = reviewRepository.countByUser_Id(user.getId());
+    int commentCount = commentRepository.countByUser_Id(user.getId());
+
+    return new UserInfoDto(
+        user.getNickname(),
+        user.getEmail(),
+        user.getProfileImageUrl(),
+        user.getOneLineIntroduction(),
+        reviewCount,
+        commentCount
+    );
+  }
+
+  // 다른 회원정보 확인
+  @Transactional(readOnly = true)
+  public UserInfoDto getOthersInfo(Long userId) {
+
+    getLoginUser();
+    User user = userRepository.findById(userId)
+        .orElseThrow(() -> new DeepdiviewException(ErrorCode.USER_NOT_FOUND));
+
+    int reviewCount = reviewRepository.countByUser_Id(userId);
+    int commentCount = commentRepository.countByUser_Id(userId);
+
+    return new UserInfoDto(
+        user.getNickname(),
+        null, // 다른 사용자 정보 중 이메일은 숨김처리
+        user.getProfileImageUrl(),
+        user.getOneLineIntroduction(),
+        reviewCount,
+        commentCount
+    );
+  }
 
   // 로그인 여부 확인 메서드
   @Transactional(readOnly = true)

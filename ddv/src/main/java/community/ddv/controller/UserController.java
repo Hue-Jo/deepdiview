@@ -1,10 +1,12 @@
 package community.ddv.controller;
 
+import community.ddv.dto.UserDTO;
 import community.ddv.dto.UserDTO.AccountDeleteDto;
 import community.ddv.dto.UserDTO.AccountUpdateDto;
 import community.ddv.dto.UserDTO.AdminDto;
 import community.ddv.dto.UserDTO.LoginDto;
 import community.ddv.dto.UserDTO.SignUpDto;
+import community.ddv.dto.UserDTO.UserInfoDto;
 import community.ddv.response.LoginResponse;
 import community.ddv.service.UserService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -14,6 +16,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -76,5 +80,20 @@ public class UserController {
     String email = userDetails.getUsername();
     userService.updateOneLineIntro(email, accountUpdateDto);
     return ResponseEntity.ok().build();
+  }
+
+  @Operation(summary = "내 정보 확인", description = "닉네임, 이메일, 프로필사진, 한줄소개, 리뷰수, 댓글수")
+  @GetMapping("/me")
+  public ResponseEntity<UserInfoDto> getMyInfo() {
+    UserInfoDto userInfoDto = userService.getMyInfo();
+    return ResponseEntity.ok(userInfoDto);
+  }
+
+  @Operation(summary = "다른 유저 정보 확인", description = "닉네임, 프로필사진, 한줄소개, 리뷰수, 댓글수")
+  @GetMapping("/{userId}")
+  public ResponseEntity<UserInfoDto> getMyInfo(
+      @PathVariable Long userId) {
+    UserInfoDto userInfoDto = userService.getOthersInfo(userId);
+    return ResponseEntity.ok(userInfoDto);
   }
 }

@@ -9,11 +9,13 @@ import community.ddv.entity.User;
 import community.ddv.exception.DeepdiviewException;
 import community.ddv.repository.CertificationRepository;
 import java.io.IOException;
+import java.time.DayOfWeek;
 import java.time.LocalDateTime;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -152,12 +154,15 @@ public class CertificationService {
     certificationRepository.save(certification);
   }
 
-
-  /**
-   * 특정 사용자가 인증 승인을 받았는지 확인
-   */
-  public boolean isUserCertificated(Long userId) {
-    return certificationRepository.existsByUser_IdAndStatus(userId, CertificationStatus.APPROVED);
+  // 인증상태 초기화 (새로운 주가 시작될 때 인증 상태를 null로 초기화)
+  @Scheduled(cron = "0 0 0 * * MON")
+  protected void resetCertificationStatus() {
+    LocalDateTime now = LocalDateTime.now();
+    if (now.getDayOfWeek() == DayOfWeek.MONDAY && now.getHour() == 0 && now.getMinute() == 0 && now.getSecond() == 0) {
+      log.info("새로운 주가 됨에 따라 인증상태 초기화");
+      int resetCount = certificationRepository.resetAllCertifications();
+      log.info("초기화된 인증 개수 : {} ", resetCount);
+    }
   }
 
 }

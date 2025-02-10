@@ -22,4 +22,6 @@ public class MovieDTO {
   private List<Long> genre_ids;   // 장르 아이디 리스트
   private List<String> genre_names; // 장르 이름 리스트
 
+  private List<ReviewResponseDTO> reviews;
+
 }

@@ -45,7 +45,7 @@ public class CommentService {
 
     Comment newComment = commentRepository.save(comment);
     log.info("댓글 작성 완료");
-    return mapToResponse(newComment);
+    return convertToCommentResponse(newComment);
   }
 
 
@@ -67,7 +67,7 @@ public class CommentService {
 
     comment.updateContent(commentRequestDto.getContent());
     log.info("댓글 수정 완료");
-    return mapToResponse(comment);
+    return convertToCommentResponse(comment);
   }
 
 
@@ -97,15 +97,14 @@ public class CommentService {
   }
 
 
-  private CommentResponseDto mapToResponse(Comment comment) {
+  private CommentResponseDto convertToCommentResponse(Comment comment) {
     return CommentResponseDto.builder()
         .id(comment.getId())
         .reviewId(comment.getReview().getId())
         .userNickname(comment.getUser().getNickname())
         .content(comment.getContent())
         .createdAt(comment.getCreatedAt())
-        .updatedAt(comment.getUpdatedAt()
-        )
+        .updatedAt(comment.getUpdatedAt())
         .build();
   }
 }

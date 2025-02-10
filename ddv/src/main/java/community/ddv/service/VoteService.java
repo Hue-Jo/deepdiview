@@ -16,7 +16,6 @@ import community.ddv.entity.VoteMovie;
 import community.ddv.entity.VoteParticipation;
 import community.ddv.exception.DeepdiviewException;
 import community.ddv.repository.MovieRepository;
-import community.ddv.repository.VoteMovieRepository;
 import community.ddv.repository.VoteParticipationRepository;
 import community.ddv.repository.VoteRepository;
 import java.time.DayOfWeek;
@@ -38,7 +37,6 @@ import org.springframework.transaction.annotation.Transactional;
 public class VoteService {
 
   private final VoteRepository voteRepository;
-  private final VoteMovieRepository voteMovieRepository;
   private final VoteParticipationRepository voteParticipationRepository;
   private final MovieRepository movieRepository;
   private final UserService userService;
@@ -68,7 +66,7 @@ public class VoteService {
     }
 
     // 이번주에 이미 생성된 투표가 있는지 확인
-    LocalDateTime weekStart = now.with(DayOfWeek.WEDNESDAY).with(LocalTime.MIN);
+    LocalDateTime weekStart = now.with(DayOfWeek.SUNDAY).with(LocalTime.MIN);
     LocalDateTime weekEnd = now.with(DayOfWeek.SATURDAY).with(LocalTime.MAX);
     boolean voteAlreadyExists = voteRepository.existsByStartDateBetween(weekStart, weekEnd);
     if (voteAlreadyExists) {
@@ -242,6 +240,18 @@ public class VoteService {
         vote.getEndDate(),
         vote.getEndDate().isAfter(LocalDateTime.now()),
         voteResults);
+  }
+
+  /**
+   * 특정 투표의 1위 영화 조회
+   */
+  public Long getTopVotedMovieForThisWeek(Long voteId) {
+    VoteResultDTO voteResults = getVoteResult(voteId);
+    if (voteResults.getResults().isEmpty()) {
+      throw new DeepdiviewException(ErrorCode.VOTE_RESULT_NOT_FOUND);
+    }
+    return voteResults.getResults().get(0).getTmdbId();
+
   }
 }
 
