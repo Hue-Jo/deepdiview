@@ -3,6 +3,7 @@ package community.ddv.dto;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
 
 public class UserDTO {
@@ -61,6 +62,18 @@ public class UserDTO {
 
     private String email;
     private String password;
+  }
+
+  @Getter
+  @AllArgsConstructor
+  public static class UserInfoDto {
+
+    private String nickname;
+    private String email;
+    private String profileImageUrl;
+    private String oneLineIntro;
+    private int reviewCount; // 리뷰 작성 개수
+    private int commentCount; // 댓글 작성 개수
   }
 
 

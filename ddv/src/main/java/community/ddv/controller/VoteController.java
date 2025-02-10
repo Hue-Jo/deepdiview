@@ -47,6 +47,7 @@ public class VoteController {
     return ResponseEntity.status(HttpStatus.OK).body(responseDTO);
   }
 
+  @Operation(summary = "투표 결과 확인")
   @GetMapping("/{voteId}/result")
   public ResponseEntity<VoteResultDTO> getVoteResult(
       @PathVariable Long voteId) {

@@ -2,11 +2,11 @@ package community.ddv.service;
 
 import community.ddv.constant.ErrorCode;
 import community.ddv.dto.MovieDTO;
+import community.ddv.dto.ReviewResponseDTO;
 import community.ddv.entity.Movie;
 import community.ddv.exception.DeepdiviewException;
 import community.ddv.repository.MovieRepository;
 import java.util.List;
-import java.util.Optional;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -21,6 +21,7 @@ import org.springframework.stereotype.Service;
 public class MovieService {
 
   private final MovieRepository movieRepository;
+  private final ReviewService reviewService;
 
   /**
    * 넷플릭스 내 인기도 탑 20 영화 세부정보 조회
@@ -56,7 +57,10 @@ public class MovieService {
         throw new DeepdiviewException(ErrorCode.MOVIE_NOT_FOUND);
       }
       return movies.stream()
-          .map(this::convertToDTO)
+          .map(movie -> {
+            List<ReviewResponseDTO> reviews = reviewService.getReviewByMovieId(movie.getTmdbId());
+            return convertToDTOwithReviews(movie, reviews);
+          })
           .collect(Collectors.toList());
     } catch (Exception e) {
       throw new RuntimeException("영화 정보 조회 중 오류 발생");
@@ -68,11 +72,33 @@ public class MovieService {
    * @param tmdbId
    */
   public MovieDTO getMovieDetailsById(Long tmdbId) {
-    return movieRepository.findByTmdbId(tmdbId)
-        .map(this::convertToDTO)
+    Movie movie = movieRepository.findByTmdbId(tmdbId)
         .orElseThrow(() -> new DeepdiviewException(ErrorCode.MOVIE_NOT_FOUND));
+    List<ReviewResponseDTO> reviews = reviewService.getReviewByMovieId(tmdbId);
+    return convertToDTOwithReviews(movie, reviews);
   }
 
+
+  public MovieDTO convertToDTOwithReviews(Movie movie, List<ReviewResponseDTO> reviews) {
+
+    return MovieDTO.builder()
+        .id(movie.getTmdbId())
+        .title(movie.getTitle())
+        .original_title(movie.getOriginalTitle())
+        .overview(movie.getOverview())
+        .release_date(movie.getReleaseDate())
+        .popularity(movie.getPopularity())
+        .poster_path(movie.getPosterPath())
+        .backdrop_path(movie.getBackdropPath())
+        .genre_ids(movie.getMovieGenres().stream()
+            .map(movieGenre -> movieGenre.getGenre().getId())
+            .collect(Collectors.toList()))
+        .genre_names(movie.getMovieGenres().stream()
+            .map(movieGenre -> movieGenre.getGenre().getName())
+            .collect(Collectors.toList()))
+        .reviews(reviews)
+        .build();
+  }
 
   public MovieDTO convertToDTO(Movie movie) {
 
