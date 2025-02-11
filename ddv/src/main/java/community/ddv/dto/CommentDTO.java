@@ -20,7 +20,6 @@ public class CommentDTO {
     private Long id;
 
     private Long reviewId;
-    private String reviewTitle;
 
     private Long userId;
     private String userNickname;
@@ -30,8 +29,6 @@ public class CommentDTO {
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 
-    private Long tmdbId;
-    private String movieTitle;
   }
 
 

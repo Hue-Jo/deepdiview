@@ -16,6 +16,7 @@ public class ReviewResponseDTO {
 
   private Long reviewId;
   private Long userId;
+  private String nickname;
 //  private Long movieId;
 //  private Long tmdbId;
 //  private String movieTitle;
