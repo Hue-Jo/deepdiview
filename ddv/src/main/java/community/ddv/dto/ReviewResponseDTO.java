@@ -21,7 +21,7 @@ public class ReviewResponseDTO {
 //  private String movieTitle;
   private String reviewTitle;
   private String reviewContent;
-  private int rating;
+  private double rating;
   private LocalDateTime createdAt;
   private LocalDateTime updatedAt;
 

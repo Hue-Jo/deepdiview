@@ -48,7 +48,7 @@ public class Review {
   private String content; // 내용 (1000자 이내로 제한)
 
   @Setter
-  private int rating; // 별점
+  private double rating; // 별점
 
   private LocalDateTime createdAt;
 
