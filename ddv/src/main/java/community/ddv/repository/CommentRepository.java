@@ -12,7 +12,9 @@ public interface CommentRepository extends JpaRepository<Comment, Long> {
 
   int countByUser_Id(Long userId);
 
-  // 특정 리뷰에 달린 댓글 최신순 조회
+  // 특정 리뷰에 달린 댓글 조회
   Page<Comment> findByReview(Review review, Pageable pageable);
 
+  // 특정 사용자가 작성한 댓글 조회
+  Page<Comment> findByUser_Id(Long userId, Pageable pageable);
 }

@@ -130,13 +130,13 @@ public class ReviewService {
 
   @Transactional(readOnly = true)
   public List<ReviewResponseDTO> getReviewByMovieId(Long tmdbId) {
-    log.info("영화리뷰 조회 시도");
+    log.info("특정 영화의 리뷰 조회 시도");
     Movie movie = movieRepository.findByTmdbId(tmdbId)
         .orElseThrow(() -> new DeepdiviewException(ErrorCode.MOVIE_NOT_FOUND));
 
     List<Review> reviews = reviewRepository.findByMovie(movie);
 
-    log.info("영화리뷰 조회 완료");
+    log.info("특정 영화의 리뷰 조회 완료");
     return reviews.stream()
         .map(this::convertToResponseDto)
         .collect(Collectors.toList());

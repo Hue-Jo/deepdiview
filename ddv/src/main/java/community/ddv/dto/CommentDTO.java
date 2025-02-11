@@ -4,7 +4,6 @@ import java.time.LocalDateTime;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
-import lombok.NoArgsConstructor;
 
 public class CommentDTO {
 
@@ -19,12 +18,20 @@ public class CommentDTO {
   @AllArgsConstructor
   public static class CommentResponseDto {
     private Long id;
+
     private Long reviewId;
+    private String reviewTitle;
+
+    private Long userId;
     private String userNickname;
+
     private String content;
 
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
+
+    private Long tmdbId;
+    private String movieTitle;
   }
 
 

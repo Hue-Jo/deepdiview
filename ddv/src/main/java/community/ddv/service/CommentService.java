@@ -9,14 +9,10 @@ import community.ddv.entity.User;
 import community.ddv.exception.DeepdiviewException;
 import community.ddv.repository.CommentRepository;
 import community.ddv.repository.ReviewRepository;
-import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
-import org.springframework.data.domain.Sort.Direction;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -29,11 +25,6 @@ public class CommentService {
   private final CommentRepository commentRepository;
   private final ReviewRepository reviewRepository;
 
-  /**
-   * 댓글 작성
-   * @param reviewId
-   * @param commentRequestDto
-   */
   @Transactional
   public CommentResponseDto createComment(Long reviewId, CommentRequestDto commentRequestDto) {
 
@@ -99,7 +90,6 @@ public class CommentService {
 
     log.info("댓글 삭제 완료");
     commentRepository.delete(comment);
-
   }
 
   @Transactional(readOnly = true)
@@ -111,6 +101,18 @@ public class CommentService {
         .orElseThrow(() -> new DeepdiviewException(ErrorCode.REVIEW_NOT_FOUND));
 
     Page<Comment> comments = commentRepository.findByReview(review, pageable);
+    log.info("댓글 조회 성공");
+
+    return comments.map(this::convertToCommentResponse);
+  }
+
+  @Transactional(readOnly = true)
+  public Page<CommentResponseDto> getCommentsByUserId(Long userId, Pageable pageable) {
+    log.info("특정 이용자가 작성한 댓글 조회 요청");
+    userService.getLoginUser();
+
+    Page<Comment> comments = commentRepository.findByUser_Id(userId, pageable);
+    log.info("특정 이용자가 작성한 댓글 조회 성공");
 
     return comments.map(this::convertToCommentResponse);
   }
@@ -119,7 +121,11 @@ public class CommentService {
   private CommentResponseDto convertToCommentResponse(Comment comment) {
     return CommentResponseDto.builder()
         .id(comment.getId())
+        .tmdbId(comment.getReview().getMovie().getTmdbId())
+        .movieTitle(comment.getReview().getMovie().getTitle())
         .reviewId(comment.getReview().getId())
+        .reviewTitle(comment.getReview().getTitle())
+        .userId(comment.getUser().getId())
         .userNickname(comment.getUser().getNickname())
         .content(comment.getContent())
         .createdAt(comment.getCreatedAt())
