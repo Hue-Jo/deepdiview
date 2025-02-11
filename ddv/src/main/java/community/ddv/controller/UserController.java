@@ -1,17 +1,21 @@
 package community.ddv.controller;
 
-import community.ddv.dto.UserDTO;
+import community.ddv.dto.CommentDTO.CommentResponseDto;
 import community.ddv.dto.UserDTO.AccountDeleteDto;
 import community.ddv.dto.UserDTO.AccountUpdateDto;
-import community.ddv.dto.UserDTO.AdminDto;
 import community.ddv.dto.UserDTO.LoginDto;
 import community.ddv.dto.UserDTO.SignUpDto;
 import community.ddv.dto.UserDTO.UserInfoDto;
 import community.ddv.response.LoginResponse;
+import community.ddv.service.CommentService;
 import community.ddv.service.UserService;
 import io.swagger.v3.oas.annotations.Operation;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -30,6 +34,7 @@ import org.springframework.web.bind.annotation.RestController;
 public class UserController {
 
   private final UserService userService;
+  private final CommentService commentService;
 
   // 회원가입 API
   @Operation(summary = "회원가입")
@@ -96,4 +101,14 @@ public class UserController {
     UserInfoDto userInfoDto = userService.getOthersInfo(userId);
     return ResponseEntity.ok(userInfoDto);
   }
+
+  @Operation(summary = "특정 사용자가 작성한 댓글 조회")
+  @GetMapping("/{userId}/comments")
+  public ResponseEntity<Page<CommentResponseDto>> getCommentsByUserId(
+      @PathVariable Long userId,
+      @PageableDefault(size = 20, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable) {
+    Page<CommentResponseDto> comments = commentService.getCommentsByUserId(userId, pageable);
+    return ResponseEntity.ok(comments);
+  }
+
 }

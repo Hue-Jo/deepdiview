@@ -7,7 +7,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort.Direction;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -64,10 +64,11 @@ public class CommentController {
 
   @Operation(summary = "특정 리뷰에 달린 댓글 조회")
   @GetMapping
-  public ResponseEntity<Page<CommentResponseDto>> getComments(
+  public ResponseEntity<Page<CommentResponseDto>> getCommentsByReviewId(
       @PathVariable Long reviewId,
-      @PageableDefault(size = 20, sort = "createdAt", direction = Direction.DESC) Pageable pageable) {
+      @PageableDefault(size = 20, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable) {
 
-    return ResponseEntity.ok(commentService.getCommentsByReviewId(reviewId, pageable));
+    Page<CommentResponseDto> comments = commentService.getCommentsByReviewId(reviewId, pageable);
+    return ResponseEntity.ok(comments);
   }
 }
