@@ -6,6 +6,7 @@ import community.ddv.dto.ReviewResponseDTO;
 import community.ddv.entity.Movie;
 import community.ddv.exception.DeepdiviewException;
 import community.ddv.repository.MovieRepository;
+import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
@@ -59,7 +60,12 @@ public class MovieService {
       return movies.stream()
           .map(movie -> {
             List<ReviewResponseDTO> reviews = reviewService.getReviewByMovieId(movie.getTmdbId());
-            return convertToDTOwithReviews(movie, reviews);
+            // 최신순 5개만 가져오도록 제한
+            List<ReviewResponseDTO> latestReviews = reviews.stream()
+                .sorted(Comparator.comparing(ReviewResponseDTO::getCreatedAt).reversed())
+                .limit(5)
+                .collect(Collectors.toList());
+            return convertToDTOwithReviews(movie, latestReviews);
           })
           .collect(Collectors.toList());
     } catch (Exception e) {
@@ -75,7 +81,11 @@ public class MovieService {
     Movie movie = movieRepository.findByTmdbId(tmdbId)
         .orElseThrow(() -> new DeepdiviewException(ErrorCode.MOVIE_NOT_FOUND));
     List<ReviewResponseDTO> reviews = reviewService.getReviewByMovieId(tmdbId);
-    return convertToDTOwithReviews(movie, reviews);
+    List<ReviewResponseDTO> latestReviews = reviews.stream()
+        .sorted(Comparator.comparing(ReviewResponseDTO::getCreatedAt).reversed())
+        .limit(5)
+        .collect(Collectors.toList());
+    return convertToDTOwithReviews(movie, latestReviews);
   }
 
 

@@ -121,10 +121,7 @@ public class CommentService {
   private CommentResponseDto convertToCommentResponse(Comment comment) {
     return CommentResponseDto.builder()
         .id(comment.getId())
-        .tmdbId(comment.getReview().getMovie().getTmdbId())
-        .movieTitle(comment.getReview().getMovie().getTitle())
         .reviewId(comment.getReview().getId())
-        .reviewTitle(comment.getReview().getTitle())
         .userId(comment.getUser().getId())
         .userNickname(comment.getUser().getNickname())
         .content(comment.getContent())

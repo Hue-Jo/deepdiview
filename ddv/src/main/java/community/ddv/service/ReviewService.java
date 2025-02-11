@@ -29,6 +29,7 @@ public class ReviewService {
   private final ReviewRepository reviewRepository;
   private final UserRepository userRepository;
   private final MovieRepository movieRepository;
+  private final UserService userService;
 
   /**
    * 영화 리뷰 작성 _ 유저는 특정 영화에 대해 한 번만 리뷰 작성 가능
@@ -142,10 +143,23 @@ public class ReviewService {
         .collect(Collectors.toList());
   }
 
+  @Transactional(readOnly = true)
+  public ReviewResponseDTO getReviewById(Long reviewId) {
+    log.info("특정 리뷰 조회 요청");
+
+    Review review = reviewRepository.findById(reviewId)
+        .orElseThrow(() -> new DeepdiviewException(ErrorCode.REVIEW_NOT_FOUND));
+
+    log.info("특정 리뷰 조회 성공");
+    return convertToResponseWithCommentsDto(review);
+  }
+
+
   private ReviewResponseDTO convertToResponseDto(Review review) {
     return ReviewResponseDTO.builder()
         .reviewId(review.getId())
         .userId(review.getUser().getId())
+        .nickname(review.getUser().getNickname())
         .reviewTitle(review.getTitle())
         .reviewContent(review.getContent())
         .rating(review.getRating())
@@ -158,6 +172,7 @@ public class ReviewService {
     return ReviewResponseDTO.builder()
         .reviewId(review.getId())
         .userId(review.getUser().getId())
+        .nickname(review.getUser().getNickname())
         .reviewTitle(review.getTitle())
         .reviewContent(review.getContent())
         .rating(review.getRating())
@@ -173,8 +188,9 @@ public class ReviewService {
     return CommentResponseDto.builder()
         .id(comment.getId())
         .reviewId(comment.getReview().getId())
-        .content(comment.getContent())
+        .userId(comment.getUser().getId())
         .userNickname(comment.getUser().getNickname())
+        .content(comment.getContent())
         .createdAt(comment.getCreatedAt())
         .updatedAt(comment.getUpdatedAt())
         .build();
