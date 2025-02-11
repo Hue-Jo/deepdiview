@@ -9,8 +9,14 @@ import community.ddv.entity.User;
 import community.ddv.exception.DeepdiviewException;
 import community.ddv.repository.CommentRepository;
 import community.ddv.repository.ReviewRepository;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.domain.Sort.Direction;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -94,6 +100,19 @@ public class CommentService {
     log.info("댓글 삭제 완료");
     commentRepository.delete(comment);
 
+  }
+
+  @Transactional(readOnly = true)
+  public Page<CommentResponseDto> getCommentsByReviewId(Long reviewId, Pageable pageable) {
+    log.info("댓글 조회 요청");
+    userService.getLoginUser();
+
+    Review review = reviewRepository.findById(reviewId)
+        .orElseThrow(() -> new DeepdiviewException(ErrorCode.REVIEW_NOT_FOUND));
+
+    Page<Comment> comments = commentRepository.findByReview(review, pageable);
+
+    return comments.map(this::convertToCommentResponse);
   }
 
 

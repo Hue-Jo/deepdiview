@@ -1,8 +1,10 @@
 package community.ddv.dto;
 
 import java.time.LocalDateTime;
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 
 public class CommentDTO {
 
@@ -14,6 +16,7 @@ public class CommentDTO {
 
   @Getter
   @Builder
+  @AllArgsConstructor
   public static class CommentResponseDto {
     private Long id;
     private Long reviewId;

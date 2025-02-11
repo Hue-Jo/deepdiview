@@ -5,9 +5,14 @@ import community.ddv.dto.CommentDTO.CommentResponseDto;
 import community.ddv.service.CommentService;
 import io.swagger.v3.oas.annotations.Operation;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort.Direction;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -55,5 +60,14 @@ public class CommentController {
   ) {
     commentService.deleteComment(reviewId, commentId);
     return ResponseEntity.noContent().build();
+  }
+
+  @Operation(summary = "특정 리뷰에 달린 댓글 조회")
+  @GetMapping
+  public ResponseEntity<Page<CommentResponseDto>> getComments(
+      @PathVariable Long reviewId,
+      @PageableDefault(size = 20, sort = "createdAt", direction = Direction.DESC) Pageable pageable) {
+
+    return ResponseEntity.ok(commentService.getCommentsByReviewId(reviewId, pageable));
   }
 }
