@@ -63,7 +63,7 @@ public class ReviewController {
 
   }
 
-  @Operation(summary = "특정 영화에 대한 리뷰 리스트 조회")
+  @Operation(summary = "특정 영화에 대한 리뷰 조회", description = "댓글은 포함되어있지 않습니다.")
   @GetMapping("/movie/{tmdbId}")
   public ResponseEntity<List<ReviewResponseDTO>> getReviewsByMovieId(
       @PathVariable Long tmdbId) {
@@ -71,5 +71,11 @@ public class ReviewController {
     return ResponseEntity.ok(reviews);
   }
 
-
+  @Operation(summary = "특정 리뷰 조회", description = "댓글이 포함되어 있습니다.")
+  @GetMapping("/{reviewId}")
+  public ResponseEntity<ReviewResponseDTO> getReviewById(
+      @PathVariable Long reviewId) {
+    ReviewResponseDTO reviews = reviewService.getReviewById(reviewId);
+    return ResponseEntity.ok(reviews);
+  }
 }

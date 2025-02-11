@@ -29,6 +29,7 @@ public class ReviewService {
   private final ReviewRepository reviewRepository;
   private final UserRepository userRepository;
   private final MovieRepository movieRepository;
+  private final UserService userService;
 
   /**
    * 영화 리뷰 작성 _ 유저는 특정 영화에 대해 한 번만 리뷰 작성 가능
@@ -141,6 +142,18 @@ public class ReviewService {
         .map(this::convertToResponseDto)
         .collect(Collectors.toList());
   }
+
+  @Transactional(readOnly = true)
+  public ReviewResponseDTO getReviewById(Long reviewId) {
+    log.info("특정 리뷰 조회 요청");
+
+    Review review = reviewRepository.findById(reviewId)
+        .orElseThrow(() -> new DeepdiviewException(ErrorCode.REVIEW_NOT_FOUND));
+
+    log.info("특정 리뷰 조회 성공");
+    return convertToResponseWithCommentsDto(review);
+  }
+
 
   private ReviewResponseDTO convertToResponseDto(Review review) {
     return ReviewResponseDTO.builder()
