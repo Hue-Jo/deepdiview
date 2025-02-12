@@ -56,11 +56,9 @@ public class UserController {
   @Operation(summary = "회원탈퇴")
   @DeleteMapping("/me")
   public ResponseEntity<Void> deleteAccount(
-      @AuthenticationPrincipal UserDetails userDetails,
       @RequestBody AccountDeleteDto accountDeleteDto
   ) {
-    String email = userDetails.getUsername();
-    userService.deleteAccount(email, accountDeleteDto);
+    userService.deleteAccount(accountDeleteDto);
     return ResponseEntity.noContent().build();
   }
 
@@ -68,22 +66,18 @@ public class UserController {
   @Operation(summary = "회원정보 수정")
   @PutMapping("/me")
   public ResponseEntity<Void> updateAccount(
-      @AuthenticationPrincipal UserDetails userDetails,
       @RequestBody AccountUpdateDto accountUpdateDto
   ) {
-    String email = userDetails.getUsername();
-    userService.updateAccount(email, accountUpdateDto);
+    userService.updateAccount(accountUpdateDto);
     return ResponseEntity.ok().build();
   }
 
   @Operation(summary = "한줄소개 설정/수정", description = "회원가입 직후에는 새롭게 설정, 설정된 이후에는 수정")
   @PutMapping("/me/intro")
   public ResponseEntity<Void> updateIntro(
-      @AuthenticationPrincipal UserDetails userDetails,
       @RequestBody AccountUpdateDto accountUpdateDto
   ) {
-    String email = userDetails.getUsername();
-    userService.updateOneLineIntro(email, accountUpdateDto);
+    userService.updateOneLineIntro(accountUpdateDto);
     return ResponseEntity.ok().build();
   }
 
