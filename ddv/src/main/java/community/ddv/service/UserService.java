@@ -131,12 +131,10 @@ public class UserService {
    * @param accountDeleteDto - 로그인 된 상태에서 비밀번호 입력
    */
   @Transactional
-  public void deleteAccount(String email, AccountDeleteDto accountDeleteDto) {
+  public void deleteAccount(AccountDeleteDto accountDeleteDto) {
 
-    log.info("회원탈퇴 요청 : {}", email);
-
-    User user = userRepository.findByEmail(email)
-        .orElseThrow(() -> new DeepdiviewException(ErrorCode.USER_NOT_FOUND));
+    User user = getLoginUser();
+    log.info("회원탈퇴 요청 : {}", user.getEmail());
 
     // 비밀번호 확인
     if (!passwordEncoder.matches(accountDeleteDto.getPassword(), user.getPassword())) {
@@ -156,11 +154,10 @@ public class UserService {
    * @param accountUpdateDto
    */
   @Transactional
-  public void updateAccount(String email, AccountUpdateDto accountUpdateDto) {
-    log.info("회원정보 수정시도 : {}", email);
+  public void updateAccount(AccountUpdateDto accountUpdateDto) {
 
-    User user = userRepository.findByEmail(email)
-        .orElseThrow(() -> new DeepdiviewException(ErrorCode.USER_NOT_FOUND));
+    User user = getLoginUser();
+    log.info("회원정보 수정시도 : {}", user.getEmail());
 
     String newNickname = accountUpdateDto.getNewNickname();
     String newPassword = accountUpdateDto.getNewPassword();
@@ -216,11 +213,10 @@ public class UserService {
    * @param accountUpdateDto
    */
   @Transactional
-  public void updateOneLineIntro(String email, AccountUpdateDto accountUpdateDto) {
-    log.info("한줄소개 수정 시도 : {}", email);
+  public void updateOneLineIntro(AccountUpdateDto accountUpdateDto) {
 
-    User user = userRepository.findByEmail(email)
-        .orElseThrow(() -> new DeepdiviewException(ErrorCode.USER_NOT_FOUND));
+    User user = getLoginUser();
+    log.info("한줄소개 수정 시도 : {}", user.getEmail());
 
     String newOneLineIntro = accountUpdateDto.getOneLineIntro();
 
