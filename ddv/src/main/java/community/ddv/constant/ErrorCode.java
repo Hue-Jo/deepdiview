@@ -15,7 +15,7 @@ public enum ErrorCode {
   USER_NOT_FOUND("존재하지 않는 사용자입니다.", HttpStatus.NOT_FOUND),
   INVALID_REFRESH_TOKEN("유효하지 않은 토큰입니다.", HttpStatus.BAD_REQUEST),
   MOVIE_NOT_FOUND("존재하지 않는 영화입니다.", HttpStatus.NOT_FOUND),
-  ALREADY_COMMITED_REVIEW("이미 해당 영화에 대한 리뷰를 작성했습니다.", HttpStatus.BAD_REQUEST),
+  ALREADY_COMMITED_REVIEW("이미 해당 영화에 대한 리뷰를 작성했습니다. 수정만 가능합니다.", HttpStatus.BAD_REQUEST),
   REVIEW_NOT_FOUND("존재하지 않는 리뷰입니다.", HttpStatus.BAD_REQUEST),
   INVALID_USER("작성자만 가능합니다.", HttpStatus.FORBIDDEN),
   COMMENT_NOT_FOUND("댓글이 존재하지 않습니다.", HttpStatus.BAD_REQUEST),
@@ -35,7 +35,9 @@ public enum ErrorCode {
   DUPLICATION_NOT_ALLOW("한 개만 선택할 수 있습니다. ", HttpStatus.MULTIPLE_CHOICES),
   ALREADY_EXIST_VOTE("이미 이번주에 생성한 투표가 있습니다.", HttpStatus.BAD_REQUEST),
   IMAGE_FILE_ONLY("이미지 파일(jpg, jpeg, png, gif)만 업로드 가능합니다.", HttpStatus.BAD_REQUEST),
-  VOTE_RESULT_NOT_FOUND("투표 결과가 존재하지 않습니다.", HttpStatus.NOT_FOUND);
+  VOTE_RESULT_NOT_FOUND("투표 결과가 존재하지 않습니다.", HttpStatus.NOT_FOUND),
+  NOT_CERTIFIED_YET("토론 작성 권한이 없습니다. 인증을 먼저 완료해주세요", HttpStatus.UNAUTHORIZED),
+  INVALID_REVIEW_PERIOD("토론 작성 기간이 아닙니다. 다음 주에 새로운 영화로 만나요", HttpStatus.BAD_REQUEST);
 
 
   private final String description;

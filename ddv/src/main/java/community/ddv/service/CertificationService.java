@@ -154,6 +154,11 @@ public class CertificationService {
     certificationRepository.save(certification);
   }
 
+  // 사용자가 특정 영화에 대해 인증된 상태인지 확인
+  public boolean isUserCertified(Long userId) {
+    return certificationRepository.existsByUser_IdAndStatus(userId, CertificationStatus.APPROVED);
+  }
+
   // 인증상태 초기화 (새로운 주가 시작될 때 인증 상태를 null로 초기화)
   @Scheduled(cron = "0 0 0 * * MON")
   protected void resetCertificationStatus() {

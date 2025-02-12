@@ -14,4 +14,7 @@ public interface VoteRepository extends JpaRepository<Vote, Long> {
 
   // 이번주에 생성된 투표가 있는지 여부
   boolean existsByStartDateBetween(LocalDateTime weekStart, LocalDateTime weekEnd);
+
+  // 지난주 생성된 투표 조회
+  Optional<Vote> findByStartDateBetween(LocalDateTime startDate, LocalDateTime endDate);
 }
