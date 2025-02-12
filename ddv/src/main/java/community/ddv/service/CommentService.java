@@ -33,6 +33,7 @@ public class CommentService {
 
     Review review = reviewRepository.findById(reviewId)
         .orElseThrow(() -> new DeepdiviewException(ErrorCode.REVIEW_NOT_FOUND));
+    log.info("댓글이 달릴 reviewId: {}", review.getId());
 
     Comment comment = Comment.builder()
         .review(review)

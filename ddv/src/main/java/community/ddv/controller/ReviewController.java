@@ -31,34 +31,28 @@ public class ReviewController {
   @Operation(summary = "리뷰글 작성")
   @PostMapping
   public ResponseEntity<ReviewResponseDTO> createReview(
-      @AuthenticationPrincipal UserDetails userDetails,
       @RequestBody @Valid ReviewDTO reviewDTO) {
 
-    String email = userDetails.getUsername();
-    ReviewResponseDTO response = reviewService.createReview(email, reviewDTO);
+    ReviewResponseDTO response = reviewService.createReview(reviewDTO);
     return ResponseEntity.status(HttpStatus.CREATED).body(response);
   }
 
   @Operation(summary = "리뷰글 삭제")
   @DeleteMapping("/{reviewId}")
   public ResponseEntity<Void> deleteReview(
-      @AuthenticationPrincipal UserDetails userDetails,
       @PathVariable Long reviewId
   ) {
-    String email = userDetails.getUsername();
-    reviewService.deleteReview(email, reviewId);
+    reviewService.deleteReview(reviewId);
     return ResponseEntity.noContent().build();
   }
 
   @Operation(summary = "리뷰글 수정")
   @PutMapping("/{reviewId}")
   public ResponseEntity<ReviewResponseDTO> updateReview(
-      @AuthenticationPrincipal UserDetails userDetails,
       @PathVariable Long reviewId,
       @RequestBody @Valid ReviewUpdateDTO reviewUpdateDTO
   ) {
-    String email = userDetails.getUsername();
-    ReviewResponseDTO response = reviewService.updateReview(email, reviewId, reviewUpdateDTO);
+    ReviewResponseDTO response = reviewService.updateReview(reviewId, reviewUpdateDTO);
     return ResponseEntity.ok(response);
 
   }

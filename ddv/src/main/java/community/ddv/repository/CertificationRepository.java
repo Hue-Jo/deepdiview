@@ -15,6 +15,9 @@ public interface CertificationRepository extends JpaRepository<Certification, Lo
   boolean existsByUser_IdAndStatus(Long userId, CertificationStatus status);
   Page<Certification> findByStatus(CertificationStatus status, Pageable pageable);
 
+  // 특정 영화에 대한 인증
+  // boolean existsByUser_IdANdMovie_IdAndStatus(Long userId, Long movieId);
+
   @Modifying
   @Query("UPDATE Certification c SET c.status = NULL")
   int resetAllCertifications();
