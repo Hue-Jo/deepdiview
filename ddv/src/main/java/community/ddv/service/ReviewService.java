@@ -36,11 +36,10 @@ public class ReviewService {
    * @param reviewDTO
    */
   @Transactional
-  public ReviewResponseDTO createReview(String email, ReviewDTO reviewDTO) {
-    log.info("리뷰 작성 시도, 유저: {}", email);
+  public ReviewResponseDTO createReview(ReviewDTO reviewDTO) {
 
-    User user = userRepository.findByEmail(email)
-        .orElseThrow(() -> new DeepdiviewException(ErrorCode.USER_NOT_FOUND));
+    User user = userService.getLoginUser();
+    log.info("리뷰 작성 시도, 유저: {}");
 
     Movie movie = movieRepository.findByTmdbId(reviewDTO.getTmdbId())
         .orElseThrow(() -> new DeepdiviewException(ErrorCode.MOVIE_NOT_FOUND));
@@ -72,11 +71,10 @@ public class ReviewService {
    * @param reviewId
    */
   @Transactional
-  public void deleteReview(String email, Long reviewId) {
-    log.info("리뷰 삭제 시도, 유저: {}", email);
+  public void deleteReview(Long reviewId) {
 
-    User user = userRepository.findByEmail(email)
-        .orElseThrow(() -> new DeepdiviewException(ErrorCode.USER_NOT_FOUND));
+    User user = userService.getLoginUser();
+    log.info("리뷰 삭제 시도");
 
     Review review = reviewRepository.findById(reviewId)
         .orElseThrow(() -> new DeepdiviewException(ErrorCode.REVIEW_NOT_FOUND));
@@ -97,11 +95,10 @@ public class ReviewService {
    * @return
    */
   @Transactional
-  public ReviewResponseDTO updateReview(String email, Long reviewId, ReviewUpdateDTO reviewUpdateDTO) {
-    log.info("리뷰 수정 시도, 유저: {}", email);
+  public ReviewResponseDTO updateReview(Long reviewId, ReviewUpdateDTO reviewUpdateDTO) {
 
-    User user = userRepository.findByEmail(email)
-        .orElseThrow(() -> new DeepdiviewException(ErrorCode.USER_NOT_FOUND));
+    User user = userService.getLoginUser();
+    log.info("리뷰 수정 시도");
 
     Review review = reviewRepository.findById(reviewId)
         .orElseThrow(() -> new DeepdiviewException(ErrorCode.REVIEW_NOT_FOUND));
