@@ -55,6 +55,10 @@ public class Review {
   @Setter
   private LocalDateTime updatedAt;
 
+  @Setter
+  @Column(nullable = false)
+  private Integer likeCount = 0;
+
   @OneToMany(mappedBy = "review", cascade = CascadeType.ALL)
   private List<Comment> comments = new ArrayList<>();
 
