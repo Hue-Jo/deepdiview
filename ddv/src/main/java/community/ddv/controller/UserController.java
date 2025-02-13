@@ -13,6 +13,7 @@ import community.ddv.service.ReviewService;
 import community.ddv.service.UserService;
 import io.swagger.v3.oas.annotations.Operation;
 import jakarta.validation.Valid;
+import java.io.IOException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -26,7 +27,9 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
 
 @RestController
 @RequestMapping("/api/users")
@@ -113,6 +116,21 @@ public class UserController {
       @PageableDefault(size = 20, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable) {
     Page<ReviewResponseDTO> reviews = reviewService.getReviewsByUserId(userId, pageable);
     return ResponseEntity.ok(reviews);
+  }
+
+  @Operation(summary = "프로필사진 업로드/수정", description = "프로필 사진이 존재하는 경우 수정, 존재하지 않는 경우 새롭게 업로드 됩니다.")
+  @PostMapping("/profile-image")
+  public ResponseEntity<String> uploadProfileImage(
+      @RequestParam("file") MultipartFile file) throws IOException {
+    String profileImageUrl = userService.updateProfileImage(file);
+    return ResponseEntity.ok(profileImageUrl);
+  }
+
+  @Operation(summary = "프로필사진 삭제")
+  @DeleteMapping("profile-image")
+  public ResponseEntity<Void> deleteProfileImage() throws IOException {
+    userService.deleteProfileImage();
+    return ResponseEntity.noContent().build();
   }
 
 }

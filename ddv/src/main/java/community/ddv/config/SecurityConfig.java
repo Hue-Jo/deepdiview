@@ -35,7 +35,8 @@ public class SecurityConfig {
       "/api/users/login",
       "/api/fetch/genres",
       "/api/fetch/movies",
-      "/api/movies/**"
+      "/api/movies/**",
+      "/api/discussions/isSunday"
   };
 
   @Bean

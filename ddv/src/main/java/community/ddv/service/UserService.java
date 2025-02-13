@@ -16,6 +16,7 @@ import community.ddv.repository.RefreshTokenRepository;
 import community.ddv.repository.ReviewRepository;
 import community.ddv.repository.UserRepository;
 import community.ddv.response.LoginResponse;
+import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.Optional;
 import java.util.regex.Pattern;
@@ -26,6 +27,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
 @Service
 @RequiredArgsConstructor
@@ -38,6 +40,7 @@ public class UserService {
   private final JwtProvider jwtProvider;
   private final ReviewRepository reviewRepository;
   private final CommentRepository commentRepository;
+  private final FileStorageService fileStorageService;
 
   /**
    * 회원가입
@@ -240,7 +243,9 @@ public class UserService {
   }
 
 
-  // 내 정보 확인
+  /**
+   * 내 정보 조회
+   */
   @Transactional(readOnly = true)
   public UserInfoDto getMyInfo() {
 
@@ -259,7 +264,10 @@ public class UserService {
     );
   }
 
-  // 다른 회원정보 확인
+  /**
+   * 특정 사용자 정보 확인
+   * @param userId
+   */
   @Transactional(readOnly = true)
   public UserInfoDto getOthersInfo(Long userId) {
 
@@ -296,5 +304,62 @@ public class UserService {
         .orElseThrow(() -> new DeepdiviewException(ErrorCode.USER_NOT_FOUND));
   }
 
+  /**
+   * 프로필 등록/수정
+   * @param profileImage
+   * */
+  @Transactional
+  public String updateProfileImage(MultipartFile profileImage) throws IOException {
+    User user = getLoginUser();
+
+    // 파일 크기 제한
+    long maxFileSize = 5 * 1024 * 1024;
+    if (profileImage.getSize() > maxFileSize) {
+      throw new IOException("파일 크기는 5MB를 초과할 수 없습니다.");
+    }
+
+    // 기존 프사가 존재하는 경우, 삭제 후 새 이미지로 대체됨
+    if (user.getProfileImageUrl() != null && !user.getProfileImageUrl().isEmpty()) {
+      String existingProfileImageUrl = user.getProfileImageUrl();
+      String existingProfileImageName = existingProfileImageUrl.substring(
+          existingProfileImageUrl.lastIndexOf("/") + 1);
+      try {
+        fileStorageService.deleteFile(existingProfileImageName);
+      } catch (IOException e) {
+        log.error("기존 프로필사진 삭제 실패");
+        throw new IOException("기존 프로필 사진 삭제 중 문제 발생");
+      }
+    }
+
+    String newProfileImageUrl;
+    // 새 프로필 사진 업로드
+    try {
+      newProfileImageUrl = fileStorageService.uploadFile(profileImage);
+    } catch (IOException e) {
+      log.info("새 프로필 사진 업로드 실패 ");
+      throw new IOException("새 프로필 사진 업로드 중 문제가 발생했습니다.");
+    }
+
+    user.setProfileImageUrl(newProfileImageUrl);
+    user.setUpdatedAt(LocalDateTime.now());
+    userRepository.save(user);
+    log.info("프로필 이미지 등록/수정 완료");
+    return newProfileImageUrl;
+  }
+
+  /**
+   * 프로필 사진 삭제
+   */
+  @Transactional
+  public void deleteProfileImage() throws IOException {
+    User user = getLoginUser();
+    log.info("프로필사진 삭제 요청");
+    if (user.getProfileImageUrl() != null && !user.getProfileImageUrl().isEmpty()) {
+      user.setProfileImageUrl(null);
+      user.setUpdatedAt(LocalDateTime.now());
+      userRepository.save(user);
+      log.info("프로필 사진 삭제 완료");
+    }
+  }
 }
 

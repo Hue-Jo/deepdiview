@@ -12,6 +12,7 @@ import community.ddv.exception.DeepdiviewException;
 import community.ddv.repository.MovieRepository;
 import community.ddv.repository.ReviewRepository;
 import java.time.DayOfWeek;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -82,5 +83,9 @@ public class DiscussionService {
         .orElseThrow(() -> new DeepdiviewException(ErrorCode.REVIEW_NOT_FOUND));
 
     return commentService.createComment(review.getId(), commentRequestDto);
+  }
+
+  public boolean isTodaySunday() {
+    return LocalDate.now().getDayOfWeek() == DayOfWeek.SUNDAY;
   }
 }
