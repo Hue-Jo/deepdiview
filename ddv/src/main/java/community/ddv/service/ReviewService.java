@@ -4,6 +4,7 @@ import community.ddv.constant.ErrorCode;
 import community.ddv.dto.CommentDTO.CommentResponseDto;
 import community.ddv.dto.ReviewDTO;
 import community.ddv.dto.ReviewDTO.ReviewUpdateDTO;
+import community.ddv.dto.ReviewResponseDTO;
 import community.ddv.entity.Comment;
 import community.ddv.entity.Movie;
 import community.ddv.entity.Review;
@@ -11,13 +12,13 @@ import community.ddv.entity.User;
 import community.ddv.exception.DeepdiviewException;
 import community.ddv.repository.MovieRepository;
 import community.ddv.repository.ReviewRepository;
-import community.ddv.repository.UserRepository;
-import community.ddv.dto.ReviewResponseDTO;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -27,7 +28,6 @@ import org.springframework.transaction.annotation.Transactional;
 public class ReviewService {
 
   private final ReviewRepository reviewRepository;
-  private final UserRepository userRepository;
   private final MovieRepository movieRepository;
   private final UserService userService;
 
@@ -149,6 +149,18 @@ public class ReviewService {
 
     log.info("특정 리뷰 조회 성공");
     return convertToResponseWithCommentsDto(review);
+  }
+
+  @Transactional(readOnly = true)
+  public Page<ReviewResponseDTO> getReviewsByUserId(Long userId, Pageable pageable) {
+    log.info("특정 사용자의 리뷰 내역 조회 요청");
+    userService.getLoginUser();
+
+    Page<Review> reviews = reviewRepository.findByUser_Id(userId, pageable);
+    log.info("특정 사용자의 리뷰 내역 조회 성공");
+
+    return reviews.map(this::convertToResponseDto);
+
   }
 
 
