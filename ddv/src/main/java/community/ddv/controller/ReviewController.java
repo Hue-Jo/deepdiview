@@ -3,6 +3,7 @@ package community.ddv.controller;
 import community.ddv.dto.ReviewDTO;
 import community.ddv.dto.ReviewDTO.ReviewUpdateDTO;
 import community.ddv.dto.ReviewResponseDTO;
+import community.ddv.service.LikeService;
 import community.ddv.service.ReviewService;
 import io.swagger.v3.oas.annotations.Operation;
 import jakarta.validation.Valid;
@@ -25,6 +26,7 @@ import org.springframework.web.bind.annotation.RestController;
 public class ReviewController {
 
   private final ReviewService reviewService;
+  private final LikeService likeService;
 
   @Operation(summary = "리뷰글 작성")
   @PostMapping
@@ -69,5 +71,13 @@ public class ReviewController {
       @PathVariable Long reviewId) {
     ReviewResponseDTO reviews = reviewService.getReviewById(reviewId);
     return ResponseEntity.ok(reviews);
+  }
+
+  @Operation(summary = "좋아요", description = "토글형식입니다. 두 번 누를 시 좋아요 취소")
+  @PostMapping("/like/{reviewId}")
+  public ResponseEntity<Void> toggleLike(
+      @PathVariable Long reviewId) {
+    likeService.toggleLike(reviewId);
+    return ResponseEntity.ok().build();
   }
 }
