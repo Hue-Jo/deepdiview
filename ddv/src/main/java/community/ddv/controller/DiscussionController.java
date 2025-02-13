@@ -10,6 +10,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -39,5 +40,11 @@ public class DiscussionController {
 
     CommentResponseDto comment = discussionService.createDiscussionComment(reviewId, commentRequestDto);
     return ResponseEntity.status(HttpStatus.CREATED).body(comment);
+  }
+
+  @Operation(summary = "일요일인지 여부 T/F")
+  @GetMapping("/isSunday")
+  public ResponseEntity<Boolean> isSunday() {
+    return ResponseEntity.ok(discussionService.isTodaySunday());
   }
 }
