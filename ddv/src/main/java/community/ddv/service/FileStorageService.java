@@ -72,5 +72,16 @@ public class FileStorageService {
     return String.format("https://%s.s3.%s.amazonaws.com/%s", bucket, region, fileName);
   }
 
-
+  public void deleteFile(String fileUrl) throws IOException {
+    if (fileUrl != null && !fileUrl.isEmpty()) {
+      String fileName = fileUrl.substring(fileUrl.lastIndexOf("/") + 1);
+      try {
+        amazonS3.deleteObject(bucket, fileName);
+        log.info("S3에서 파일 삭제 성공");
+      } catch (AmazonServiceException e) {
+        log.error("S3에서 파일 삭제 중 오류 발생");
+        throw new RuntimeException("파일 삭제 중 문제가 발생했습니다. 관리자에게 문의하세요");
+      }
+    }
+  }
 }
