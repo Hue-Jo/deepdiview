@@ -3,7 +3,6 @@ package community.ddv.service;
 import community.ddv.component.JwtProvider;
 import community.ddv.constant.ErrorCode;
 import community.ddv.constant.Role;
-import community.ddv.dto.UserDTO;
 import community.ddv.dto.UserDTO.AccountDeleteDto;
 import community.ddv.dto.UserDTO.AccountUpdateDto;
 import community.ddv.dto.UserDTO.LoginDto;
