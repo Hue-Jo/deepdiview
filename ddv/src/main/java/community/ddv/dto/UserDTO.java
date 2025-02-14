@@ -58,10 +58,12 @@ public class UserDTO {
 
     private String newPassword;
     private String newConfirmPassword;
-
-    private String oneLineIntro;
   }
 
+  @Getter
+  public static class OneLineIntro {
+    private String oneLineIntro;
+  }
 
   @Getter
   @AllArgsConstructor

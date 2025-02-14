@@ -5,6 +5,7 @@ import community.ddv.dto.ReviewResponseDTO;
 import community.ddv.dto.UserDTO.AccountDeleteDto;
 import community.ddv.dto.UserDTO.AccountUpdateDto;
 import community.ddv.dto.UserDTO.LoginDto;
+import community.ddv.dto.UserDTO.OneLineIntro;
 import community.ddv.dto.UserDTO.SignUpDto;
 import community.ddv.dto.UserDTO.UserInfoDto;
 import community.ddv.response.LoginResponse;
@@ -79,9 +80,9 @@ public class UserController {
   @Operation(summary = "한줄소개 설정/수정", description = "회원가입 직후에는 새롭게 설정, 설정된 이후에는 수정")
   @PutMapping("/me/intro")
   public ResponseEntity<Void> updateIntro(
-      @RequestBody AccountUpdateDto accountUpdateDto
+      @RequestBody OneLineIntro oneLineIntro
   ) {
-    userService.updateOneLineIntro(accountUpdateDto);
+    userService.updateOneLineIntro(oneLineIntro);
     return ResponseEntity.ok().build();
   }
 

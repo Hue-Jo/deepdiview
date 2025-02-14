@@ -2,6 +2,7 @@ package community.ddv.entity;
 
 import community.ddv.constant.Role;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EntityListeners;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
@@ -13,6 +14,9 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.annotation.LastModifiedDate;
+import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 @Entity
 @NoArgsConstructor
@@ -20,6 +24,7 @@ import lombok.Setter;
 @Getter
 @Setter
 @Builder
+@EntityListeners(AuditingEntityListener.class)
 public class User {
 
   @Id
@@ -36,6 +41,8 @@ public class User {
   private String profileImageUrl;
   private String oneLineIntroduction;
 
+  @CreatedDate
   private LocalDateTime createdAt;
+  @LastModifiedDate
   private LocalDateTime updatedAt;
 }
