@@ -25,6 +25,7 @@ public class ReviewResponseDTO {
   private double rating;
   private LocalDateTime createdAt;
   private LocalDateTime updatedAt;
+  private Integer likeCount;
 
   private List<CommentResponseDto> comments;
 }

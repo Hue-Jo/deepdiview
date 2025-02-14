@@ -85,14 +85,14 @@ public class UserController {
     return ResponseEntity.ok().build();
   }
 
-  @Operation(summary = "내 정보 확인", description = "닉네임, 이메일, 프로필사진, 한줄소개, 리뷰수, 댓글수")
+  @Operation(summary = "내 정보 확인", description = "닉네임, 이메일, 프로필사진, 한줄소개, 리뷰수, 댓글수, 별점 분포")
   @GetMapping("/me")
   public ResponseEntity<UserInfoDto> getMyInfo() {
     UserInfoDto userInfoDto = userService.getMyInfo();
     return ResponseEntity.ok(userInfoDto);
   }
 
-  @Operation(summary = "다른 유저 정보 확인", description = "닉네임, 프로필사진, 한줄소개, 리뷰수, 댓글수")
+  @Operation(summary = "다른 유저 정보 확인", description = "닉네임, 프로필사진, 한줄소개, 리뷰수, 댓글수, 별점 분포")
   @GetMapping("/{userId}")
   public ResponseEntity<UserInfoDto> getMyInfo(
       @PathVariable Long userId) {
