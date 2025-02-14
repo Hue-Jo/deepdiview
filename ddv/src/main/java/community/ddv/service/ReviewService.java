@@ -171,6 +171,7 @@ public class ReviewService {
         .rating(review.getRating())
         .createdAt(review.getCreatedAt())
         .updatedAt(review.getUpdatedAt())
+        .likeCount(review.getLikeCount())
         .build();
   }
 
@@ -184,6 +185,7 @@ public class ReviewService {
         .rating(review.getRating())
         .createdAt(review.getCreatedAt())
         .updatedAt(review.getUpdatedAt())
+        .likeCount(review.getLikeCount())
         .comments(review.getComments().stream()
             .map(this::convertToCommentDto)
             .collect(Collectors.toList()))
