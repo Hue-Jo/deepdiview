@@ -12,7 +12,7 @@ public interface ReviewRepository extends JpaRepository<Review, Long> {
 
   boolean existsByUserAndMovie(User user, Movie movie);
   int countByUser_Id(Long userId);
-  List<Review> findByMovie(Movie movie);
+  Page<Review> findByMovie(Movie movie, Pageable pageable);
   Page<Review> findByUser_Id(Long userId, Pageable pageable);
   //List<Review> findTop5ByMovieOrderByCreatedAtDesc(Movie movie);
 }

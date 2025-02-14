@@ -6,7 +6,6 @@ import community.ddv.dto.ReviewResponseDTO;
 import community.ddv.entity.Movie;
 import community.ddv.exception.DeepdiviewException;
 import community.ddv.repository.MovieRepository;
-import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
@@ -14,6 +13,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.domain.Sort.Direction;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -59,13 +60,9 @@ public class MovieService {
       }
       return movies.stream()
           .map(movie -> {
-            List<ReviewResponseDTO> reviews = reviewService.getReviewByMovieId(movie.getTmdbId());
-            // 최신순 5개만 가져오도록 제한
-            List<ReviewResponseDTO> latestReviews = reviews.stream()
-                .sorted(Comparator.comparing(ReviewResponseDTO::getCreatedAt).reversed())
-                .limit(5)
-                .collect(Collectors.toList());
-            return convertToDTOwithReviews(movie, latestReviews);
+            Pageable pageable = PageRequest.of(0, 5, Sort.by(Direction.DESC, "createdAt"));
+            Page<ReviewResponseDTO> reviews = reviewService.getReviewByMovieId(movie.getTmdbId(), pageable);
+            return convertToDTOwithReviews(movie, reviews.getContent());
           })
           .collect(Collectors.toList());
     } catch (Exception e) {
@@ -80,12 +77,9 @@ public class MovieService {
   public MovieDTO getMovieDetailsById(Long tmdbId) {
     Movie movie = movieRepository.findByTmdbId(tmdbId)
         .orElseThrow(() -> new DeepdiviewException(ErrorCode.MOVIE_NOT_FOUND));
-    List<ReviewResponseDTO> reviews = reviewService.getReviewByMovieId(tmdbId);
-    List<ReviewResponseDTO> latestReviews = reviews.stream()
-        .sorted(Comparator.comparing(ReviewResponseDTO::getCreatedAt).reversed())
-        .limit(5)
-        .collect(Collectors.toList());
-    return convertToDTOwithReviews(movie, latestReviews);
+    Pageable pageable = PageRequest.of(0, 5, Sort.by(Direction.DESC, "createdAt"));
+    Page<ReviewResponseDTO> reviews = reviewService.getReviewByMovieId(tmdbId, pageable);
+    return convertToDTOwithReviews(movie, reviews.getContent());
   }
 
 

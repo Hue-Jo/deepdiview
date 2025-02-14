@@ -13,7 +13,6 @@ import community.ddv.exception.DeepdiviewException;
 import community.ddv.repository.MovieRepository;
 import community.ddv.repository.ReviewRepository;
 import java.time.LocalDateTime;
-import java.util.List;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -127,17 +126,15 @@ public class ReviewService {
   }
 
   @Transactional(readOnly = true)
-  public List<ReviewResponseDTO> getReviewByMovieId(Long tmdbId) {
+  public Page<ReviewResponseDTO> getReviewByMovieId(Long tmdbId, Pageable pageable) {
     log.info("특정 영화의 리뷰 조회 시도");
     Movie movie = movieRepository.findByTmdbId(tmdbId)
         .orElseThrow(() -> new DeepdiviewException(ErrorCode.MOVIE_NOT_FOUND));
 
-    List<Review> reviews = reviewRepository.findByMovie(movie);
+    Page<Review> reviews = reviewRepository.findByMovie(movie, pageable);
 
     log.info("특정 영화의 리뷰 조회 완료");
-    return reviews.stream()
-        .map(this::convertToResponseDto)
-        .collect(Collectors.toList());
+    return reviews.map(this::convertToResponseDto);
   }
 
   @Transactional(readOnly = true)

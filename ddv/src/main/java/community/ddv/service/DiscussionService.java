@@ -33,7 +33,10 @@ public class DiscussionService {
   private final ReviewRepository reviewRepository;
   private final CommentService commentService;
 
-  // 인증 승인 받은 사용자의 투표 1위 영화에 대한 리뷰 작성
+  /**
+   * 인증 승인 받은 사용자의 투표 1위 영화에 대한 리뷰 작성
+   * @param reviewDTO
+   */
   @Transactional
   public ReviewResponseDTO createDiscussion(ReviewDTO reviewDTO) {
 
@@ -69,6 +72,11 @@ public class DiscussionService {
     return reviewService.createReview(reviewDTO);
   }
 
+  /**
+   * 인증 승인된 사용자의 댓글 작성
+   * @param reviewId
+   * @param commentRequestDto
+   */
   @Transactional
   public CommentResponseDto createDiscussionComment(Long reviewId, CommentRequestDto commentRequestDto) {
 
@@ -85,6 +93,7 @@ public class DiscussionService {
     return commentService.createComment(review.getId(), commentRequestDto);
   }
 
+  // 일요일 확인 API
   public boolean isTodaySunday() {
     return LocalDate.now().getDayOfWeek() == DayOfWeek.SUNDAY;
   }

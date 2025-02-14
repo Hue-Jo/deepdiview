@@ -7,8 +7,11 @@ import community.ddv.service.LikeService;
 import community.ddv.service.ReviewService;
 import io.swagger.v3.oas.annotations.Operation;
 import jakarta.validation.Valid;
-import java.util.List;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort.Direction;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -59,9 +62,10 @@ public class ReviewController {
 
   @Operation(summary = "특정 영화에 대한 리뷰 조회", description = "댓글은 포함되어있지 않습니다.")
   @GetMapping("/movie/{tmdbId}")
-  public ResponseEntity<List<ReviewResponseDTO>> getReviewsByMovieId(
-      @PathVariable Long tmdbId) {
-    List<ReviewResponseDTO> reviews = reviewService.getReviewByMovieId(tmdbId);
+  public ResponseEntity<Page<ReviewResponseDTO>> getReviewsByMovieId(
+      @PathVariable Long tmdbId,
+      @PageableDefault(size = 20, sort = "createdAt", direction = Direction.DESC) Pageable pageable) {
+    Page<ReviewResponseDTO> reviews = reviewService.getReviewByMovieId(tmdbId, pageable);
     return ResponseEntity.ok(reviews);
   }
 
