@@ -62,12 +62,6 @@ public class UserDTO {
     private String oneLineIntro;
   }
 
-  @Getter
-  public static class AdminDto{
-
-    private String email;
-    private String password;
-  }
 
   @Getter
   @AllArgsConstructor
@@ -83,6 +77,7 @@ public class UserDTO {
     private int commentCount; // 댓글 작성 개수
     private Map<Double, Long> ratingDistribution; // 별점 분포
     private CertificationStatus certificationStatus; // 인증 상태
+    private RejectionReason rejectionReason; // 인증 거절 사유
   }
 
 

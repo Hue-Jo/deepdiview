@@ -1,6 +1,7 @@
 package community.ddv.service;
 
 import community.ddv.component.JwtProvider;
+import community.ddv.constant.CertificationStatus;
 import community.ddv.constant.ErrorCode;
 import community.ddv.constant.Role;
 import community.ddv.dto.UserDTO.AccountDeleteDto;
@@ -278,6 +279,8 @@ public class UserService {
         .commentCount(commentCount)
         .ratingDistribution(ratingDistribution)
         .certificationStatus(certification != null ? certification.getStatus() : null)
+        .rejectionReason(certification != null && certification.getStatus() == CertificationStatus.REJECTED
+        ? certification.getRejectionReason() : null)
     .build();
   }
 
