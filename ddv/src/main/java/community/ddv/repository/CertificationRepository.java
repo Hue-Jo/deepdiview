@@ -2,6 +2,7 @@ package community.ddv.repository;
 
 import community.ddv.constant.CertificationStatus;
 import community.ddv.entity.Certification;
+import java.util.Optional;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -21,4 +22,6 @@ public interface CertificationRepository extends JpaRepository<Certification, Lo
   @Modifying
   @Query("UPDATE Certification c SET c.status = NULL")
   int resetAllCertifications();
+
+  Optional<Certification> findByUser_Id(Long userId);
 }

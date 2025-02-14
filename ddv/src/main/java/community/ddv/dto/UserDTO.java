@@ -1,11 +1,15 @@
 package community.ddv.dto;
 
+import community.ddv.constant.CertificationStatus;
+import community.ddv.constant.RejectionReason;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 import java.util.Map;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 
 public class UserDTO {
 
@@ -58,15 +62,11 @@ public class UserDTO {
     private String oneLineIntro;
   }
 
-  @Getter
-  public static class AdminDto{
-
-    private String email;
-    private String password;
-  }
 
   @Getter
   @AllArgsConstructor
+  @NoArgsConstructor
+  @Builder
   public static class UserInfoDto {
 
     private String nickname;
@@ -76,6 +76,8 @@ public class UserDTO {
     private int reviewCount; // 리뷰 작성 개수
     private int commentCount; // 댓글 작성 개수
     private Map<Double, Long> ratingDistribution; // 별점 분포
+    private CertificationStatus certificationStatus; // 인증 상태
+    private RejectionReason rejectionReason; // 인증 거절 사유
   }
 
 

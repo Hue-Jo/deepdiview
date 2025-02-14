@@ -23,7 +23,6 @@ import lombok.Setter;
 @AllArgsConstructor
 @Builder
 @Getter
-@Setter
 public class Certification {
 
   @Id
@@ -48,5 +47,6 @@ public class Certification {
     this.status = status;
     this.rejectionReason = rejectionReason;
   }
+
 
 }
