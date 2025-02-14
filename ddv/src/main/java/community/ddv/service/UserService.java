@@ -7,6 +7,7 @@ import community.ddv.constant.Role;
 import community.ddv.dto.UserDTO.AccountDeleteDto;
 import community.ddv.dto.UserDTO.AccountUpdateDto;
 import community.ddv.dto.UserDTO.LoginDto;
+import community.ddv.dto.UserDTO.OneLineIntro;
 import community.ddv.dto.UserDTO.SignUpDto;
 import community.ddv.dto.UserDTO.UserInfoDto;
 import community.ddv.entity.Certification;
@@ -74,7 +75,6 @@ public class UserService {
         .password(passwordEncoder.encode(signUpDto.getPassword()))
         .nickname(signUpDto.getNickname())
         .role(Role.USER) // 일반 유저를 기본 역할로 설정
-        .createdAt(LocalDateTime.now())
         .build();
 
     userRepository.save(user);
@@ -204,7 +204,6 @@ public class UserService {
       log.info("비밀번호 변경성공");
     }
 
-    user.setUpdatedAt(LocalDateTime.now());
     userRepository.save(user);
     log.info("회원정보 수정완료");
 
@@ -219,15 +218,15 @@ public class UserService {
 
   /**
    * 한줄소개 설정/수정/삭제
-   * @param accountUpdateDto
+   * @param oneLineIntro
    */
   @Transactional
-  public void updateOneLineIntro(AccountUpdateDto accountUpdateDto) {
+  public void updateOneLineIntro(OneLineIntro oneLineIntro) {
 
     User user = getLoginUser();
     log.info("한줄소개 수정 시도 : {}", user.getEmail());
 
-    String newOneLineIntro = accountUpdateDto.getOneLineIntro();
+    String newOneLineIntro = oneLineIntro.getOneLineIntro();
 
     // 기존의 한줄소개가 없었던 경우
     if (user.getOneLineIntroduction() == null) {
@@ -245,7 +244,6 @@ public class UserService {
         log.info("한줄소개 수정 완료");
       }
     }
-    user.setUpdatedAt(LocalDateTime.now());
     userRepository.save(user);
   }
 
@@ -368,7 +366,6 @@ public class UserService {
     }
 
     user.setProfileImageUrl(newProfileImageUrl);
-    user.setUpdatedAt(LocalDateTime.now());
     userRepository.save(user);
     log.info("프로필 이미지 등록/수정 완료");
     return newProfileImageUrl;
@@ -383,7 +380,6 @@ public class UserService {
     log.info("프로필사진 삭제 요청");
     if (user.getProfileImageUrl() != null && !user.getProfileImageUrl().isEmpty()) {
       user.setProfileImageUrl(null);
-      user.setUpdatedAt(LocalDateTime.now());
       userRepository.save(user);
       log.info("프로필 사진 삭제 완료");
     }

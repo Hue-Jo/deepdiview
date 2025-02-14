@@ -55,8 +55,6 @@ public class ReviewService {
         .title(reviewDTO.getTitle())
         .content(reviewDTO.getContent())
         .rating(reviewDTO.getRating())
-        .createdAt(LocalDateTime.now())
-        .updatedAt(LocalDateTime.now())
         .build();
 
     Review savedReview = reviewRepository.save(review);
@@ -114,8 +112,6 @@ public class ReviewService {
     if (reviewUpdateDTO.getRating() != null) {
       review.setRating(reviewUpdateDTO.getRating());
     }
-
-    review.setUpdatedAt(LocalDateTime.now());
 
     Review updatedReview = reviewRepository.save(review);
     log.info("리뷰 수정 완료");

@@ -49,7 +49,7 @@ public class ReviewController {
     return ResponseEntity.noContent().build();
   }
 
-  @Operation(summary = "리뷰글 수정")
+  @Operation(summary = "리뷰글 수정", description = "제목 내용 별점 각각 수정 가능, 별점은 변경하지 않을 시 null로 들어가야 함")
   @PutMapping("/{reviewId}")
   public ResponseEntity<ReviewResponseDTO> updateReview(
       @PathVariable Long reviewId,
