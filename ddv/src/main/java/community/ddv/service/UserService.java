@@ -8,10 +8,12 @@ import community.ddv.dto.UserDTO.AccountUpdateDto;
 import community.ddv.dto.UserDTO.LoginDto;
 import community.ddv.dto.UserDTO.SignUpDto;
 import community.ddv.dto.UserDTO.UserInfoDto;
+import community.ddv.entity.Certification;
 import community.ddv.entity.RefreshToken;
 import community.ddv.entity.Review;
 import community.ddv.entity.User;
 import community.ddv.exception.DeepdiviewException;
+import community.ddv.repository.CertificationRepository;
 import community.ddv.repository.CommentRepository;
 import community.ddv.repository.RefreshTokenRepository;
 import community.ddv.repository.ReviewRepository;
@@ -19,11 +21,9 @@ import community.ddv.repository.UserRepository;
 import community.ddv.response.LoginResponse;
 import java.io.IOException;
 import java.time.LocalDateTime;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 import java.util.regex.Pattern;
-import java.util.stream.Collector;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -46,6 +46,7 @@ public class UserService {
   private final ReviewRepository reviewRepository;
   private final CommentRepository commentRepository;
   private final FileStorageService fileStorageService;
+  private final CertificationRepository certificationRepository;
 
   /**
    * 회원가입
@@ -266,15 +267,18 @@ public class UserService {
             Collectors.counting()
         ));
 
-    return new UserInfoDto(
-        user.getNickname(),
-        user.getEmail(),
-        user.getProfileImageUrl(),
-        user.getOneLineIntroduction(),
-        reviewCount,
-        commentCount,
-        ratingDistribution
-    );
+    Certification certification = certificationRepository.findByUser_Id(user.getId()).orElse(null);
+
+    return UserInfoDto.builder()
+        .nickname(user.getNickname())
+        .email((user.getEmail()))
+        .profileImageUrl(user.getProfileImageUrl())
+        .oneLineIntro(user.getOneLineIntroduction())
+        .reviewCount(reviewCount)
+        .commentCount(commentCount)
+        .ratingDistribution(ratingDistribution)
+        .certificationStatus(certification != null ? certification.getStatus() : null)
+    .build();
   }
 
   /**
@@ -298,15 +302,14 @@ public class UserService {
             Collectors.counting()
         ));
 
-    return new UserInfoDto(
-        user.getNickname(),
-        null, // 다른 사용자 정보 중 이메일은 숨김처리
-        user.getProfileImageUrl(),
-        user.getOneLineIntroduction(),
-        reviewCount,
-        commentCount,
-        ratingDistribution
-    );
+    return UserInfoDto.builder()
+        .nickname(user.getNickname())
+        .profileImageUrl(user.getProfileImageUrl())
+        .oneLineIntro(user.getOneLineIntroduction())
+        .reviewCount(reviewCount)
+        .commentCount(commentCount)
+        .ratingDistribution(ratingDistribution)
+        .build();
   }
 
   // 로그인 여부 확인 메서드
