@@ -3,6 +3,7 @@ package community.ddv.dto;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
+import java.util.Map;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 
@@ -74,6 +75,7 @@ public class UserDTO {
     private String oneLineIntro;
     private int reviewCount; // 리뷰 작성 개수
     private int commentCount; // 댓글 작성 개수
+    private Map<Double, Long> ratingDistribution; // 별점 분포
   }
 
 

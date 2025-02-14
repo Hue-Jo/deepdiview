@@ -9,6 +9,7 @@ import community.ddv.dto.UserDTO.LoginDto;
 import community.ddv.dto.UserDTO.SignUpDto;
 import community.ddv.dto.UserDTO.UserInfoDto;
 import community.ddv.entity.RefreshToken;
+import community.ddv.entity.Review;
 import community.ddv.entity.User;
 import community.ddv.exception.DeepdiviewException;
 import community.ddv.repository.CommentRepository;
@@ -18,8 +19,12 @@ import community.ddv.repository.UserRepository;
 import community.ddv.response.LoginResponse;
 import java.io.IOException;
 import java.time.LocalDateTime;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Optional;
 import java.util.regex.Pattern;
+import java.util.stream.Collector;
+import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.Authentication;
@@ -254,13 +259,21 @@ public class UserService {
     int reviewCount = reviewRepository.countByUser_Id(user.getId());
     int commentCount = commentRepository.countByUser_Id(user.getId());
 
+    Map<Double, Long> ratingDistribution = reviewRepository.findAllByUser_Id(user.getId()).stream()
+        .map(Review::getRating)
+        .collect(Collectors.groupingBy(
+            rating -> rating,
+            Collectors.counting()
+        ));
+
     return new UserInfoDto(
         user.getNickname(),
         user.getEmail(),
         user.getProfileImageUrl(),
         user.getOneLineIntroduction(),
         reviewCount,
-        commentCount
+        commentCount,
+        ratingDistribution
     );
   }
 
@@ -278,13 +291,21 @@ public class UserService {
     int reviewCount = reviewRepository.countByUser_Id(userId);
     int commentCount = commentRepository.countByUser_Id(userId);
 
+    Map<Double, Long> ratingDistribution = reviewRepository.findAllByUser_Id(user.getId()).stream()
+        .map(Review::getRating)
+        .collect(Collectors.groupingBy(
+            rating -> rating,
+            Collectors.counting()
+        ));
+
     return new UserInfoDto(
         user.getNickname(),
         null, // 다른 사용자 정보 중 이메일은 숨김처리
         user.getProfileImageUrl(),
         user.getOneLineIntroduction(),
         reviewCount,
-        commentCount
+        commentCount,
+        ratingDistribution
     );
   }
 
