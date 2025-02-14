@@ -64,7 +64,6 @@ public class ReviewService {
     return convertToResponseDto(savedReview);
   }
 
-
   /**
    * 리뷰 삭제 _ 작성자만 가능
    * @param reviewId
@@ -85,7 +84,6 @@ public class ReviewService {
     reviewRepository.delete(review);
     log.info("리뷰 삭제 완료");
   }
-
 
   /**
    * 리뷰 수정 _ 작성자만 수정 가능, 제목 내용 별점 각각 수정 가능, 별점은 변경하지 않을 시 null로 들어가야 함
@@ -125,6 +123,11 @@ public class ReviewService {
     return convertToResponseDto(updatedReview);
   }
 
+  /**
+   * 특정 영화의 리뷰 조회
+   * @param tmdbId
+   *
+   */
   @Transactional(readOnly = true)
   public Page<ReviewResponseDTO> getReviewByMovieId(Long tmdbId, Pageable pageable) {
     log.info("특정 영화의 리뷰 조회 시도");
@@ -137,6 +140,10 @@ public class ReviewService {
     return reviews.map(this::convertToResponseDto);
   }
 
+  /**
+   * 특정 리뷰 조회
+   * @param reviewId
+   */
   @Transactional(readOnly = true)
   public ReviewResponseDTO getReviewById(Long reviewId) {
     log.info("특정 리뷰 조회 요청");
@@ -148,6 +155,11 @@ public class ReviewService {
     return convertToResponseWithCommentsDto(review);
   }
 
+  /**
+   * 특정 사용자가 작성한 리뷰 조회
+   * @param userId
+   * @return
+   */
   @Transactional(readOnly = true)
   public Page<ReviewResponseDTO> getReviewsByUserId(Long userId, Pageable pageable) {
     log.info("특정 사용자의 리뷰 내역 조회 요청");
