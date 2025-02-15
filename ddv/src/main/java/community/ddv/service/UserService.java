@@ -11,24 +11,22 @@ import community.ddv.dto.UserDTO.OneLineIntro;
 import community.ddv.dto.UserDTO.SignUpDto;
 import community.ddv.dto.UserDTO.UserInfoDto;
 import community.ddv.entity.Certification;
-import community.ddv.entity.RefreshToken;
 import community.ddv.entity.Review;
 import community.ddv.entity.User;
 import community.ddv.exception.DeepdiviewException;
 import community.ddv.repository.CertificationRepository;
 import community.ddv.repository.CommentRepository;
-import community.ddv.repository.RefreshTokenRepository;
 import community.ddv.repository.ReviewRepository;
 import community.ddv.repository.UserRepository;
 import community.ddv.response.LoginResponse;
 import java.io.IOException;
-import java.time.LocalDateTime;
 import java.util.Map;
-import java.util.Optional;
+import java.util.concurrent.TimeUnit;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -42,7 +40,7 @@ import org.springframework.web.multipart.MultipartFile;
 public class UserService {
 
   private final UserRepository userRepository;
-  private final RefreshTokenRepository refreshTokenRepository;
+  private final RedisTemplate<String, String> redisTemplate;
   private final PasswordEncoder passwordEncoder;
   private final JwtProvider jwtProvider;
   private final ReviewRepository reviewRepository;
@@ -81,7 +79,6 @@ public class UserService {
     log.info("회원가입 완료");
   }
 
-
   /**
    * 로그인
    * @param loginDto - 이메일, 비밀번호
@@ -100,29 +97,14 @@ public class UserService {
 
     // 엑세스 토큰 생성
     String accessToken = jwtProvider.generateAccessToken(user.getEmail(), user.getRole());
-
-    // 기존 리프레시 토큰 조회 -> 유효한 경우 기존 토큰 사용, 만료된 경우나 없는 경우 새로 생성
-    String refreshToken;
-    Optional<RefreshToken> existingRefreshToken = refreshTokenRepository.findByUserEmail(
-        user.getEmail());
-    if (existingRefreshToken.isPresent()) {
-      RefreshToken token = existingRefreshToken.get();
-      // 기존 리프레시 토큰이 만료된 경우, 새로 생성
-      if (jwtProvider.isTokenExpired(token.getRefreshToken())) {
-        refreshToken = jwtProvider.generateRefreshToken(user.getEmail());
-        token.builder().refreshToken(refreshToken).build();
-        refreshTokenRepository.save(token);
-      } else {
-        // 만료가 안 된 경우, 기존 리프레시 토큰 사용
-        refreshToken = token.getRefreshToken();
-      }
-    } else {
+    // 리프레시 토큰 생성
+    String refreshToken = redisTemplate.opsForValue().get(user.getEmail());
+    if (refreshToken == null || jwtProvider.isTokenExpired(refreshToken)) {
+      // 리프레시 토큰이 없거나 만료되었으면 새로 생성 (15일 후 만료)
       refreshToken = jwtProvider.generateRefreshToken(user.getEmail());
-      RefreshToken token = RefreshToken.builder()
-          .refreshToken(refreshToken)
-          .user(user)
-          .build();
-      refreshTokenRepository.save(token);
+      redisTemplate.opsForValue().set(user.getEmail(), refreshToken, 15, TimeUnit.DAYS);
+    } else {
+      log.info("기존 리프레시 토큰 사용");
     }
     log.info("로그인 성공");
     return new LoginResponse(
@@ -134,6 +116,48 @@ public class UserService {
         user.getProfileImageUrl());
   }
 
+  /**
+   * 로그아웃
+   */
+  @Transactional
+  public void logout() {
+    Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+    String email = auth.getName();
+    String accessToken = (String) auth.getCredentials();
+    log.info("로그아웃 요청");
+
+    // 로그아웃을 하면 사용하고 있던 엑세스 토큰을 블랙리스트에 넣어서 1시간동안 사용할 수 없게 설정
+    redisTemplate.opsForValue().set("blackList:" + accessToken, "blocked", 1, TimeUnit.HOURS);
+    log.info("엑세스 토큰을 블랙리스트에 추가했습니다.");
+
+    // 리프레시 토큰 삭제
+    redisTemplate.delete(email);
+    log.info("리프레시 토큰 삭제 완료");
+
+    // SecurityContext 초기화
+    SecurityContextHolder.clearContext();
+    log.info("로그아웃 성공");
+  }
+
+  /**
+   * 리프레시 토큰으로 엑세스 토큰 재발급
+   * @param refreshToken
+   */
+  public String reissueAccessToken(String refreshToken) {
+    log.info("리프레시 토큰으로 엑세스 토큰 재발급 요청");
+
+    if (jwtProvider.isTokenExpired(refreshToken)) {
+      throw new DeepdiviewException(ErrorCode.INVALID_REFRESH_TOKEN);
+    }
+
+    String email = jwtProvider.extractEmail(refreshToken);
+    User user = userRepository.findByEmail(email)
+        .orElseThrow(() -> new DeepdiviewException(ErrorCode.USER_NOT_FOUND));
+
+    String newAccessToken = jwtProvider.generateAccessToken(user.getEmail(), user.getRole());
+    log.info("엑세스 토큰 재발급 완료");
+    return newAccessToken;
+  }
 
   /**
    * 회원탈퇴
@@ -150,7 +174,13 @@ public class UserService {
       throw new DeepdiviewException(ErrorCode.NOT_VALID_PASSWORD);
     }
 
-    refreshTokenRepository.deleteByUser(user);
+    // 엑세스 토큰을 블랙리스트에 추가
+    Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+    String accessToken = (String) auth.getCredentials();
+    redisTemplate.opsForValue().set("blackList:" + accessToken, "blocked", 1, TimeUnit.HOURS);
+    log.info("엑세스 토큰을 블랙리스트에 추가했습니다.");
+
+    redisTemplate.delete(user.getEmail());
     log.info("리프레시 토큰 삭제");
 
     // 사용자 삭제
