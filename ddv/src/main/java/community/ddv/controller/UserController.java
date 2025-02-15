@@ -1,7 +1,8 @@
 package community.ddv.controller;
 
 import community.ddv.dto.CommentDTO.CommentResponseDto;
-import community.ddv.dto.RefreshTokenDTO;
+import community.ddv.dto.TokenDTO.AccessTokenResponseDto;
+import community.ddv.dto.TokenDTO.RefreshTokenDto;
 import community.ddv.dto.ReviewResponseDTO;
 import community.ddv.dto.UserDTO.AccountDeleteDto;
 import community.ddv.dto.UserDTO.AccountUpdateDto;
@@ -73,6 +74,16 @@ public class UserController {
   ) {
     userService.deleteAccount(accountDeleteDto);
     return ResponseEntity.noContent().build();
+  }
+
+  @Operation(summary = "리프레시 토큰으로 엑세스 토큰 재발급")
+  @PostMapping("/token")
+  public ResponseEntity<AccessTokenResponseDto> refreshToken(
+      @RequestBody RefreshTokenDto refreshTokenDto
+  ) {
+      String newAccessToken = userService.reissueAccessToken(refreshTokenDto.getRefreshToken());
+      AccessTokenResponseDto tokenResponseDTO = new AccessTokenResponseDto(newAccessToken);
+      return ResponseEntity.ok(tokenResponseDTO);
   }
 
   // 회원정보 수정 API

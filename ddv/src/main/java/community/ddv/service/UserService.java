@@ -143,6 +143,21 @@ public class UserService {
    * 리프레시 토큰으로 엑세스 토큰 재발급
    * @param refreshToken
    */
+  public String reissueAccessToken(String refreshToken) {
+    log.info("리프레시 토큰으로 엑세스 토큰 재발급 요청");
+
+    if (jwtProvider.isTokenExpired(refreshToken)) {
+      throw new DeepdiviewException(ErrorCode.INVALID_REFRESH_TOKEN);
+    }
+
+    String email = jwtProvider.extractEmail(refreshToken);
+    User user = userRepository.findByEmail(email)
+        .orElseThrow(() -> new DeepdiviewException(ErrorCode.USER_NOT_FOUND));
+
+    String newAccessToken = jwtProvider.generateAccessToken(user.getEmail(), user.getRole());
+    log.info("엑세스 토큰 재발급 완료");
+    return newAccessToken;
+  }
 
   /**
    * 회원탈퇴
