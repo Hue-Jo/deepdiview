@@ -1,6 +1,7 @@
 package community.ddv.controller;
 
 import community.ddv.dto.CommentDTO.CommentResponseDto;
+import community.ddv.dto.RefreshTokenDTO;
 import community.ddv.dto.ReviewResponseDTO;
 import community.ddv.dto.UserDTO.AccountDeleteDto;
 import community.ddv.dto.UserDTO.AccountUpdateDto;
@@ -55,6 +56,13 @@ public class UserController {
   public ResponseEntity<LoginResponse> login(@RequestBody @Valid LoginDto loginDto) {
     LoginResponse loginResponse = userService.logIn(loginDto);
     return ResponseEntity.ok(loginResponse);
+  }
+
+  @Operation(summary = "로그아웃")
+  @PostMapping("/logout")
+  public ResponseEntity<Void> logout() {
+    userService.logout();
+    return ResponseEntity.ok().build();
   }
 
   // 회원탈퇴 API
