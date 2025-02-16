@@ -1,6 +1,10 @@
 package community.ddv.config;
 
+import static org.springframework.security.config.Customizer.withDefaults;
+
 import community.ddv.component.JwtFilter;
+import java.util.Arrays;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -14,6 +18,9 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.CorsConfigurationSource;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
 @Configuration
 @EnableWebSecurity
@@ -43,6 +50,7 @@ public class SecurityConfig {
       throws Exception {
 
     return httpSecurity
+        .cors(cors -> cors.configurationSource(corsConfigurationSource()))
         .csrf(AbstractHttpConfigurer::disable) // REST API이므로 CSRF 비활성화
         .formLogin(AbstractHttpConfigurer::disable) // 폼 로그인 비활성화
         .httpBasic(AbstractHttpConfigurer::disable)
@@ -55,6 +63,21 @@ public class SecurityConfig {
         )
         .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class) // jwt 필터
         .build();
+  }
+
+  // CORS 설정
+  @Bean
+  public CorsConfigurationSource corsConfigurationSource() {
+    CorsConfiguration configuration = new CorsConfiguration();
+    configuration.setAllowCredentials(true); // 자격증명 허용
+    configuration.setAllowedOrigins(List.of("http://localhost:3000"));
+    //configuration.setAllowedOriginPatterns(List.of("*"));
+    configuration.addAllowedHeader("*"); // 모든 헤더
+    configuration.addAllowedMethod("GET, POST, PUT, DELETE");
+
+    UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+    source.registerCorsConfiguration("/**", configuration);// 모든 경로
+    return source;
   }
 
   @Bean

@@ -1,8 +1,6 @@
 package community.ddv.controller;
 
 import community.ddv.dto.CommentDTO.CommentResponseDto;
-import community.ddv.dto.TokenDTO.AccessTokenResponseDto;
-import community.ddv.dto.TokenDTO.RefreshTokenDto;
 import community.ddv.dto.ReviewResponseDTO;
 import community.ddv.dto.UserDTO.AccountDeleteDto;
 import community.ddv.dto.UserDTO.AccountUpdateDto;
@@ -29,6 +27,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -63,7 +62,7 @@ public class UserController {
   @PostMapping("/logout")
   public ResponseEntity<Void> logout() {
     userService.logout();
-    return ResponseEntity.ok().build();
+    return ResponseEntity.noContent().build();
   }
 
   // 회원탈퇴 API
@@ -77,13 +76,14 @@ public class UserController {
   }
 
   @Operation(summary = "리프레시 토큰으로 엑세스 토큰 재발급")
-  @PostMapping("/token")
-  public ResponseEntity<AccessTokenResponseDto> refreshToken(
-      @RequestBody RefreshTokenDto refreshTokenDto
-  ) {
-      String newAccessToken = userService.reissueAccessToken(refreshTokenDto.getRefreshToken());
-      AccessTokenResponseDto tokenResponseDTO = new AccessTokenResponseDto(newAccessToken);
-      return ResponseEntity.ok(tokenResponseDTO);
+  @PostMapping("/reissue-access-token")
+  public ResponseEntity<?> reissueAccessToken(@RequestHeader("Authorization") String authorization) {
+      // Authorization 헤더에서 'Bearer '를 제외한 리프레시 토큰 추출
+    String refreshToken = authorization.replace("Bearer ", "");
+
+      // 엑세스 토큰 재발급
+    String newAccessToken = userService.reissueAccessToken(refreshToken);
+    return ResponseEntity.ok(newAccessToken);
   }
 
   // 회원정보 수정 API

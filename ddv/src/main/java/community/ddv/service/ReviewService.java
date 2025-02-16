@@ -55,6 +55,7 @@ public class ReviewService {
         .title(reviewDTO.getTitle())
         .content(reviewDTO.getContent())
         .rating(reviewDTO.getRating())
+        .likeCount(0)
         .build();
 
     Review savedReview = reviewRepository.save(review);
