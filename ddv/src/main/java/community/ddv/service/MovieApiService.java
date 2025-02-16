@@ -8,11 +8,13 @@ import community.ddv.repository.MovieGenreRepository;
 import community.ddv.repository.MovieRepository;
 import community.ddv.response.MovieResponse;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
@@ -24,12 +26,13 @@ public class MovieApiService {
 
   @Value("${tmdb.key}")
   private String tmdbKey;
-  private final String TMDB_MOVIE_API_URL = "https://api.themoviedb.org/3/discover/movie?include_adult=true&include_video=false&language=ko-KR&region=KR&sort_by=popularity.desc&watch_region=KR&with_watch_providers=8&api_key=";
+  private final String TMDB_MOVIE_API_URL = "https://api.themoviedb.org/3/discover/movie?include_adult=true&include_video=false&language=ko-KR&region=KR&watch_region=KR&with_watch_providers=8&api_key=";
 
   private final MovieRepository movieRepository;
   private final GenreRepository genreRepository;
   private final RestTemplate restTemplate;
 
+  @Scheduled(cron = "15 0 0 * * MON")
   public void fetchAndSaveMovies() {
 
     int currentPage = 1;
@@ -39,11 +42,11 @@ public class MovieApiService {
       try {
         // API 호출
         String url = TMDB_MOVIE_API_URL + tmdbKey + "&page=" + currentPage;
-        ResponseEntity<MovieResponse> response = restTemplate.getForEntity(url,
-            MovieResponse.class);
+        ResponseEntity<MovieResponse> response = restTemplate.getForEntity(url, MovieResponse.class);
 
         if (response.getStatusCode().is2xxSuccessful() && response.getBody() != null) {
 
+          // 응답 본문에서 영화 데이터, 총 페이지 수 가져오기
           MovieResponse movieResponse = response.getBody();
           totalPages = movieResponse.getTotal_pages();
 
@@ -53,7 +56,21 @@ public class MovieApiService {
               .map(this::toEntity)
               .collect(Collectors.toList());
 
-          movieRepository.saveAll(movies);
+          for (Movie movie : movies) {
+            // 이미 DB에 존재하는 TMDB ID인지 확인
+            Optional<Movie> existingMovieOpt = movieRepository.findByTmdbId(movie.getTmdbId());
+
+            // 이미 존재한다면, 인기도만 업데이트 후 저장
+            if (existingMovieOpt.isPresent()) {
+              Movie existingMovie = existingMovieOpt.get();
+              existingMovie.setPopularity(movie.getPopularity());
+              movieRepository.save(existingMovie);
+            } else {
+              // 존재하지 않는다면 새로 저장
+              movieRepository.save(movie);
+            }
+          }
+
           log.info("영화 정보가 DB에 성공적으로 저장되었습니다. 페이지 " + currentPage + "/" + totalPages);
           currentPage++;
 
