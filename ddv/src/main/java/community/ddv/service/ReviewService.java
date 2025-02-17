@@ -171,6 +171,7 @@ public class ReviewService {
 
 
   private ReviewResponseDTO convertToResponseDto(Review review) {
+    Movie movie = review.getMovie();
     return ReviewResponseDTO.builder()
         .reviewId(review.getId())
         .userId(review.getUser().getId())
@@ -181,10 +182,14 @@ public class ReviewService {
         .createdAt(review.getCreatedAt())
         .updatedAt(review.getUpdatedAt())
         .likeCount(review.getLikeCount())
+        .tmdbId(movie.getTmdbId())
+        .movieTitle(movie.getTitle())
+        .posterPath(movie.getPosterPath())
         .build();
   }
 
   private ReviewResponseDTO convertToResponseWithCommentsDto(Review review) {
+    Movie movie = review.getMovie();
     return ReviewResponseDTO.builder()
         .reviewId(review.getId())
         .userId(review.getUser().getId())
@@ -195,6 +200,9 @@ public class ReviewService {
         .createdAt(review.getCreatedAt())
         .updatedAt(review.getUpdatedAt())
         .likeCount(review.getLikeCount())
+        .tmdbId(movie.getTmdbId())
+        .movieTitle(movie.getTitle())
+        .posterPath(movie.getPosterPath())
         .comments(review.getComments().stream()
             .map(this::convertToCommentDto)
             .collect(Collectors.toList()))
