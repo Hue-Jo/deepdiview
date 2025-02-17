@@ -7,8 +7,10 @@ import community.ddv.repository.GenreRepository;
 import community.ddv.repository.MovieGenreRepository;
 import community.ddv.repository.MovieRepository;
 import community.ddv.response.MovieResponse;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -16,6 +18,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 
@@ -26,17 +29,17 @@ public class MovieApiService {
 
   @Value("${tmdb.key}")
   private String tmdbKey;
-  private final String TMDB_MOVIE_API_URL = "https://api.themoviedb.org/3/discover/movie?include_adult=true&include_video=false&language=ko-KR&region=KR&watch_region=KR&with_watch_providers=8&api_key=";
+  private final String TMDB_MOVIE_API_URL = "https://api.themoviedb.org/3/discover/movie?include_adult=false&include_video=false&language=ko&page=1&sort_by=primary_release_date.desc&watch_region=KR&with_watch_providers=8&api_key=";
 
   private final MovieRepository movieRepository;
   private final GenreRepository genreRepository;
   private final RestTemplate restTemplate;
 
-  @Scheduled(cron = "15 0 0 * * MON")
   public void fetchAndSaveMovies() {
 
     int currentPage = 1;
     int totalPages;
+    Set<Long> fetchedTmdbIds = new HashSet<>();
 
     do {
       try {
@@ -57,6 +60,9 @@ public class MovieApiService {
               .collect(Collectors.toList());
 
           for (Movie movie : movies) {
+
+            fetchedTmdbIds.add(movie.getTmdbId());
+
             // 이미 DB에 존재하는 TMDB ID인지 확인
             Optional<Movie> existingMovieOpt = movieRepository.findByTmdbId(movie.getTmdbId());
 
@@ -64,6 +70,7 @@ public class MovieApiService {
             if (existingMovieOpt.isPresent()) {
               Movie existingMovie = existingMovieOpt.get();
               existingMovie.setPopularity(movie.getPopularity());
+              existingMovie.setAvailable(true);
               movieRepository.save(existingMovie);
             } else {
               // 존재하지 않는다면 새로 저장
@@ -86,7 +93,16 @@ public class MovieApiService {
         break;
       }
     } while (currentPage <= totalPages);
-    log.info("모든 영화 데이터 저장 완료 ");
+
+    // DB에는 있지만 API에서 사라진 영화는 isAvailable = false로 변경
+    List<Movie> allMovies = movieRepository.findAll();
+    for (Movie movie : allMovies) {
+      if (!fetchedTmdbIds.contains(movie.getTmdbId())) {
+        movie.changeAsUnavailable();
+        movieRepository.save(movie);
+      }
+    }
+    log.info("모든 영화 데이터 저장/업데이트 완료 ");
 
   }
 
