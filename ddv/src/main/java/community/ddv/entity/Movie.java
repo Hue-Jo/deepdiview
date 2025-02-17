@@ -8,6 +8,7 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.OneToMany;
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -28,6 +29,7 @@ public class Movie {
   @GeneratedValue(strategy = GenerationType.IDENTITY)
   private Long id; // 본 서비스에서 사용하는 id
 
+  @Column(unique = true, nullable = false)
   private Long tmdbId;       // tmdb에서 제공하는 id
   private String title;          // 제목
   private String originalTitle;  // 원어 제목
@@ -49,7 +51,14 @@ public class Movie {
     movieGenres.add(movieGenre);
   }
 
+  @Setter
+  private boolean isAvailable = true; // 넷플에서 제공중인지 여부 (기본값 true)
+
+  public void changeAsUnavailable() {
+    this.isAvailable = false;
+  }
+
   @OneToMany(mappedBy = "movie", cascade = CascadeType.ALL)
-  private List<VoteMovie> voteMovies;
+  private List<VoteMovie> voteMovies = new ArrayList<>();
 
 }
