@@ -17,15 +17,15 @@ public class ReviewResponseDTO {
   private Long reviewId;
   private Long userId;
   private String nickname;
-//  private Long movieId;
-//  private Long tmdbId;
-//  private String movieTitle;
   private String reviewTitle;
   private String reviewContent;
   private double rating;
   private LocalDateTime createdAt;
   private LocalDateTime updatedAt;
   private Integer likeCount;
+  private Long tmdbId;
+  private String movieTitle;
+  private String posterPath;
 
   private List<CommentResponseDto> comments;
 }
