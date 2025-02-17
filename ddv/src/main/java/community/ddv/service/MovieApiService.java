@@ -29,7 +29,7 @@ public class MovieApiService {
 
   @Value("${tmdb.key}")
   private String tmdbKey;
-  private final String TMDB_MOVIE_API_URL = "https://api.themoviedb.org/3/discover/movie?include_adult=false&include_video=false&language=ko&page=1&sort_by=primary_release_date.desc&watch_region=KR&with_watch_providers=8&api_key=";
+  private final String TMDB_MOVIE_API_URL = "https://api.themoviedb.org/3/discover/movie?include_adult=true&include_video=false&language=ko&sort_by=primary_release_date.desc&watch_region=KR&with_watch_providers=8&api_key=";
 
   private final MovieRepository movieRepository;
   private final GenreRepository genreRepository;
