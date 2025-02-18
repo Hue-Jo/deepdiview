@@ -61,14 +61,25 @@ public class DiscussionService {
       throw new DeepdiviewException(ErrorCode.INVALID_REVIEW_PERIOD);
     }
 
-    // 4. 중복 리뷰 확인
-    if (reviewRepository.existsByUserAndMovie(user, lastWeekTopMovie)) {
-      log.warn("이미 리뷰가 작성된 영화");
-      throw new DeepdiviewException(ErrorCode.ALREADY_COMMITED_REVIEW);
+    // 4. 중복 리뷰 확인 -> 기존에 작성한 리뷰가 있으면 수정
+//    if (reviewRepository.existsByUserAndMovie(user, lastWeekTopMovie)) {
+//      log.warn("이미 리뷰가 작성된 영화");
+//      throw new DeepdiviewException(ErrorCode.ALREADY_COMMITED_REVIEW);
+//    }
+    Review existingReview = reviewRepository.findByUserAndMovie(user, lastWeekTopMovie)
+        .orElse(null);
+
+    if (existingReview != null) {
+      existingReview.setTitle(reviewDTO.getTitle());
+      existingReview.setContent(reviewDTO.getContent());
+      existingReview.setContent(reviewDTO.getContent());
+      existingReview.setCertified(true);
+      reviewRepository.save(existingReview);
     }
 
     // 5. 리뷰 생성 및 저장
     reviewDTO.setTmdbId(lastWeekTopMovie.getTmdbId());
+    reviewDTO.setCertified(true);
     return reviewService.createReview(reviewDTO);
   }
 
