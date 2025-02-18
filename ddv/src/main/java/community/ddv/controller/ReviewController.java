@@ -7,6 +7,7 @@ import community.ddv.service.LikeService;
 import community.ddv.service.ReviewService;
 import io.swagger.v3.oas.annotations.Operation;
 import jakarta.validation.Valid;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -75,6 +76,12 @@ public class ReviewController {
       @PathVariable Long reviewId) {
     ReviewResponseDTO reviews = reviewService.getReviewById(reviewId);
     return ResponseEntity.ok(reviews);
+  }
+
+  @Operation(summary = "최신 리뷰 3개 조회")
+  @GetMapping("/reviews/latest")
+  public ResponseEntity<List<ReviewResponseDTO>> getLatestReviews() {
+    return ResponseEntity.ok(reviewService.getLatestReviews());
   }
 
   @Operation(summary = "좋아요", description = "토글형식입니다. 두 번 누를 시 좋아요 취소")

@@ -12,7 +12,7 @@ import community.ddv.entity.User;
 import community.ddv.exception.DeepdiviewException;
 import community.ddv.repository.MovieRepository;
 import community.ddv.repository.ReviewRepository;
-import java.time.LocalDateTime;
+import java.util.List;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -167,6 +167,16 @@ public class ReviewService {
 
     return reviews.map(this::convertToResponseDto);
 
+  }
+
+  @Transactional(readOnly = true)
+  public List<ReviewResponseDTO> getLatestReviews() {
+    log.info("최신 리뷰 3개 조회 요청");
+    List<Review> reviews = reviewRepository.findTop3ByOrderByCreatedAtDesc();
+    log.info("최신리뷰 3개 조회 성공");
+    return reviews.stream()
+        .map(this::convertToResponseDto)
+        .collect(Collectors.toList());
   }
 
 
