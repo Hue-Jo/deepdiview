@@ -4,6 +4,7 @@ import community.ddv.constant.ErrorCode;
 import community.ddv.dto.CommentDTO.CommentRequestDto;
 import community.ddv.dto.CommentDTO.CommentResponseDto;
 import community.ddv.dto.ReviewDTO;
+import community.ddv.dto.ReviewDTO.ReviewUpdateDTO;
 import community.ddv.dto.ReviewResponseDTO;
 import community.ddv.entity.Movie;
 import community.ddv.entity.Review;
@@ -62,19 +63,16 @@ public class DiscussionService {
     }
 
     // 4. 중복 리뷰 확인 -> 기존에 작성한 리뷰가 있으면 수정
-//    if (reviewRepository.existsByUserAndMovie(user, lastWeekTopMovie)) {
-//      log.warn("이미 리뷰가 작성된 영화");
-//      throw new DeepdiviewException(ErrorCode.ALREADY_COMMITED_REVIEW);
-//    }
     Review existingReview = reviewRepository.findByUserAndMovie(user, lastWeekTopMovie)
         .orElse(null);
 
     if (existingReview != null) {
-      existingReview.setTitle(reviewDTO.getTitle());
-      existingReview.setContent(reviewDTO.getContent());
-      existingReview.setRating(reviewDTO.getRating());
+      log.info("기존에 작성한 리뷰가 있으므로 수정 시도");
+      ReviewUpdateDTO updateDTO = new ReviewUpdateDTO(reviewDTO.getTitle(), reviewDTO.getContent(), reviewDTO.getRating());
+      ReviewResponseDTO updatedReview = reviewService.updateReview(existingReview.getId(), updateDTO);
       existingReview.updateCertified(true);
-      reviewRepository.saveAndFlush(existingReview);
+      reviewRepository.save(existingReview);
+      return updatedReview;
     }
 
     // 5. 리뷰 생성 및 저장

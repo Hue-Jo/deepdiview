@@ -4,7 +4,6 @@ import community.ddv.dto.MovieDTO;
 import community.ddv.entity.Genre;
 import community.ddv.entity.Movie;
 import community.ddv.repository.GenreRepository;
-import community.ddv.repository.MovieGenreRepository;
 import community.ddv.repository.MovieRepository;
 import community.ddv.response.MovieResponse;
 import java.util.HashSet;
@@ -16,9 +15,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
-import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 
