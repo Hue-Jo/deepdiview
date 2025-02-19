@@ -56,6 +56,7 @@ public class ReviewService {
         .content(reviewDTO.getContent())
         .rating(reviewDTO.getRating())
         .likeCount(0)
+        .certified(reviewDTO.isCertified())
         .build();
 
     Review savedReview = reviewRepository.save(review);
@@ -99,31 +100,35 @@ public class ReviewService {
     Review review = reviewRepository.findById(reviewId)
         .orElseThrow(() -> new DeepdiviewException(ErrorCode.REVIEW_NOT_FOUND));
 
-    if (!review.getUser().equals(user)) {
+    if (review.getUser().equals(user)) {
+
+      if (!reviewUpdateDTO.getTitle().isEmpty()) {
+        review.setTitle(reviewUpdateDTO.getTitle());
+      }
+      if (!reviewUpdateDTO.getContent().isEmpty()) {
+        review.setContent(reviewUpdateDTO.getContent());
+      }
+      if (reviewUpdateDTO.getRating() != null) {
+        review.setRating(reviewUpdateDTO.getRating());
+      }
+
+      Review updatedReview = reviewRepository.save(review);
+      log.info("리뷰 수정 완료");
+      return convertToResponseDto(updatedReview);
+
+    } else {
       log.warn("리뷰 수정 권한 없음");
       throw new DeepdiviewException(ErrorCode.INVALID_USER);
+
     }
 
-    if (!reviewUpdateDTO.getTitle().isEmpty()) {
-      review.setTitle(reviewUpdateDTO.getTitle());
-    }
-    if (!reviewUpdateDTO.getContent().isEmpty()) {
-      review.setContent(reviewUpdateDTO.getContent());
-    }
-    if (reviewUpdateDTO.getRating() != null) {
-      review.setRating(reviewUpdateDTO.getRating());
-    }
 
-    Review updatedReview = reviewRepository.save(review);
-    log.info("리뷰 수정 완료");
-
-    return convertToResponseDto(updatedReview);
   }
 
   /**
    * 특정 영화의 리뷰 조회
-   * @param tmdbId
    *
+   * @param tmdbId
    */
   @Transactional(readOnly = true)
   public Page<ReviewResponseDTO> getReviewByMovieId(Long tmdbId, Pageable pageable) {
@@ -139,6 +144,7 @@ public class ReviewService {
 
   /**
    * 특정 리뷰 조회
+   *
    * @param reviewId
    */
   @Transactional(readOnly = true)
@@ -154,6 +160,7 @@ public class ReviewService {
 
   /**
    * 특정 사용자가 작성한 리뷰 조회
+   *
    * @param userId
    * @return
    */
@@ -195,6 +202,7 @@ public class ReviewService {
         .tmdbId(movie.getTmdbId())
         .movieTitle(movie.getTitle())
         .posterPath(movie.getPosterPath())
+        .certified(review.isCertified())
         .build();
   }
 
@@ -213,6 +221,7 @@ public class ReviewService {
         .tmdbId(movie.getTmdbId())
         .movieTitle(movie.getTitle())
         .posterPath(movie.getPosterPath())
+        .certified(review.isCertified())
         .comments(review.getComments().stream()
             .map(this::convertToCommentDto)
             .collect(Collectors.toList()))

@@ -26,6 +26,7 @@ public class ReviewResponseDTO {
   private Long tmdbId;
   private String movieTitle;
   private String posterPath;
+  private boolean certified;
 
   private List<CommentResponseDto> comments;
 }

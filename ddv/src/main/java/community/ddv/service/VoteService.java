@@ -62,13 +62,13 @@ public class VoteService {
 
     // 투표 생성은 일요일만 가능, 한 주에 한 번만 가능
     LocalDateTime now = LocalDateTime.now();
-    if (now.getDayOfWeek() != DayOfWeek.SUNDAY) {
+    if (now.getDayOfWeek() != DayOfWeek.WEDNESDAY) {
       log.error("투표 생성은 일요일만 가능합니다.");
       throw new DeepdiviewException(ErrorCode.INVALID_VOTE_CREAT_DATE);
     }
 
     // 이번주에 이미 생성된 투표가 있는지 확인
-    LocalDateTime weekStart = now.with(DayOfWeek.SUNDAY).with(LocalTime.MIN);
+    LocalDateTime weekStart = now.with(DayOfWeek.WEDNESDAY).with(LocalTime.MIN);
     LocalDateTime weekEnd = now.with(DayOfWeek.SATURDAY).with(LocalTime.MAX);
     boolean voteAlreadyExists = voteRepository.existsByStartDateBetween(weekStart, weekEnd);
     if (voteAlreadyExists) {
@@ -78,9 +78,14 @@ public class VoteService {
 
     // 투표 시작일 : 생성 다음날(월요일) 자정(0시 0분)
     LocalDateTime startDate = now.plusDays(1).with(LocalTime.MIDNIGHT);
+
     // 투표 종료일 : 토요일 23시 59분 59초
-    LocalDateTime endDate = now.with(TemporalAdjusters.next(DayOfWeek.SATURDAY))
-        .withHour(23).withMinute(59).withSecond(59);
+    //LocalDateTime endDate = now.with(TemporalAdjusters.next(DayOfWeek.SATURDAY))
+    //    .withHour(23).withMinute(59).withSecond(59);
+
+    // 테스트용
+    LocalDateTime endDate = now.plusDays(1).with(LocalTime.MIDNIGHT);
+
 
     // 인기도 탑 5의 영화 세부 정보 가져오기
     List<MovieDTO> top5Movies = movieService.getTop5Movies();
@@ -89,7 +94,10 @@ public class VoteService {
     Vote vote = Vote.builder()
         .title("다음주의 영화를 선택해주세요")
         //.movies(selectedMovies)
+
+        // 테스트용
         .startDate(now)
+
         //.startDate(startDate)
         .endDate(endDate)
         .voteMovies(new ArrayList<>())
@@ -244,25 +252,22 @@ public class VoteService {
         voteResults);
   }
 
-//  /**
-//   * 특정 투표의 1위 영화 조회
-//   */
-//  public Long getTopVotedMovieForThisWeek(Long voteId) {
-//    VoteResultDTO voteResults = getVoteResult(voteId);
-//    if (voteResults.getResults().isEmpty()) {
-//      throw new DeepdiviewException(ErrorCode.VOTE_RESULT_NOT_FOUND);
-//    }
-//    return voteResults.getResults().get(0).getTmdbId();
-//
-//  }
 
-  // 지난 주 1위 영화 가져오는 메서드
+  /**
+   * 지난 주 1위 영화 가져오는 메서드
+   */
   public Long getLastWeekTopVoteMovie() {
     LocalDateTime now = LocalDateTime.now();
-    LocalDateTime lastWeekStart = now.minusWeeks(1).with(DayOfWeek.MONDAY).with((LocalTime.MIN));
-    LocalDateTime lastWeekEnd = now.minusWeeks(1).with(DayOfWeek.SATURDAY).with((LocalTime.MAX));
+//    LocalDateTime lastWeekStart = now.minusWeeks(1).with(DayOfWeek.MONDAY).with((LocalTime.MIN));
+//    LocalDateTime lastWeekEnd = now.minusWeeks(1).with(DayOfWeek.SATURDAY).with((LocalTime.MAX));
+//    Vote lastWeekVote = voteRepository.findByStartDateBetween(lastWeekStart, lastWeekEnd)
 
-    Vote lastWeekVote = voteRepository.findByStartDateBetween(lastWeekStart, lastWeekEnd)
+    //테스트용
+    LocalDateTime lastStart = now.minusDays(1).with(LocalTime.MIN);
+    LocalDateTime lastEnd = now.minusDays(1).with(LocalTime.MAX);
+    Vote lastWeekVote = voteRepository.findByStartDateBetween(lastStart, lastEnd)
+
+//
         .orElseThrow(() -> new DeepdiviewException(ErrorCode.VOTE_RESULT_NOT_FOUND));
 
     VoteResultDTO voteResults = getVoteResult(lastWeekVote.getId());
@@ -271,8 +276,6 @@ public class VoteService {
       throw new DeepdiviewException(ErrorCode.VOTE_RESULT_NOT_FOUND);
     }
 
-//    Long tmdbId = voteResults.getResults().get(0).getTmdbId();
-//    log.info("지난 주의 영화 : {}", tmdbId);
     VoteMovieResultDTO topVoteMovie = voteResults.getResults().get(0);
     Long tmdbId = topVoteMovie.getTmdbId();
     log.info("지난 주의 영화 : {}", tmdbId);

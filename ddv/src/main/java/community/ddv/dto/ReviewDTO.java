@@ -3,6 +3,7 @@ package community.ddv.dto;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -22,8 +23,11 @@ public class ReviewDTO {
   @Max(value = 5, message = "별점은 5점까지 줄 수 있습니다.")
   private Double rating;
 
+  private boolean isCertified;
+
   @Getter
   @Setter
+  @AllArgsConstructor
   public static class ReviewUpdateDTO {
 
     private String title;
