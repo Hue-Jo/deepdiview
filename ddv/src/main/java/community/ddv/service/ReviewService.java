@@ -202,6 +202,7 @@ public class ReviewService {
         .tmdbId(movie.getTmdbId())
         .movieTitle(movie.getTitle())
         .posterPath(movie.getPosterPath())
+        .certified(review.isCertified())
         .build();
   }
 
@@ -220,6 +221,7 @@ public class ReviewService {
         .tmdbId(movie.getTmdbId())
         .movieTitle(movie.getTitle())
         .posterPath(movie.getPosterPath())
+        .certified(review.isCertified())
         .comments(review.getComments().stream()
             .map(this::convertToCommentDto)
             .collect(Collectors.toList()))
