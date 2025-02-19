@@ -72,9 +72,9 @@ public class DiscussionService {
     if (existingReview != null) {
       existingReview.setTitle(reviewDTO.getTitle());
       existingReview.setContent(reviewDTO.getContent());
-      existingReview.setContent(reviewDTO.getContent());
-      existingReview.setCertified(true);
-      reviewRepository.save(existingReview);
+      existingReview.setRating(reviewDTO.getRating());
+      existingReview.updateCertified(true);
+      reviewRepository.saveAndFlush(existingReview);
     }
 
     // 5. 리뷰 생성 및 저장

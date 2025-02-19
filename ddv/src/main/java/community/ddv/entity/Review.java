@@ -65,8 +65,13 @@ public class Review {
   @Column(nullable = false)
   private Integer likeCount = 0;
 
-  @Setter
-  private boolean isCertified = false;
+  private boolean certified;
+
+  public void updateCertified(boolean certified) {
+    this.certified = certified;
+  }
+
+
 
   @OneToMany(mappedBy = "review", cascade = CascadeType.ALL)
   private List<Comment> comments = new ArrayList<>();

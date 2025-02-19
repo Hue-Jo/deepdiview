@@ -56,7 +56,7 @@ public class ReviewService {
         .content(reviewDTO.getContent())
         .rating(reviewDTO.getRating())
         .likeCount(0)
-        .isCertified(false)
+        .certified(reviewDTO.isCertified())
         .build();
 
     Review savedReview = reviewRepository.save(review);
