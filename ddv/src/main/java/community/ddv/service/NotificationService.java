@@ -29,14 +29,16 @@ public class NotificationService {
   /**
    * SSE 구독 메서드
    * @param userId
-   * @param emitter
    */
-  public void subscribe(Long userId, SseEmitter emitter) {
+  public SseEmitter subscribe(Long userId) {
 
-    // 사용자에게 하나의 SSE 연결만 허용
+    // 이미 구독중이면 기존 emitter 반환
     if (userEmitters.containsKey(userId)) {
-      emitter.complete(); // 기존에 연결된 게 있으면 종료 처리
+      //emitter.complete(); 기존에 연결된 게 있으면 종료 처리
+      return userEmitters.get(userId);
     }
+
+    SseEmitter emitter = new SseEmitter(3 * 60 * 1000L); // 3 * 60 초 (타임아웃 3분)
 
     // 새 연결 저장
     userEmitters.put(userId, emitter);
@@ -44,6 +46,8 @@ public class NotificationService {
     // 연결 종료시 emitter 제거
     emitter.onCompletion(() -> userEmitters.remove(userId));
     emitter.onTimeout(() -> userEmitters.remove(userId));
+
+    return emitter;
   }
 
   /**
@@ -88,6 +92,11 @@ public class NotificationService {
     sendNotification(userId, notificationDTO);
   }
 
+  /**
+   * 인증상태가 변경되었을 때의 알림
+   * @param userId
+   * @param status
+   */
   public void certificateResult(Long userId, CertificationStatus status) {
     User user = userRepository.findById(userId)
         .orElseThrow(() -> new DeepdiviewException(ErrorCode.USER_NOT_FOUND));
