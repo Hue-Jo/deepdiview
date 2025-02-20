@@ -141,8 +141,8 @@ public class CertificationService {
     }
     log.info("인증 상태 변경 : {}", certification.getStatus());
     certificationRepository.save(certification);
-
     notificationService.certificateResult(certification.getUser().getId(), certification.getStatus());
+
   }
 
   // 사용자가 특정 영화에 대해 인증된 상태인지 확인

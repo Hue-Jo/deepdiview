@@ -23,7 +23,6 @@ public class NotificationService {
 
   // SSE 연결을 저장할 Map
   private final Map<Long, SseEmitter> userEmitters = new ConcurrentHashMap<>();
-  private final UserService userService;
   private final UserRepository userRepository;
   private final NotificationRepository notificationRepository;
 
@@ -93,7 +92,7 @@ public class NotificationService {
     User user = userRepository.findById(userId)
         .orElseThrow(() -> new DeepdiviewException(ErrorCode.USER_NOT_FOUND));
 
-    String message ="";
+    String message = "";
     if (status == CertificationStatus.APPROVED) {
       message = "인증이 승인되었습니다.";
     } else if (status == CertificationStatus.REJECTED) {

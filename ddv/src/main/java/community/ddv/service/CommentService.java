@@ -44,6 +44,7 @@ public class CommentService {
 
     Comment newComment = commentRepository.save(comment);
     log.info("댓글 작성 완료");
+    notificationService.commentAdded(user.getId(), reviewId);
     return convertToCommentResponse(newComment);
   }
 
@@ -67,7 +68,6 @@ public class CommentService {
     comment.updateContent(commentRequestDto.getContent());
     log.info("댓글 수정 완료");
 
-    notificationService.commentAdded(user.getId(), reviewId);
     return convertToCommentResponse(comment);
   }
 
