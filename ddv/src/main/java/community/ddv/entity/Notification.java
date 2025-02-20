@@ -42,8 +42,4 @@ public class Notification {
 
   private LocalDateTime createdAt;
 
-
-
-
-
 }

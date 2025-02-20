@@ -9,8 +9,6 @@ import lombok.Getter;
 public class NotificationDTO {
 
   private String message;
-  private LocalDateTime createdAt;
-
-
+  private Long relatedId;
 
 }
