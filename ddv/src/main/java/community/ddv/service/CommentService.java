@@ -24,6 +24,7 @@ public class CommentService {
   private final UserService userService;
   private final CommentRepository commentRepository;
   private final ReviewRepository reviewRepository;
+  private final NotificationService notificationService;
 
   @Transactional
   public CommentResponseDto createComment(Long reviewId, CommentRequestDto commentRequestDto) {
@@ -43,6 +44,7 @@ public class CommentService {
 
     Comment newComment = commentRepository.save(comment);
     log.info("댓글 작성 완료");
+    notificationService.commentAdded(user.getId(), reviewId);
     return convertToCommentResponse(newComment);
   }
 
@@ -65,6 +67,7 @@ public class CommentService {
 
     comment.updateContent(commentRequestDto.getContent());
     log.info("댓글 수정 완료");
+
     return convertToCommentResponse(comment);
   }
 

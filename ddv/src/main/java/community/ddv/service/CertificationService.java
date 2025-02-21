@@ -28,6 +28,7 @@ public class CertificationService {
   private final CertificationRepository certificationRepository;
   private final FileStorageService fileStorageService;
   private final UserService userService;
+  private final NotificationService notificationService;
 
   /**
    * 일반사용자 _ 영화를 봤는지 인증을 위한 인증샷 제출 (특정 영화의 리뷰에 참여하기 위함)
@@ -140,6 +141,8 @@ public class CertificationService {
     }
     log.info("인증 상태 변경 : {}", certification.getStatus());
     certificationRepository.save(certification);
+    notificationService.certificateResult(certification.getUser().getId(), certification.getStatus());
+
   }
 
   // 사용자가 특정 영화에 대해 인증된 상태인지 확인
