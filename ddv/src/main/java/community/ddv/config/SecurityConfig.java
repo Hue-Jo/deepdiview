@@ -1,9 +1,6 @@
 package community.ddv.config;
 
-import static org.springframework.security.config.Customizer.withDefaults;
-
 import community.ddv.component.JwtFilter;
-import java.util.Arrays;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
@@ -70,7 +67,7 @@ public class SecurityConfig {
   public CorsConfigurationSource corsConfigurationSource() {
     CorsConfiguration configuration = new CorsConfiguration();
     configuration.setAllowCredentials(true); // 자격증명 허용
-    configuration.setAllowedOrigins(List.of("http://localhost:3000"));
+    configuration.setAllowedOrigins(List.of("http://localhost:3000", "https://deepdiview.vercel.app"));
     //configuration.setAllowedOriginPatterns(List.of("*"));
     configuration.addAllowedHeader("*"); // 모든 헤더
     configuration.addAllowedMethod("GET, POST, PUT, DELETE");
