@@ -28,15 +28,21 @@ public class MovieController {
 
   @Operation(summary = "영화 제목으로 상세정보 조회", description = "특정 단어가 포함되어 있는 영화들의 세부정보를 반환합니다. 띄어쓰기를 무시하고도 조회가 됩니다.")
   @GetMapping("/search/list")
-  public ResponseEntity<List<MovieDTO>> getMoviesByTitle(@RequestParam("title") String title) {
-    List<MovieDTO> movies = movieService.searchMoviesByTitle(title);
+  public ResponseEntity<List<MovieDTO>> getMoviesByTitle(
+      @RequestParam("title") String title,
+      @RequestParam(value = "certifiedFilter", required = false, defaultValue = "false") Boolean certifiedFilter
+      ) {
+    List<MovieDTO> movies = movieService.searchMoviesByTitle(title, certifiedFilter);
     return ResponseEntity.ok(movies);
   }
 
   @Operation(summary = "특정 영화 상세정보 조회", description = "tmdb에서 제공하는 id값(tmdbId)을 넣어야 조회됩니다.")
   @GetMapping("/{movieId}")
-  public ResponseEntity<MovieDTO> getMovieDetail(@PathVariable Long movieId) {
-    MovieDTO movieDetails = movieService.getMovieDetailsById(movieId);
+  public ResponseEntity<MovieDTO> getMovieDetail(
+      @PathVariable Long movieId,
+      @RequestParam(value = "certifiedFilter", required = false, defaultValue = "false") Boolean certifiedFilter
+      ) {
+    MovieDTO movieDetails = movieService.getMovieDetailsById(movieId, certifiedFilter);
     return ResponseEntity.ok(movieDetails);
   }
 }
