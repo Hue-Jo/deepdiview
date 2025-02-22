@@ -131,12 +131,20 @@ public class ReviewService {
    * @param tmdbId
    */
   @Transactional(readOnly = true)
-  public Page<ReviewResponseDTO> getReviewByMovieId(Long tmdbId, Pageable pageable) {
+  public Page<ReviewResponseDTO> getReviewByMovieId(Long tmdbId, Pageable pageable, Boolean certifiedFilter) {
     log.info("특정 영화의 리뷰 조회 시도");
     Movie movie = movieRepository.findByTmdbId(tmdbId)
         .orElseThrow(() -> new DeepdiviewException(ErrorCode.MOVIE_NOT_FOUND));
 
-    Page<Review> reviews = reviewRepository.findByMovie(movie, pageable);
+    Page<Review> reviews;
+
+    if (certifiedFilter) {
+      log.info("인증된 리뷰만 조회");
+      reviews = reviewRepository.findByMovieAndCertifiedTrue(movie, pageable);
+    } else {
+      log.info("모든 리뷰 조회");
+      reviews = reviewRepository.findByMovie(movie, pageable);
+    }
 
     log.info("특정 영화의 리뷰 조회 완료");
     return reviews.map(this::convertToResponseDto);
@@ -165,13 +173,21 @@ public class ReviewService {
    * @return
    */
   @Transactional(readOnly = true)
-  public Page<ReviewResponseDTO> getReviewsByUserId(Long userId, Pageable pageable) {
+  public Page<ReviewResponseDTO> getReviewsByUserId(Long userId, Pageable pageable, Boolean certifiedFilter) {
     log.info("특정 사용자의 리뷰 내역 조회 요청");
     userService.getLoginUser();
 
-    Page<Review> reviews = reviewRepository.findByUser_Id(userId, pageable);
-    log.info("특정 사용자의 리뷰 내역 조회 성공");
+    Page<Review> reviews;
 
+    if (certifiedFilter) {
+      log.info("특정 사용자의 인증된 리뷰만 조회");
+      reviews = reviewRepository.findByUser_IdAndCertifiedTrue(userId, pageable);
+    } else {
+      log.info("특정 사용자의 모든 리뷰 조회");
+      reviews = reviewRepository.findByUser_Id(userId, pageable);
+    }
+
+    log.info("특정 사용자의 리뷰 내역 조회 성공");
     return reviews.map(this::convertToResponseDto);
 
   }

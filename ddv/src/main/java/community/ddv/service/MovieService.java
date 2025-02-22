@@ -52,7 +52,7 @@ public class MovieService {
    * 영화 제목으로 해당 영화의 세부정보 조회 _ 공백 무시 가능 & 특정 글자가 포함되는 조회됨 & 넷플 인기도 순 정렬
    * @param title
    */
-  public List<MovieDTO> searchMoviesByTitle(String title) {
+  public List<MovieDTO> searchMoviesByTitle(String title, Boolean certifiedFilter) {
     try {
       List<Movie> movies = movieRepository.findByTitleFlexible(title);
       if (movies.isEmpty()) {
@@ -61,7 +61,7 @@ public class MovieService {
       return movies.stream()
           .map(movie -> {
             Pageable pageable = PageRequest.of(0, 5, Sort.by(Direction.DESC, "createdAt"));
-            Page<ReviewResponseDTO> reviews = reviewService.getReviewByMovieId(movie.getTmdbId(), pageable);
+            Page<ReviewResponseDTO> reviews = reviewService.getReviewByMovieId(movie.getTmdbId(), pageable, certifiedFilter);
             return convertToDTOwithReviews(movie, reviews.getContent());
           })
           .collect(Collectors.toList());
@@ -74,11 +74,11 @@ public class MovieService {
    * 특정 영화 id로 해당 영화의 세부정보 조회
    * @param tmdbId
    */
-  public MovieDTO getMovieDetailsById(Long tmdbId) {
+  public MovieDTO getMovieDetailsById(Long tmdbId, Boolean certifiedFilter) {
     Movie movie = movieRepository.findByTmdbId(tmdbId)
         .orElseThrow(() -> new DeepdiviewException(ErrorCode.MOVIE_NOT_FOUND));
     Pageable pageable = PageRequest.of(0, 5, Sort.by(Direction.DESC, "createdAt"));
-    Page<ReviewResponseDTO> reviews = reviewService.getReviewByMovieId(tmdbId, pageable);
+    Page<ReviewResponseDTO> reviews = reviewService.getReviewByMovieId(tmdbId, pageable, certifiedFilter);
     return convertToDTOwithReviews(movie, reviews.getContent());
   }
 

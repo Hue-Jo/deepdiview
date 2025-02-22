@@ -22,6 +22,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
@@ -65,8 +66,9 @@ public class ReviewController {
   @GetMapping("/movie/{tmdbId}")
   public ResponseEntity<Page<ReviewResponseDTO>> getReviewsByMovieId(
       @PathVariable Long tmdbId,
+      @RequestParam(value = "certifiedFilter", required = false, defaultValue = "false") Boolean certifiedFilter,
       @PageableDefault(size = 20, sort = "createdAt", direction = Direction.DESC) Pageable pageable) {
-    Page<ReviewResponseDTO> reviews = reviewService.getReviewByMovieId(tmdbId, pageable);
+    Page<ReviewResponseDTO> reviews = reviewService.getReviewByMovieId(tmdbId, pageable, certifiedFilter);
     return ResponseEntity.ok(reviews);
   }
 

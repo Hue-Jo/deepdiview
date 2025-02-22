@@ -133,8 +133,9 @@ public class UserController {
   @GetMapping("{userId}/reviews")
   public ResponseEntity<Page<ReviewResponseDTO>> getReviewsByUserId(
       @PathVariable Long userId,
+      @RequestParam(value = "certifiedFilter", required = false, defaultValue = "false") Boolean certifiedFilter,
       @PageableDefault(size = 20, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable) {
-    Page<ReviewResponseDTO> reviews = reviewService.getReviewsByUserId(userId, pageable);
+    Page<ReviewResponseDTO> reviews = reviewService.getReviewsByUserId(userId, pageable, certifiedFilter);
     return ResponseEntity.ok(reviews);
   }
 
