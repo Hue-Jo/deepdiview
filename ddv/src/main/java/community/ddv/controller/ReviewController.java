@@ -81,7 +81,7 @@ public class ReviewController {
   }
 
   @Operation(summary = "최신 리뷰 3개 조회")
-  @GetMapping("/reviews/latest")
+  @GetMapping("/latest")
   public ResponseEntity<List<ReviewResponseDTO>> getLatestReviews() {
     return ResponseEntity.ok(reviewService.getLatestReviews());
   }
