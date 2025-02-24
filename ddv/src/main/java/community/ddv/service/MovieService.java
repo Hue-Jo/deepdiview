@@ -31,6 +31,7 @@ public class MovieService {
   public List<MovieDTO> getTop20Movies() {
     Pageable pageable = PageRequest.of(0, 20);
     Page<Movie> top20Movies = movieRepository.findTop20ByOrderByPopularityDesc(pageable);
+    log.info("인기도 탑20 영화 조회 성공");
     return top20Movies.stream()
         .map(this::convertToDTO)
         .collect(Collectors.toList());
@@ -42,6 +43,7 @@ public class MovieService {
   public List<MovieDTO> getTop5Movies() {
     Pageable pageable = PageRequest.of(0, 5);
     Page<Movie> top5Movies = movieRepository.findTop5ByOrderByPopularityDesc(pageable);
+    log.info("인기도 탑5 영화 조회 성공");
     return top5Movies.stream()
         .map(this::convertToDTO)
         .collect(Collectors.toList());
@@ -58,6 +60,7 @@ public class MovieService {
       if (movies.isEmpty()) {
         throw new DeepdiviewException(ErrorCode.MOVIE_NOT_FOUND);
       }
+      log.info("영화 제목으로 영화의 세부정보 조회 성공");
       return movies.stream()
           .map(movie -> {
             Pageable pageable = PageRequest.of(0, 5, Sort.by(Direction.DESC, "createdAt"));
@@ -79,6 +82,7 @@ public class MovieService {
         .orElseThrow(() -> new DeepdiviewException(ErrorCode.MOVIE_NOT_FOUND));
     Pageable pageable = PageRequest.of(0, 5, Sort.by(Direction.DESC, "createdAt"));
     Page<ReviewResponseDTO> reviews = reviewService.getReviewByMovieId(tmdbId, pageable, certifiedFilter);
+    log.info("영화Id로 영화의 세부정보 조회 성공");
     return convertToDTOwithReviews(movie, reviews.getContent());
   }
 
