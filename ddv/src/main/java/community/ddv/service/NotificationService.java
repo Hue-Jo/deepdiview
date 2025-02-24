@@ -14,11 +14,13 @@ import java.time.LocalDateTime;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class NotificationService {
 
   // SSE 연결을 저장할 Map
@@ -32,6 +34,7 @@ public class NotificationService {
    */
   public SseEmitter subscribe(Long userId) {
 
+    log.info("SSE 구독 시작 : userId = {}", userId);
     // 이미 구독중이면 기존 emitter 반환
     if (userEmitters.containsKey(userId)) {
       //emitter.complete(); 기존에 연결된 게 있으면 종료 처리
@@ -39,14 +42,20 @@ public class NotificationService {
     }
 
     SseEmitter emitter = new SseEmitter(3 * 60 * 1000L); // 3 * 60 초 (타임아웃 3분)
-
+    log.debug("새 SSE Emitter 생성 : 타임아웃 = 3분");
     // 새 연결 저장
     userEmitters.put(userId, emitter);
+    log.info("새 SSE 연결 저장");
 
     // 연결 종료시 emitter 제거
-    emitter.onCompletion(() -> userEmitters.remove(userId));
-    emitter.onTimeout(() -> userEmitters.remove(userId));
-
+    emitter.onCompletion(() -> {
+      log.info("SSE 연결 완료: userId = {}", userId);
+      userEmitters.remove(userId);
+    });
+    emitter.onTimeout(() -> {
+      log.info("SSE 연결 타임아웃: userId = {}", userId);
+      userEmitters.remove(userId);
+    });
     return emitter;
   }
 
@@ -61,9 +70,13 @@ public class NotificationService {
     if (emitter != null) {
       try {
         emitter.send(notificationDTO);
+        log.info("알림 전송 성공 : userId = {}", userId);
       } catch (IOException e) {
+        log.info("알림 전송 실패 : userId = {}", userId);
         emitter.completeWithError(e);
       }
+    } else {
+      log.warn("해당 사용자에게 SSE Emitter가 존재하지 않습니다.");
     }
   }
 
@@ -73,6 +86,7 @@ public class NotificationService {
    * @param reviewId
    */
   public void commentAdded(Long userId, Long reviewId) {
+    log.info("댓글 추가 알림 생성 시작: userId = {}, reviewId = {}", userId, reviewId);
     User user = userRepository.findById(userId)
         .orElseThrow(() -> new DeepdiviewException(ErrorCode.USER_NOT_FOUND));
 
@@ -98,6 +112,7 @@ public class NotificationService {
    * @param status
    */
   public void certificateResult(Long userId, CertificationStatus status) {
+    log.info("인증 결과 알림 생성 시작: userId = {}, status = {}", userId, status);
     User user = userRepository.findById(userId)
         .orElseThrow(() -> new DeepdiviewException(ErrorCode.USER_NOT_FOUND));
 

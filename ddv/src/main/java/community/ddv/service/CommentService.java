@@ -31,6 +31,7 @@ public class CommentService {
 
     log.info("댓글 작성 요청");
     User user = userService.getLoginUser();
+    log.info("댓글 작성자 : {}", user.getId());
 
     Review review = reviewRepository.findById(reviewId)
         .orElseThrow(() -> new DeepdiviewException(ErrorCode.REVIEW_NOT_FOUND));
@@ -44,7 +45,10 @@ public class CommentService {
 
     Comment newComment = commentRepository.save(comment);
     log.info("댓글 작성 완료");
+
     notificationService.commentAdded(user.getId(), reviewId);
+    log.info("댓글이 달렸다는 알림 전송 완료 ");
+
     return convertToCommentResponse(newComment);
   }
 
@@ -61,6 +65,7 @@ public class CommentService {
     Comment comment = commentRepository.findById(commentId)
         .orElseThrow(() -> new DeepdiviewException(ErrorCode.COMMENT_NOT_FOUND));
 
+    // 댓글 작성자만 수정 가능
     if (!comment.getUser().getId().equals(user.getId())) {
       throw new DeepdiviewException(ErrorCode.INVALID_USER);
     }
@@ -84,6 +89,7 @@ public class CommentService {
     Comment comment = commentRepository.findById(commentId)
         .orElseThrow(() -> new DeepdiviewException(ErrorCode.COMMENT_NOT_FOUND));
 
+    // 댓글 작성자만 삭제 가능
     if (!comment.getUser().getId().equals(user.getId())) {
       throw new DeepdiviewException(ErrorCode.INVALID_USER);
     }
@@ -98,7 +104,7 @@ public class CommentService {
 
   @Transactional(readOnly = true)
   public Page<CommentResponseDto> getCommentsByReviewId(Long reviewId, Pageable pageable) {
-    log.info("댓글 조회 요청");
+    log.info("리뷰별 댓글 조회 요청");
     userService.getLoginUser();
 
     Review review = reviewRepository.findById(reviewId)

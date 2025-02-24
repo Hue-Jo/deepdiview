@@ -42,6 +42,7 @@ public class CertificationService {
 
     // 이미 인증 승인을 받은 경우, 중복 인증 불가
     if (certificationRepository.existsByUser_IdAndStatus(user.getId(), CertificationStatus.APPROVED)) {
+      log.warn("이미 승인을 받은 사용자입니다.");
       throw new DeepdiviewException(ErrorCode.ALREADY_APPROVED);
     }
 
@@ -73,10 +74,12 @@ public class CertificationService {
    * @param pageable
    */
   public Page<CertificationResponseDto> getCertificationsByStatus(CertificationStatus status, Pageable pageable) {
+    log.info("관리자의 인증 목록 조회 시작");
     userService.getLoginUser();
 
     if (status == null) {
       // 전체 조회
+      log.info("인증 전체 조회");
       return certificationRepository.findAll(pageable)
           .map(certification -> CertificationResponseDto.builder()
               .id(certification.getId())
@@ -88,6 +91,7 @@ public class CertificationService {
               .build());
     } else {
       // 인증 상태에 따른 조회
+      log.info("인증 상태에 따른 조회");
       return certificationRepository.findByStatus(status, pageable)
           .map(certification -> CertificationResponseDto.builder()
               .id(certification.getId())
@@ -107,10 +111,12 @@ public class CertificationService {
    * @return
    */
   public CertificationResponseDto getCertification(Long certificationId) {
+    log.info("특정 인증 정보 조회 시작(인증 이미지 확인)");
     userService.getLoginUser();
     Certification certification = certificationRepository.findById(certificationId)
         .orElseThrow(() -> new DeepdiviewException(ErrorCode.CERTIFICATION_NOT_FOUND));
 
+    log.info("특정 인증 정보 조회 성공(인증 이미지 확인 완료)");
     return CertificationResponseDto.builder()
         .id(certificationId)
         .userId(certification.getUser().getId())
@@ -128,20 +134,25 @@ public class CertificationService {
    * @param rejectionReason
    */
   public void proceedCertification(Long certificationId, boolean approve, RejectionReason rejectionReason) {
+    log.info("인증 처리 시작");
     userService.getLoginUser();
 
     Certification certification = certificationRepository.findById(certificationId)
         .orElseThrow(() -> new DeepdiviewException(ErrorCode.CERTIFICATION_NOT_FOUND));
-    log.info("인증 상태 : {}", certification.getStatus());
+    log.info("현재 인증 상태 : {}", certification.getStatus());
 
     if (approve) {
       certification.setStatus(CertificationStatus.APPROVED, null);
+      log.info("인증 승인");
     } else {
       certification.setStatus(CertificationStatus.REJECTED, rejectionReason);
+      log.info("인증 거절 : 거절 사유 = {}", rejectionReason);
     }
     log.info("인증 상태 변경 : {}", certification.getStatus());
     certificationRepository.save(certification);
+
     notificationService.certificateResult(certification.getUser().getId(), certification.getStatus());
+    log.info("인증 결과 알림 전송");
 
   }
 

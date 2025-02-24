@@ -82,7 +82,6 @@ public class VoteService {
     // 투표 종료일 : 토요일 23시 59분 59초
     //LocalDateTime endDate = now.with(TemporalAdjusters.next(DayOfWeek.SATURDAY))
     //    .withHour(23).withMinute(59).withSecond(59);
-
     // 테스트용
     LocalDateTime endDate = now.plusDays(1).with(LocalTime.MIDNIGHT);
 
@@ -93,11 +92,9 @@ public class VoteService {
 
     Vote vote = Vote.builder()
         .title("다음주의 영화를 선택해주세요")
-        //.movies(selectedMovies)
 
         // 테스트용
         .startDate(now)
-
         //.startDate(startDate)
         .endDate(endDate)
         .voteMovies(new ArrayList<>())
@@ -141,7 +138,6 @@ public class VoteService {
 
     log.info("투표 선택지 조회 완료");
     return new VoteOptionsDto(tmdbIds);
-//    return new VoteCreatedDTO(activatingVote);
   }
 
   /**
@@ -178,9 +174,6 @@ public class VoteService {
     }
 
     // 영화 선택
-//    Movie selectedMovie = movieRepository.findByTmdbId(voteParticipationRequestDto.getTmdbId())
-//        .orElseThrow(() -> new DeepdiviewException(ErrorCode.MOVIE_NOT_FOUND));
-
     VoteMovie selectedVotedMovie = vote.getVoteMovies().stream()
         .filter(voteMovie -> voteMovie.getMovie().getTmdbId()
             .equals(voteParticipationRequestDto.getTmdbId()))
