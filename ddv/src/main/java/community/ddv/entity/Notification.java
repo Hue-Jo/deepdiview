@@ -12,12 +12,14 @@ import jakarta.persistence.ManyToOne;
 import java.time.LocalDateTime;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 @Entity
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
+@Getter
 public class Notification {
 
   @Id
@@ -29,10 +31,6 @@ public class Notification {
 
   @Enumerated(EnumType.STRING)
   private NotificationType notificationType; // 알림 타입/메시지
-
-  public String getNotificationType() {
-    return notificationType.getMessage();
-  }
 
   private boolean isRead; // 확인 여부
 
