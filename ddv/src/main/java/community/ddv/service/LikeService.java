@@ -7,7 +7,6 @@ import community.ddv.entity.User;
 import community.ddv.exception.DeepdiviewException;
 import community.ddv.repository.LikeRepository;
 import community.ddv.repository.ReviewRepository;
-import community.ddv.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -20,12 +19,12 @@ public class LikeService {
 
   private final LikeRepository likeRepository;
   private final ReviewRepository reviewRepository;
-  private final UserRepository userRepository;
   private final UserService userService;
+  private final NotificationService notificationService;
 
   @Transactional
   public void toggleLike(Long reviewId) {
-    User user = userService.getLoginUser();
+    User user = userService.getLoginUser(); // 좋아요 누르는 사람
     Review review = reviewRepository.findById(reviewId)
         .orElseThrow(() -> new DeepdiviewException(ErrorCode.REVIEW_NOT_FOUND));
 
@@ -48,6 +47,9 @@ public class LikeService {
       review.setLikeCount(review.getLikeCount() + 1);
       reviewRepository.save(review);
       log.info("졸아요 성공 (좋아요 +1)");
+
+      notificationService.likeAdded(user.getId(), review.getId());
+      log.info("좋아요가 달렸다는 알림 전송 완료");
     }
   }
 
