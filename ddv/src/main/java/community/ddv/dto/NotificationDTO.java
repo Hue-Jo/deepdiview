@@ -1,6 +1,5 @@
 package community.ddv.dto;
 
-import java.time.LocalDateTime;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 

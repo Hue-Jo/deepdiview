@@ -7,11 +7,12 @@ import community.ddv.dto.NotificationDTO;
 import community.ddv.dto.NotificationResponseDTO;
 import community.ddv.entity.Certification;
 import community.ddv.entity.Notification;
+import community.ddv.entity.Review;
 import community.ddv.entity.User;
 import community.ddv.exception.DeepdiviewException;
 import community.ddv.repository.CertificationRepository;
 import community.ddv.repository.NotificationRepository;
-import community.ddv.repository.UserRepository;
+import community.ddv.repository.ReviewRepository;
 import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -30,10 +31,10 @@ public class NotificationService {
 
   // SSE 연결을 저장할 Map
   private final Map<Long, SseEmitter> userEmitters = new ConcurrentHashMap<>();
-  private final UserRepository userRepository;
   private final UserService userService;
   private final NotificationRepository notificationRepository;
   private final CertificationRepository certificationRepository;
+  private final ReviewRepository reviewRepository;
 
   /**
    * SSE 구독 메서드
@@ -103,20 +104,28 @@ public class NotificationService {
 
   /**
    * 리뷰에 댓글이 달렸을 때의 알람
-   * @param userId
+   * @param commenterId
    * @param reviewId
    */
-  public void commentAdded(Long userId, Long reviewId) {
-    log.info("댓글 추가 알림 생성 시작: userId = {}, reviewId = {}", userId, reviewId);
-    User user = userRepository.findById(userId)
-        .orElseThrow(() -> new DeepdiviewException(ErrorCode.USER_NOT_FOUND));
+  public void commentAdded(Long commenterId, Long reviewId) {
+    log.info("댓글 추가 알림 생성 시작: reviewId = {}", reviewId);
+
+    Review review = reviewRepository.findById(reviewId)
+        .orElseThrow(() -> new DeepdiviewException(ErrorCode.REVIEW_NOT_FOUND));
+
+    User reviewer = review.getUser(); // 리뷰 작성자 (댓글 알림 받는 사람)
+
+    if (commenterId.equals(reviewer.getId())) {
+      log.info("자신의 리뷰에 댓글 작성 - 알림 X");
+      return;
+    }
 
     NotificationDTO notificationDTO = new NotificationDTO(
         NotificationType.COMMENT_ADDED.getMessage(), reviewId
     );
 
     Notification notification = Notification.builder()
-        .user(user)
+        .user(reviewer)
         .notificationType(NotificationType.COMMENT_ADDED)
         .isRead(false)
         .createdAt(LocalDateTime.now())
@@ -124,8 +133,43 @@ public class NotificationService {
 
     notificationRepository.save(notification);
 
-    sendNotification(userId, notificationDTO);
+    sendNotification(reviewer.getId(), notificationDTO);
   }
+
+
+  /**
+   * 좋아요 알림
+   * @param reviewId
+   */
+  public void likeAdded(Long likerId, Long reviewId) {
+    log.info("좋아요 알림 생성 시작");
+
+    Review review = reviewRepository.findById(reviewId)
+        .orElseThrow(() -> new DeepdiviewException(ErrorCode.REVIEW_NOT_FOUND));
+
+    User reviewer = review.getUser(); // 리뷰 작성자 (좋아요 알림 받는 사람)
+
+    if (likerId.equals(reviewer.getId())) {
+      log.info("자신의 리뷰에 좋아요 - 알림 X");
+      return;
+    }
+
+    NotificationDTO notificationDTO = new NotificationDTO(
+        NotificationType.LIKE_ADDED.getMessage(), reviewId
+    );
+
+    Notification notification = Notification.builder()
+        .user(reviewer)
+        .notificationType(NotificationType.LIKE_ADDED)
+        .isRead(false)
+        .createdAt(LocalDateTime.now())
+        .build();
+
+    notificationRepository.save(notification);
+
+    sendNotification(reviewer.getId(), notificationDTO);
+  }
+
 
   /**
    * 인증상태가 변경되었을 때의 알림
