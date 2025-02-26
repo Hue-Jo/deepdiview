@@ -151,7 +151,7 @@ public class CertificationService {
     log.info("인증 상태 변경 : {}", certification.getStatus());
     certificationRepository.save(certification);
 
-    notificationService.certificateResult(certification.getUser().getId(), certification.getStatus());
+    notificationService.certificateResult(certification.getId(), certification.getStatus());
     log.info("인증 결과 알림 전송");
 
   }

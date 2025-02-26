@@ -37,7 +37,8 @@ public enum ErrorCode {
   IMAGE_FILE_ONLY("이미지 파일(jpg, jpeg, png, gif)만 업로드 가능합니다.", HttpStatus.BAD_REQUEST),
   VOTE_RESULT_NOT_FOUND("투표 결과가 존재하지 않습니다.", HttpStatus.NOT_FOUND),
   NOT_CERTIFIED_YET("토론 작성 권한이 없습니다. 인증을 먼저 완료해주세요", HttpStatus.UNAUTHORIZED),
-  INVALID_REVIEW_PERIOD("토론 작성 기간이 아닙니다. 다음 주에 새로운 영화로 만나요", HttpStatus.BAD_REQUEST);
+  INVALID_REVIEW_PERIOD("토론 작성 기간이 아닙니다. 다음 주에 새로운 영화로 만나요", HttpStatus.BAD_REQUEST),
+  NOTIFICATION_NOT_FOUND("존재하지 않는 알람입니다.", HttpStatus.NOT_FOUND);
 
 
   private final String description;

@@ -9,6 +9,6 @@ import lombok.Getter;
 public class NotificationDTO {
 
   private String message;
-  private Long relatedId;
+  private Long relatedId; // 댓글이 달린 리뷰 ID , 인증 ID
 
 }
