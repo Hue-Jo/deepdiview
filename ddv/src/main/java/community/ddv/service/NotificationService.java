@@ -5,9 +5,11 @@ import community.ddv.constant.ErrorCode;
 import community.ddv.constant.NotificationType;
 import community.ddv.dto.NotificationDTO;
 import community.ddv.dto.NotificationResponseDTO;
+import community.ddv.entity.Certification;
 import community.ddv.entity.Notification;
 import community.ddv.entity.User;
 import community.ddv.exception.DeepdiviewException;
+import community.ddv.repository.CertificationRepository;
 import community.ddv.repository.NotificationRepository;
 import community.ddv.repository.UserRepository;
 import java.io.IOException;
@@ -31,6 +33,7 @@ public class NotificationService {
   private final UserRepository userRepository;
   private final UserService userService;
   private final NotificationRepository notificationRepository;
+  private final CertificationRepository certificationRepository;
 
   /**
    * SSE 구독 메서드
@@ -126,13 +129,16 @@ public class NotificationService {
 
   /**
    * 인증상태가 변경되었을 때의 알림
-   * @param userId
+   * @param certificationId
    * @param status
    */
-  public void certificateResult(Long userId, CertificationStatus status) {
-    log.info("인증 결과 알림 생성 시작: userId = {}, status = {}", userId, status);
-    User user = userRepository.findById(userId)
-        .orElseThrow(() -> new DeepdiviewException(ErrorCode.USER_NOT_FOUND));
+  public void certificateResult(Long certificationId, CertificationStatus status) {
+    log.info("인증 결과 알림 생성 시작");
+
+    Certification certification = certificationRepository.findById(certificationId)
+        .orElseThrow(() -> new DeepdiviewException(ErrorCode.CERTIFICATION_NOT_FOUND));
+
+    User user = certification.getUser();
 
     String message = "";
     if (status == CertificationStatus.APPROVED) {
@@ -141,7 +147,7 @@ public class NotificationService {
       message = "인증이 거절되었습니다.";
     }
 
-    NotificationDTO notificationDTO = new NotificationDTO(message, userId);
+    NotificationDTO notificationDTO = new NotificationDTO(message, certificationId);
 
     Notification notification = Notification.builder()
         .user(user)
@@ -151,7 +157,7 @@ public class NotificationService {
         .build();
 
     notificationRepository.save(notification);
-    sendNotification(userId, notificationDTO);
+    sendNotification(user.getId(), notificationDTO);
   }
 
   // 알림 목록 조회
