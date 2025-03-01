@@ -19,11 +19,11 @@
 - [TMDB](https://api.themoviedb.org/3/discover/movie?include_adult=true&include_video=false&language=ko&sort_by=primary_release_date.desc&watch_region=KR&with_watch_providers=8)
 
 ### ERD
-![Image](https://github.com/user-attachments/assets/2a7178a7-3be0-4038-bb7c-248306981156)
+![Image](https://github.com/user-attachments/assets/c0e630c3-e5b8-468e-a9c7-616094fec689)
 
 <details>
   <summary> 상세 ERD </summary>
-https://github.com/user-attachments/assets/3a587987-55d2-4161-a199-a16051d9a44c
+https://github.com/user-attachments/assets/2fb44e2c-1933-46a7-97aa-bce45052a3eb
 </details>
 
 ---
