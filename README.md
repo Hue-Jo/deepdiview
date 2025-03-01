@@ -18,7 +18,16 @@
 ### 사용 오픈 API
 - [TMDB](https://api.themoviedb.org/3/discover/movie?include_adult=true&include_video=false&language=ko&sort_by=primary_release_date.desc&watch_region=KR&with_watch_providers=8)
 
+### ERD
+![Image](https://github.com/user-attachments/assets/0f056c2b-73e6-400a-a30a-c13faf37caa4)
+
+<details>
+  <summary> 상세 ERD </summary>
+https://github.com/user-attachments/assets/d3e371d5-d93e-41f9-94f6-cf885f38626e
+</details>
+
 ---
+
 ## 🎯 프로젝트 목적 
 - 단순한 영화 리뷰를 넘어, 감상 인증을 거친 신뢰도 높은 영화 커뮤니티 구축
 - 투표, 인증, 리뷰(토론)을 통해 영화에 대한 깊이 있는 상호작용 유도 
