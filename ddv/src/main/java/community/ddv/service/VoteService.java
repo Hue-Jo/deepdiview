@@ -62,13 +62,13 @@ public class VoteService {
 
     // 투표 생성은 일요일만 가능, 한 주에 한 번만 가능
     LocalDateTime now = LocalDateTime.now();
-    if (now.getDayOfWeek() != DayOfWeek.SUNDAY) {
+    if (now.getDayOfWeek() != DayOfWeek.MONDAY) {
       log.error("투표 생성은 일요일만 가능합니다.");
       throw new DeepdiviewException(ErrorCode.INVALID_VOTE_CREAT_DATE);
     }
 
     // 이번주에 이미 생성된 투표가 있는지 확인
-    LocalDateTime weekStart = now.with(DayOfWeek.SUNDAY).with(LocalTime.MIN);
+    LocalDateTime weekStart = now.with(DayOfWeek.MONDAY).with(LocalTime.MIN);
     LocalDateTime weekEnd = now.with(DayOfWeek.SATURDAY).with(LocalTime.MAX);
     boolean voteAlreadyExists = voteRepository.existsByStartDateBetween(weekStart, weekEnd);
     if (voteAlreadyExists) {
@@ -251,18 +251,19 @@ public class VoteService {
    */
   @Transactional(readOnly = true)
   public Long getLastWeekTopVoteMovie() {
+
     LocalDateTime now = LocalDateTime.now();
 //    LocalDateTime lastWeekStart = now.minusWeeks(1).with(DayOfWeek.MONDAY).with((LocalTime.MIN));
 //    LocalDateTime lastWeekEnd = now.minusWeeks(1).with(DayOfWeek.SATURDAY).with((LocalTime.MAX));
 //    Vote lastWeekVote = voteRepository.findByStartDateBetween(lastWeekStart, lastWeekEnd)
-
-    //테스트용
-    LocalDateTime lastStart = now.minusMinutes(10);
-    Vote lastWeekVote = voteRepository.findByStartDateBetween(lastStart, now)
-        .orElseThrow(() -> new DeepdiviewException(ErrorCode.VOTE_NOT_FOUND));
-
 //    Vote lastWeekVote = voteRepository.findByStartDateBetween(lastWeekStart, lastWeekEnd)
 //        .orElseThrow(() -> new DeepdiviewException(ErrorCode.VOTE_RESULT_NOT_FOUND));
+
+    //테스트용
+    //LocalDateTime lastStart = now.minusMinutes(10);
+    LocalDateTime lastStart = now.minusHours(6);
+    Vote lastWeekVote = voteRepository.findByStartDateBetween(lastStart, now)
+        .orElseThrow(() -> new DeepdiviewException(ErrorCode.VOTE_NOT_FOUND));
 
     VoteResultDTO voteResults = getVoteResult(lastWeekVote.getId());
 
