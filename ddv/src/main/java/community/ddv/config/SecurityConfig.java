@@ -39,7 +39,8 @@ public class SecurityConfig {
       "/api/fetch/genres",
       "/api/fetch/movies",
       "/api/movies/**",
-      "/api/discussions/is-sunday"
+      "/api/discussions/is-sunday",
+      "/api/discussions/this-week-movie "
   };
 
   @Bean
@@ -71,7 +72,6 @@ public class SecurityConfig {
     CorsConfiguration configuration = new CorsConfiguration();
     configuration.setAllowCredentials(true); // 자격증명 허용
     configuration.setAllowedOrigins(List.of("http://localhost:3000", "https://deepdiview.vercel.app"));
-    //configuration.setAllowedOriginPatterns(List.of("*"));
     configuration.addAllowedHeader("*"); // 모든 헤더
     configuration.addAllowedMethod("GET, POST, PUT, DELETE");
 
