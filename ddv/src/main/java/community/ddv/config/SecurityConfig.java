@@ -40,7 +40,7 @@ public class SecurityConfig {
       "/api/fetch/movies",
       "/api/movies/**",
       "/api/discussions/is-sunday",
-      "/api/discussions/this-week-movie "
+      "/api/discussions/this-week-movie"
   };
 
   @Bean
