@@ -74,7 +74,10 @@ public class SecurityConfig {
     configuration.setAllowCredentials(true); // 자격증명 허용
     configuration.setAllowedOrigins(List.of("http://localhost:3000", "https://deepdiview.vercel.app"));
     configuration.addAllowedHeader("*"); // 모든 헤더
-    configuration.addAllowedMethod("GET, POST, PUT, DELETE");
+    configuration.addAllowedMethod("GET");
+    configuration.addAllowedMethod("POST");
+    configuration.addAllowedMethod("PUT");
+    configuration.addAllowedMethod("DELETE");
 
     UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
     source.registerCorsConfiguration("/**", configuration);// 모든 경로
