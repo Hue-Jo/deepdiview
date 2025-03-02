@@ -77,13 +77,13 @@ public class VoteService {
     }
 
     // 투표 시작일 : 생성 다음날(월요일) 자정(0시 0분)
-    LocalDateTime startDate = now.plusDays(1).with(LocalTime.MIDNIGHT);
-
+    //LocalDateTime startDate = now.plusDays(1).with(LocalTime.MIDNIGHT);
     // 투표 종료일 : 토요일 23시 59분 59초
     //LocalDateTime endDate = now.with(TemporalAdjusters.next(DayOfWeek.SATURDAY))
     //    .withHour(23).withMinute(59).withSecond(59);
     // 테스트용
-    LocalDateTime endDate = now.plusDays(1).with(LocalTime.MIDNIGHT);
+    LocalDateTime endDate = now.plusMinutes(2);
+    log.info("테스트를 위해 2분으로 투표 종료 시간 조절");
 
 
     // 인기도 탑 5의 영화 세부 정보 가져오기
@@ -95,6 +95,7 @@ public class VoteService {
 
         // 테스트용
         .startDate(now)
+
         //.startDate(startDate)
         .endDate(endDate)
         .voteMovies(new ArrayList<>())
@@ -202,7 +203,6 @@ public class VoteService {
    */
   @Transactional(readOnly = true)
   public VoteResultDTO getVoteResult(Long voteId){
-    userService.getLoginUser();
     log.info("투표 결과 조회 시도");
 
     Vote vote = voteRepository.findById(voteId)
@@ -249,6 +249,7 @@ public class VoteService {
   /**
    * 지난 주 1위 영화 가져오는 메서드
    */
+  @Transactional(readOnly = true)
   public Long getLastWeekTopVoteMovie() {
     LocalDateTime now = LocalDateTime.now();
 //    LocalDateTime lastWeekStart = now.minusWeeks(1).with(DayOfWeek.MONDAY).with((LocalTime.MIN));
@@ -256,12 +257,12 @@ public class VoteService {
 //    Vote lastWeekVote = voteRepository.findByStartDateBetween(lastWeekStart, lastWeekEnd)
 
     //테스트용
-    LocalDateTime lastStart = now.minusDays(1).with(LocalTime.MIN);
-    LocalDateTime lastEnd = now.minusDays(1).with(LocalTime.MAX);
-    Vote lastWeekVote = voteRepository.findByStartDateBetween(lastStart, lastEnd)
+    LocalDateTime lastStart = now.minusMinutes(10);
+    Vote lastWeekVote = voteRepository.findByStartDateBetween(lastStart, now)
+        .orElseThrow(() -> new DeepdiviewException(ErrorCode.VOTE_NOT_FOUND));
 
-//
-        .orElseThrow(() -> new DeepdiviewException(ErrorCode.VOTE_RESULT_NOT_FOUND));
+//    Vote lastWeekVote = voteRepository.findByStartDateBetween(lastWeekStart, lastWeekEnd)
+//        .orElseThrow(() -> new DeepdiviewException(ErrorCode.VOTE_RESULT_NOT_FOUND));
 
     VoteResultDTO voteResults = getVoteResult(lastWeekVote.getId());
 
