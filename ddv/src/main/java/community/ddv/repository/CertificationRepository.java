@@ -19,8 +19,9 @@ public interface CertificationRepository extends JpaRepository<Certification, Lo
   // 특정 영화에 대한 인증
   // boolean existsByUser_IdANdMovie_IdAndStatus(Long userId, Long movieId);
 
+  // ENUM 타입을 NULL로 초기화 하기 위해 네이티브쿼리 사용
   @Modifying
-  @Query("UPDATE Certification c SET c.status = NULL")
+  @Query(value = "UPDATE Certification SET status = NULL, rejection_reason = NULL", nativeQuery = true)
   int resetAllCertifications();
 
   Optional<Certification> findByUser_Id(Long userId);

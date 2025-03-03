@@ -162,14 +162,13 @@ public class CertificationService {
   }
 
   // 인증상태 초기화 (새로운 주가 시작될 때 인증 상태를 null로 초기화)
+  @Transactional
   @Scheduled(cron = "0 0 0 * * MON")
   protected void resetCertificationStatus() {
     LocalDateTime now = LocalDateTime.now();
-    if (now.getDayOfWeek() == DayOfWeek.MONDAY && now.getHour() == 0 && now.getMinute() == 0 && now.getSecond() == 0) {
       log.info("새로운 주가 됨에 따라 인증상태 초기화");
       int resetCount = certificationRepository.resetAllCertifications();
       log.info("초기화된 인증 개수 : {} ", resetCount);
-    }
   }
 
 }
