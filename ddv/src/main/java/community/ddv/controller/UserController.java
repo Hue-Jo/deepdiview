@@ -59,7 +59,7 @@ public class UserController {
   }
 
   @Operation(summary = "로그아웃")
-  @PostMapping("/logout")
+  @DeleteMapping("/logout")
   public ResponseEntity<Void> logout() {
     userService.logout();
     return ResponseEntity.noContent().build();
@@ -77,7 +77,7 @@ public class UserController {
 
   @Operation(summary = "리프레시 토큰으로 엑세스 토큰 재발급")
   @PostMapping("/reissue-access-token")
-  public ResponseEntity<?> reissueAccessToken(@RequestHeader("Authorization") String authorization) {
+  public ResponseEntity<String> reissueAccessToken(@RequestHeader("Authorization") String authorization) {
       // Authorization 헤더에서 'Bearer '를 제외한 리프레시 토큰 추출
     String refreshToken = authorization.replace("Bearer ", "");
 
@@ -114,7 +114,7 @@ public class UserController {
 
   @Operation(summary = "다른 유저 정보 확인", description = "닉네임, 프로필사진, 한줄소개, 리뷰수, 댓글수, 별점 분포")
   @GetMapping("/{userId}")
-  public ResponseEntity<UserInfoDto> getMyInfo(
+  public ResponseEntity<UserInfoDto> getOthersInfo(
       @PathVariable Long userId) {
     UserInfoDto userInfoDto = userService.getOthersInfo(userId);
     return ResponseEntity.ok(userInfoDto);
@@ -140,7 +140,7 @@ public class UserController {
   }
 
   @Operation(summary = "프로필사진 업로드/수정", description = "프로필 사진이 존재하는 경우 수정, 존재하지 않는 경우 새롭게 업로드 됩니다.")
-  @PostMapping("/profile-image")
+  @PutMapping("/profile-image")
   public ResponseEntity<String> uploadProfileImage(
       @RequestParam("file") MultipartFile file) throws IOException {
     String profileImageUrl = userService.updateProfileImage(file);
@@ -148,7 +148,7 @@ public class UserController {
   }
 
   @Operation(summary = "프로필사진 삭제")
-  @DeleteMapping("profile-image")
+  @DeleteMapping("/profile-image")
   public ResponseEntity<Void> deleteProfileImage() throws IOException {
     userService.deleteProfileImage();
     return ResponseEntity.noContent().build();
