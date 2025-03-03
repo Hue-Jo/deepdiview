@@ -105,7 +105,6 @@ public class CommentService {
   @Transactional(readOnly = true)
   public Page<CommentResponseDto> getCommentsByReviewId(Long reviewId, Pageable pageable) {
     log.info("리뷰별 댓글 조회 요청");
-    userService.getLoginUser();
 
     Review review = reviewRepository.findById(reviewId)
         .orElseThrow(() -> new DeepdiviewException(ErrorCode.REVIEW_NOT_FOUND));
