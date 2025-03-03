@@ -10,7 +10,9 @@ import jakarta.validation.Valid;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.domain.Sort.Direction;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
@@ -67,8 +69,20 @@ public class ReviewController {
   public ResponseEntity<Page<ReviewResponseDTO>> getReviewsByMovieId(
       @PathVariable Long tmdbId,
       @RequestParam(value = "certifiedFilter", required = false, defaultValue = "false") Boolean certifiedFilter,
-      @PageableDefault(size = 20, sort = "createdAt", direction = Direction.DESC) Pageable pageable) {
-    Page<ReviewResponseDTO> reviews = reviewService.getReviewByMovieId(tmdbId, pageable, certifiedFilter);
+      @PageableDefault(size = 20) Pageable pageable,
+      @RequestParam(value = "sortBy", required = false, defaultValue = "createdAt") String sortBy,
+      @RequestParam(value = "direction", required = false, defaultValue = "DESC") Direction direction
+  ) {
+
+    Sort sort = "likeCount".equals(sortBy)
+      // 좋아요순으로 정렬 시 동점일 경우 최신순 정렬
+      ? Sort.by(Sort.Order.by("likeCount").with(direction))
+            .and(Sort.by(Sort.Order.by("createdAt").with(direction)))
+      : Sort.by(Sort.Order.by("createdAt").with(direction));
+
+    Pageable sortedPageable = PageRequest.of(pageable.getPageNumber(), pageable.getPageSize(), sort);
+
+    Page<ReviewResponseDTO> reviews = reviewService.getReviewByMovieId(tmdbId, sortedPageable, certifiedFilter);
     return ResponseEntity.ok(reviews);
   }
 
