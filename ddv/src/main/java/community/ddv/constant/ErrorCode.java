@@ -15,6 +15,7 @@ public enum ErrorCode {
   USER_NOT_FOUND("존재하지 않는 사용자입니다.", HttpStatus.NOT_FOUND),
   INVALID_REFRESH_TOKEN("유효하지 않은 토큰입니다.", HttpStatus.BAD_REQUEST),
   MOVIE_NOT_FOUND("존재하지 않는 영화입니다.", HttpStatus.NOT_FOUND),
+  KEYWORD_NOT_FOUND("해당 키워드를 포함하는 영화가 존재하지 않습니다", HttpStatus.NOT_FOUND),
   ALREADY_COMMITED_REVIEW("이미 해당 영화에 대한 리뷰를 작성했습니다. 수정만 가능합니다.", HttpStatus.BAD_REQUEST),
   REVIEW_NOT_FOUND("존재하지 않는 리뷰입니다.", HttpStatus.BAD_REQUEST),
   INVALID_USER("작성자만 가능합니다.", HttpStatus.FORBIDDEN),

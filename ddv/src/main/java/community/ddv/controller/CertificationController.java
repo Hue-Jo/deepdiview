@@ -35,7 +35,7 @@ public class CertificationController {
     return ResponseEntity.ok(certificationService.submitCertification(file));
   }
 
-  @Operation(summary = "인증 목록 조회", description = "관리자 전용 - 보류, 승인, 거절 필터링 가능 | 한 페이지당 10개씩 반환 ㅣ 인증요청을 한 순서대로 정렬됩니다.")
+  @Operation(summary = "인증 목록 조회", description = "관리자 전용 - 보류, 승인, 거절 필터링 가능 | 한 페이지당 10개씩 반환 ㅣ 인증요청을 한 지 오래된 순서대로 정렬됩니다.")
   @GetMapping("/admin")
   public ResponseEntity<Page<CertificationResponseDto>> getPendingCertifications(
       @RequestParam(required = false) CertificationStatus status,
@@ -53,7 +53,7 @@ public class CertificationController {
     return ResponseEntity.status(HttpStatus.OK).body(certification);
   }
 
-  @Operation(summary = "인증 승인/거절", description = "관리자 전용. 승인 : true / 거절 : false")
+  @Operation(summary = "인증 승인/거절", description = "관리자 전용 - 승인 : true / 거절 : false | 거절시 rejectionReason: OTHER_MOVIE_IMAGE, WRONG_IMAGE, UNIDENTIFIABLE_IMAGE")
   @PostMapping("/admin/proceeding/{certificationId}")
   public ResponseEntity<Void> proceedCertification(
       @PathVariable Long certificationId,

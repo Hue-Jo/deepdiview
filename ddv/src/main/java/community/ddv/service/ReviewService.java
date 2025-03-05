@@ -38,7 +38,7 @@ public class ReviewService {
   public ReviewResponseDTO createReview(ReviewDTO reviewDTO) {
 
     User user = userService.getLoginUser();
-    log.info("리뷰 작성 시도, 유저: {}");
+    log.info("리뷰 작성 시도 - 유저 ID : {}, 영화 TMDB ID : {}", user.getId(), reviewDTO.getTmdbId());
 
     Movie movie = movieRepository.findByTmdbId(reviewDTO.getTmdbId())
         .orElseThrow(() -> new DeepdiviewException(ErrorCode.MOVIE_NOT_FOUND));
@@ -60,7 +60,7 @@ public class ReviewService {
         .build();
 
     Review savedReview = reviewRepository.save(review);
-    log.info("리뷰 작성 성공");
+    log.info("리뷰 작성 성공 - 리뷰 ID : {}", savedReview.getId());
     return convertToResponseDto(savedReview);
   }
 
@@ -72,17 +72,17 @@ public class ReviewService {
   public void deleteReview(Long reviewId) {
 
     User user = userService.getLoginUser();
-    log.info("리뷰 삭제 시도");
+    log.info("리뷰 삭제 시도- 유저 ID : {}, 리뷰 ID : {}", user.getId(), reviewId);
 
     Review review = reviewRepository.findById(reviewId)
         .orElseThrow(() -> new DeepdiviewException(ErrorCode.REVIEW_NOT_FOUND));
 
     if (!review.getUser().equals(user)) {
-      log.warn("리뷰 삭제 권한 없음");
+      log.warn("리뷰 삭제 권한 없음 - 리뷰 ID: {}, 삭제 요청 유저 ID: {}, 리뷰 작성자 ID: {}", reviewId, user.getId(),review.getUser().getId());
       throw new DeepdiviewException(ErrorCode.INVALID_USER);
     }
     reviewRepository.delete(review);
-    log.info("리뷰 삭제 완료");
+    log.info("리뷰 삭제 완료 - 리뷰 ID: {}", reviewId);
   }
 
   /**
@@ -95,7 +95,7 @@ public class ReviewService {
   public ReviewResponseDTO updateReview(Long reviewId, ReviewUpdateDTO reviewUpdateDTO) {
 
     User user = userService.getLoginUser();
-    log.info("리뷰 수정 시도");
+    log.info("리뷰 수정 시도 - 유저 ID: {}, 리뷰 ID: {}, ", user.getId(), reviewId);
 
     Review review = reviewRepository.findById(reviewId)
         .orElseThrow(() -> new DeepdiviewException(ErrorCode.REVIEW_NOT_FOUND));
@@ -103,26 +103,26 @@ public class ReviewService {
     if (review.getUser().equals(user)) {
 
       if (!reviewUpdateDTO.getTitle().isEmpty()) {
+        log.info("리뷰 제목 변경");
         review.setTitle(reviewUpdateDTO.getTitle());
       }
       if (!reviewUpdateDTO.getContent().isEmpty()) {
+        log.info("리뷰 내용 변경");
         review.setContent(reviewUpdateDTO.getContent());
       }
       if (reviewUpdateDTO.getRating() != null) {
+        log.info("리뷰 별점 변경");
         review.setRating(reviewUpdateDTO.getRating());
       }
 
       Review updatedReview = reviewRepository.save(review);
-      log.info("리뷰 수정 완료");
+      log.info("리뷰 수정 완료 - 리뷰 ID: {}", reviewId);
       return convertToResponseDto(updatedReview);
 
     } else {
-      log.warn("리뷰 수정 권한 없음");
+      log.warn("리뷰 수정 권한 없음 - 리뷰 ID: {}, 수정 요청 유저 ID: {}, 리뷰 작성자 ID: {}", reviewId, user.getId(),review.getUser().getId());
       throw new DeepdiviewException(ErrorCode.INVALID_USER);
-
     }
-
-
   }
 
   /**
@@ -132,9 +132,12 @@ public class ReviewService {
    */
   @Transactional(readOnly = true)
   public Page<ReviewResponseDTO> getReviewByMovieId(Long tmdbId, Pageable pageable, Boolean certifiedFilter) {
-    log.info("특정 영화의 리뷰 조회 시도");
+    log.info("특정 영화의 리뷰 조회 시도 - TMDB ID : {}", tmdbId);
     Movie movie = movieRepository.findByTmdbId(tmdbId)
-        .orElseThrow(() -> new DeepdiviewException(ErrorCode.MOVIE_NOT_FOUND));
+        .orElseThrow(() -> {
+          log.warn("영화 조회 실패");
+          return new DeepdiviewException(ErrorCode.MOVIE_NOT_FOUND);
+        });
 
     Page<Review> reviews;
 
@@ -157,10 +160,13 @@ public class ReviewService {
    */
   @Transactional(readOnly = true)
   public ReviewResponseDTO getReviewById(Long reviewId) {
-    log.info("특정 리뷰 조회 요청");
+    log.info("특정 리뷰 조회 요청 - 리뷰 ID : {}", reviewId);
 
     Review review = reviewRepository.findById(reviewId)
-        .orElseThrow(() -> new DeepdiviewException(ErrorCode.REVIEW_NOT_FOUND));
+        .orElseThrow(() -> {
+          log.warn("리뷰 조회 실패");
+          return new DeepdiviewException(ErrorCode.REVIEW_NOT_FOUND);
+        });
 
     log.info("특정 리뷰 조회 성공");
     return convertToResponseWithCommentsDto(review);

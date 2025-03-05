@@ -44,7 +44,7 @@ public class CommentService {
         .build();
 
     Comment newComment = commentRepository.save(comment);
-    log.info("댓글 작성 완료");
+    log.info("댓글 작성 완료 - 댓글 ID : {}, 리뷰 ID : {}", newComment.getId(), reviewId);
 
     notificationService.commentAdded(user.getId(), reviewId);
     log.info("댓글이 달렸다는 알림 전송 완료 ");
@@ -56,7 +56,7 @@ public class CommentService {
   @Transactional
   public CommentResponseDto updateComment(Long reviewId, Long commentId, CommentRequestDto commentRequestDto) {
 
-    log.info("댓글 수정 요청");
+    log.info("댓글 수정 요청 - 댓글 ID : {}", commentId);
     User user = userService.getLoginUser();
 
     reviewRepository.findById(reviewId)
@@ -67,11 +67,12 @@ public class CommentService {
 
     // 댓글 작성자만 수정 가능
     if (!comment.getUser().getId().equals(user.getId())) {
+      log.warn("댓글 수정은 작성자만 수정 가능합니다. 작성자 ID : {}, 수정 요청자 ID : {}", comment.getUser().getId(), user.getId());
       throw new DeepdiviewException(ErrorCode.INVALID_USER);
     }
 
     comment.updateContent(commentRequestDto.getContent());
-    log.info("댓글 수정 완료");
+    log.info("댓글 수정 완료 - 댓글 ID : {}", comment.getId());
 
     return convertToCommentResponse(comment);
   }
@@ -79,7 +80,7 @@ public class CommentService {
 
   @Transactional
   public void deleteComment(Long reviewId, Long commentId) {
-    log.info("댓글 삭제 요청");
+    log.info("댓글 삭제 요청 - 댓글 ID : {}, 리뷰 ID : {}", commentId, reviewId);
 
     User user = userService.getLoginUser();
 
@@ -91,6 +92,7 @@ public class CommentService {
 
     // 댓글 작성자만 삭제 가능
     if (!comment.getUser().getId().equals(user.getId())) {
+      log.warn("댓글 삭제는 작성자만 삭제 가능합니다. - 작성자 ID : {}, 삭제 요청자 ID : {}", comment.getUser().getId(), user.getId());
       throw new DeepdiviewException(ErrorCode.INVALID_USER);
     }
 
@@ -98,13 +100,13 @@ public class CommentService {
       throw new DeepdiviewException(ErrorCode.NOT_MATCHED_CONTENT);
     }
 
-    log.info("댓글 삭제 완료");
+    log.info("댓글 삭제 완료 - 댓글 ID : {}", comment.getId());
     commentRepository.delete(comment);
   }
 
   @Transactional(readOnly = true)
   public Page<CommentResponseDto> getCommentsByReviewId(Long reviewId, Pageable pageable) {
-    log.info("리뷰별 댓글 조회 요청");
+    log.info("리뷰 {}의 댓글 조회 요청", reviewId);
 
     Review review = reviewRepository.findById(reviewId)
         .orElseThrow(() -> new DeepdiviewException(ErrorCode.REVIEW_NOT_FOUND));
@@ -117,7 +119,7 @@ public class CommentService {
 
   @Transactional(readOnly = true)
   public Page<CommentResponseDto> getCommentsByUserId(Long userId, Pageable pageable) {
-    log.info("특정 이용자가 작성한 댓글 조회 요청");
+    log.info("특정 이용자 {}가 작성한 댓글 조회 요청", userId);
     userService.getLoginUser();
 
     Page<Comment> comments = commentRepository.findByUser_Id(userId, pageable);

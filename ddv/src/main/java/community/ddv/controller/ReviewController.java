@@ -64,7 +64,7 @@ public class ReviewController {
 
   }
 
-  @Operation(summary = "특정 영화에 대한 리뷰 조회", description = "댓글은 포함되어있지 않습니다.")
+  @Operation(summary = "특정 영화에 대한 리뷰 조회", description = "댓글은 포함되어있지 않습니다. ?sortBy=likeCount로 좋아요 순 정렬을 할 수 있습니다." )
   @GetMapping("/movie/{tmdbId}")
   public ResponseEntity<Page<ReviewResponseDTO>> getReviewsByMovieId(
       @PathVariable Long tmdbId,

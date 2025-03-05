@@ -55,22 +55,22 @@ public class MovieService {
    * @param title
    */
   public List<MovieDTO> searchMoviesByTitle(String title, Boolean certifiedFilter) {
-    try {
-      List<Movie> movies = movieRepository.findByTitleFlexible(title);
-      if (movies.isEmpty()) {
-        throw new DeepdiviewException(ErrorCode.MOVIE_NOT_FOUND);
-      }
-      log.info("영화 제목으로 영화의 세부정보 조회 성공");
-      return movies.stream()
-          .map(movie -> {
-            Pageable pageable = PageRequest.of(0, 5, Sort.by(Direction.DESC, "createdAt"));
-            Page<ReviewResponseDTO> reviews = reviewService.getReviewByMovieId(movie.getTmdbId(), pageable, certifiedFilter);
-            return convertToDTOwithReviews(movie, reviews.getContent());
-          })
-          .collect(Collectors.toList());
-    } catch (Exception e) {
-      throw new RuntimeException("영화 정보 조회 중 오류 발생");
+
+    List<Movie> movies = movieRepository.findByTitleFlexible(title);
+
+    if (movies.isEmpty()) {
+      log.warn("키워드 {}를 포함하는 영화가 존재하지 않습니다.", title);
+      throw new DeepdiviewException(ErrorCode.KEYWORD_NOT_FOUND);
     }
+
+    log.info("영화 제목으로 영화의 세부정보 조회 성공");
+    return movies.stream()
+        .map(movie -> {
+          Pageable pageable = PageRequest.of(0, 5, Sort.by(Direction.DESC, "createdAt"));
+          Page<ReviewResponseDTO> reviews = reviewService.getReviewByMovieId(movie.getTmdbId(), pageable, certifiedFilter);
+          return convertToDTOwithReviews(movie, reviews.getContent());
+        })
+        .collect(Collectors.toList());
   }
 
   /**
@@ -79,7 +79,10 @@ public class MovieService {
    */
   public MovieDTO getMovieDetailsById(Long tmdbId, Boolean certifiedFilter) {
     Movie movie = movieRepository.findByTmdbId(tmdbId)
-        .orElseThrow(() -> new DeepdiviewException(ErrorCode.MOVIE_NOT_FOUND));
+        .orElseThrow(() -> {
+          log.warn("영화 Id {}에 해당하는 영화가 없습니다.", tmdbId);
+          return new DeepdiviewException(ErrorCode.MOVIE_NOT_FOUND);
+        });
     Pageable pageable = PageRequest.of(0, 5, Sort.by(Direction.DESC, "createdAt"));
     Page<ReviewResponseDTO> reviews = reviewService.getReviewByMovieId(tmdbId, pageable, certifiedFilter);
     log.info("영화Id로 영화의 세부정보 조회 성공");
