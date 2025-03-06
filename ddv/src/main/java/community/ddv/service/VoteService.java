@@ -16,13 +16,11 @@ import community.ddv.entity.VoteMovie;
 import community.ddv.entity.VoteParticipation;
 import community.ddv.exception.DeepdiviewException;
 import community.ddv.repository.MovieRepository;
-import community.ddv.repository.VoteMovieRepository;
 import community.ddv.repository.VoteParticipationRepository;
 import community.ddv.repository.VoteRepository;
 import java.time.DayOfWeek;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
-import java.time.temporal.TemporalAdjusters;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
@@ -39,7 +37,6 @@ public class VoteService {
 
   private final VoteRepository voteRepository;
   private final VoteParticipationRepository voteParticipationRepository;
-  private final VoteMovieRepository voteMovieRepository;
   private final MovieRepository movieRepository;
   private final UserService userService;
   private final MovieService movieService;
@@ -62,8 +59,9 @@ public class VoteService {
 
     // 투표 생성은 일요일만 가능, 한 주에 한 번만 가능
     LocalDateTime now = LocalDateTime.now();
+    log.debug("현재 시간 : {}", now);
     if (now.getDayOfWeek() != DayOfWeek.THURSDAY) {
-      log.error("투표 생성은 일요일만 가능합니다.");
+      log.error("투표 생성은 일요일만 가능합니다 : 현재요일 = {}", now.getDayOfWeek());
       throw new DeepdiviewException(ErrorCode.INVALID_VOTE_CREAT_DATE);
     }
 
@@ -83,7 +81,7 @@ public class VoteService {
     //    .withHour(23).withMinute(59).withSecond(59);
     // 테스트용
     LocalDateTime endDate = now.plusMinutes(3);
-    log.info("테스트를 위해 3분으로 투표 종료 시간 조절");
+    log.info("테스트를 위해 3분으로 투표 종료 시간 조절 : 종료시간 = {}", endDate);
 
 
     // 인기도 탑 5의 영화 세부 정보 가져오기
@@ -113,7 +111,7 @@ public class VoteService {
     }
     Vote savedVote = voteRepository.save(vote);
 
-    log.info("투표 생성 완료");
+    log.info("투표 생성 완료 : voteId = {}, startDate = {}, endDate = {}", savedVote.getId(), savedVote.getStartDate(), savedVote.getEndDate());
     return new VoteCreatedDTO(savedVote);
 
   }
@@ -129,6 +127,7 @@ public class VoteService {
 
     // 현재 진행중인 투표 조회
     LocalDateTime today = LocalDateTime.now();
+    log.debug("현재 시간 : {}", today);
     Vote activatingVote = voteRepository.findByStartDateBeforeAndEndDateAfter(today, today)
         .orElseThrow(() -> new DeepdiviewException(ErrorCode.INVALID_VOTE_PERIOD));
 
@@ -151,7 +150,7 @@ public class VoteService {
   public VoteParticipationResponseDto participateVote(Long voteId,
       VoteParticipationRequestDto voteParticipationRequestDto) {
     User user = userService.getLoginUser();
-    log.info("투표 시도 : {} ", user.getId());
+    log.info("투표 시도 : userId = {}, voteId = {} ", user.getId(), voteId);
 
     Vote vote = voteRepository.findById(voteId)
         .orElseThrow(() -> new DeepdiviewException(ErrorCode.VOTE_NOT_FOUND));
@@ -166,11 +165,11 @@ public class VoteService {
     // 투표 기간 내에만 참여가능
     LocalDateTime now = LocalDateTime.now();
     if (now.isAfter(vote.getEndDate())) {
-      log.error("이미 종료된 투표입니다.");
+      log.error("이미 종료된 투표입니다. voteId = {}, endDate = {}", voteId, vote.getEndDate());
       throw new DeepdiviewException(ErrorCode.INVALID_VOTE_PERIOD_ENDED);
     }
     if (now.isBefore(vote.getStartDate())) {
-      log.error("아직 시작되지 않은 투표입니다.");
+      log.error("아직 시작되지 않은 투표입니다. voteId = {}, startDate = {}", voteId, vote.getStartDate());
       throw new DeepdiviewException(ErrorCode.INVALID_VOTE_PERIOD_NOT_STARTED);
     }
 
@@ -203,10 +202,13 @@ public class VoteService {
    */
   @Transactional(readOnly = true)
   public VoteResultDTO getVoteResult(Long voteId){
-    log.info("투표 결과 조회 시도");
+    log.info("투표 결과 조회 시도 : voteId = {}", voteId);
 
     Vote vote = voteRepository.findById(voteId)
-        .orElseThrow(() -> new DeepdiviewException(ErrorCode.VOTE_NOT_FOUND));
+        .orElseThrow(() -> {
+          log.error("투표를 찾을 수 없음 : voteId = {}", voteId);
+          return new DeepdiviewException(ErrorCode.VOTE_NOT_FOUND);
+        });
 
     // 투표 결과 저장 리스트 생성
     List<VoteMovieResultDTO> voteResults = new ArrayList<>();
@@ -251,7 +253,7 @@ public class VoteService {
    */
   @Transactional(readOnly = true)
   public Long getLastWeekTopVoteMovie() {
-
+    log.info("지난주 투표 1위 영화조회 시작");
     LocalDateTime now = LocalDateTime.now();
 //    LocalDateTime lastWeekStart = now.minusWeeks(1).with(DayOfWeek.MONDAY).with((LocalTime.MIN));
 //    LocalDateTime lastWeekEnd = now.minusWeeks(1).with(DayOfWeek.SATURDAY).with((LocalTime.MAX));
@@ -273,7 +275,7 @@ public class VoteService {
 
     VoteMovieResultDTO topVoteMovie = voteResults.getResults().get(0);
     Long tmdbId = topVoteMovie.getTmdbId();
-    log.info("지난 주의 영화 : {}", tmdbId);
+    log.info("지난 주 투표 1위 영화 : tmdbId = {}, 득표수 = {}", tmdbId, topVoteMovie.getVoteCount());
 
     return tmdbId;
   }

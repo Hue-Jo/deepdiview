@@ -59,11 +59,11 @@ public class MovieService {
     List<Movie> movies = movieRepository.findByTitleFlexible(title);
 
     if (movies.isEmpty()) {
-      log.warn("키워드 {}를 포함하는 영화가 존재하지 않습니다.", title);
+      log.warn("키워드 '{}'를 포함하는 영화가 존재하지 않습니다.", title);
       throw new DeepdiviewException(ErrorCode.KEYWORD_NOT_FOUND);
     }
 
-    log.info("영화 제목으로 영화의 세부정보 조회 성공");
+    log.info("영화 제목 '{}'으로 영화의 세부정보 조회 성공", title);
     return movies.stream()
         .map(movie -> {
           Pageable pageable = PageRequest.of(0, 5, Sort.by(Direction.DESC, "createdAt"));
@@ -85,7 +85,7 @@ public class MovieService {
         });
     Pageable pageable = PageRequest.of(0, 5, Sort.by(Direction.DESC, "createdAt"));
     Page<ReviewResponseDTO> reviews = reviewService.getReviewByMovieId(tmdbId, pageable, certifiedFilter);
-    log.info("영화Id로 영화의 세부정보 조회 성공");
+    log.info("영화 tmdbId = '{}'로 영화의 세부정보 조회 성공", tmdbId);
     return convertToDTOwithReviews(movie, reviews.getContent());
   }
 

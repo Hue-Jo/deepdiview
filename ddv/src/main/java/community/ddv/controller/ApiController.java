@@ -2,6 +2,7 @@ package community.ddv.controller;
 
 import community.ddv.service.GenreApiService;
 import community.ddv.service.MovieApiService;
+import io.swagger.v3.oas.annotations.Operation;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -16,6 +17,7 @@ public class ApiController {
   private final MovieApiService movieApiService;
 
   // 장르 정보 저장
+  @Operation(summary = "DB 초기화했을 때 1순위 저장", description = "평소에는 사용하지 않으셔도 됩니다.")
   @GetMapping("/genres")
   public String fetchAndSaveGenres() {
 
@@ -24,6 +26,7 @@ public class ApiController {
   }
 
   // 장르 정보 저장
+  @Operation(summary = "DB 초기화했을 때 후순위 저장", description = "평소에는 사용하지 않으셔도 됩니다.")
   @GetMapping("/movies")
   public String fetchAndSaveMovies() {
 
