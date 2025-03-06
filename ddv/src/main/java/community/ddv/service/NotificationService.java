@@ -91,14 +91,15 @@ public class NotificationService {
     if (emitter != null) {
       try {
         emitter.send(notificationDTO);
-        log.info("알림 전송 성공 : userId = {}", userId);
+        log.info("알림 전송 성공 : userId = {}, notificationType = {}", userId, notificationDTO.getMessage());
       } catch (IOException e) {
         log.info("알림 전송 실패 : userId = {}", userId);
         emitter.completeWithError(e);
         userEmitters.remove(userId);
+        log.info("SSE Emitter 제거 : userId = {}", userId);
       }
     } else {
-      log.warn("해당 사용자에게 SSE Emitter가 존재하지 않습니다.");
+      log.warn("SSE Emitter가 존재하지 않습니다 : userId = {}", userId);
     }
   }
 
@@ -114,6 +115,7 @@ public class NotificationService {
         .orElseThrow(() -> new DeepdiviewException(ErrorCode.REVIEW_NOT_FOUND));
 
     User reviewer = review.getUser(); // 리뷰 작성자 (댓글 알림 받는 사람)
+    log.info("리뷰 작성자 : userId = {}", reviewer.getId());
 
     if (commenterId.equals(reviewer.getId())) {
       log.info("자신의 리뷰에 댓글 작성 - 알림 X");
@@ -142,12 +144,13 @@ public class NotificationService {
    * @param reviewId
    */
   public void likeAdded(Long likerId, Long reviewId) {
-    log.info("좋아요 알림 생성 시작");
+    log.info("좋아요 알림 생성 시작: reviewId = {}", reviewId);
 
     Review review = reviewRepository.findById(reviewId)
         .orElseThrow(() -> new DeepdiviewException(ErrorCode.REVIEW_NOT_FOUND));
 
     User reviewer = review.getUser(); // 리뷰 작성자 (좋아요 알림 받는 사람)
+    log.info("리뷰 작성자 : userId = {}", reviewer.getId());
 
     if (likerId.equals(reviewer.getId())) {
       log.info("자신의 리뷰에 좋아요 - 알림 X");
@@ -183,6 +186,7 @@ public class NotificationService {
         .orElseThrow(() -> new DeepdiviewException(ErrorCode.CERTIFICATION_NOT_FOUND));
 
     User user = certification.getUser();
+    log.info("인증 요청자 : userId = {}", user.getId());
 
     String message = "";
     if (status == CertificationStatus.APPROVED) {
@@ -208,6 +212,7 @@ public class NotificationService {
   public List<NotificationResponseDTO> getNotifications() {
     log.info("알림 목록 조회 요청");
     User user = userService.getLoginUser();
+    log.info("요청자 : userId = {}", user.getId());
     List<Notification> notifications = notificationRepository.findByUser_IdOrderByCreatedAtDesc(user.getId());
     return notifications.stream()
         .map(this::convertToDTO)
@@ -226,7 +231,7 @@ public class NotificationService {
   // 알림 읽음 처리
   public void markNotificationAsRead(Long notificationId) {
     User user = userService.getLoginUser();
-    log.info("알림 읽음 시도");
+    log.info("알림 읽음 시도 : userId = {}", user.getId());
     Notification notification = notificationRepository.findByIdAndUser_Id(notificationId, user.getId())
         .orElseThrow(() -> new DeepdiviewException(ErrorCode.NOTIFICATION_NOT_FOUND));
 

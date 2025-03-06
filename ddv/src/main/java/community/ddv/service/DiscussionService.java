@@ -44,16 +44,16 @@ public class DiscussionService {
     // 1. 인증 상태 확인
     User user = userService.getLoginUser();
     if (!certificationService.isUserCertified(user.getId())) {
-      log.warn("인증되지 않은 사용자");
+      log.warn("인증되지 않은 사용자 : userId = {}", user.getId());
       throw new DeepdiviewException(ErrorCode.NOT_CERTIFIED_YET);
     }
-    log.info("인증 상태 확인 완료");
+    log.info("인증 상태 확인 완료 : userId = {}", user.getId());
 
     // 2. 지난주 1위를 한 영화인지 확인
     Long lastWeekTopMovieTmdbId = voteService.getLastWeekTopVoteMovie();
     Movie lastWeekTopMovie = movieRepository.findByTmdbId(lastWeekTopMovieTmdbId)
         .orElseThrow(() -> new DeepdiviewException(ErrorCode.MOVIE_NOT_FOUND));
-    log.info("지난 주 1위 영화 확인");
+    log.info("지난 주 투표 1위 영화 확인 - TMDBId = {}, title = {}", lastWeekTopMovieTmdbId, lastWeekTopMovie.getTitle());
 
     // 3. 리뷰 작성 가능 기간 확인 (월-토)
     LocalDateTime now = LocalDateTime.now();
@@ -61,17 +61,19 @@ public class DiscussionService {
       log.warn("일요일은 리뷰 작성 불가");
       throw new DeepdiviewException(ErrorCode.INVALID_REVIEW_PERIOD);
     }
+    log.info("리뷰 작성 가능 기간 확인 완료");
 
     // 4. 중복 리뷰 확인 -> 기존에 작성한 리뷰가 있으면 수정
     Review existingReview = reviewRepository.findByUserAndMovie(user, lastWeekTopMovie)
         .orElse(null);
 
     if (existingReview != null) {
-      log.info("기존에 작성한 리뷰가 있으므로 수정 시도");
+      log.info("기존에 작성한 리뷰가 있으므로 수정 시도 : reviewId = {}", existingReview.getId());
       ReviewUpdateDTO updateDTO = new ReviewUpdateDTO(reviewDTO.getTitle(), reviewDTO.getContent(), reviewDTO.getRating());
       ReviewResponseDTO updatedReview = reviewService.updateReview(existingReview.getId(), updateDTO);
       existingReview.updateCertified(true);
       reviewRepository.save(existingReview);
+      log.info("기존리뷰 수정완료 : reviewId = {}", existingReview.getId());
       return updatedReview;
     }
 
@@ -91,10 +93,10 @@ public class DiscussionService {
 
     User user = userService.getLoginUser();
     if (!certificationService.isUserCertified(user.getId())) {
-      log.warn("인증되지 않은 사용자");
+      log.warn("인증되지 않은 사용자 : userId = {}", user.getId());
       throw new DeepdiviewException(ErrorCode.NOT_CERTIFIED_YET);
     }
-    log.info("인증 상태 확인 완료");
+    log.info("인증 상태 확인 완료 : userId = {}", user.getId());
 
     Review review = reviewRepository.findById(reviewId)
         .orElseThrow(() -> new DeepdiviewException(ErrorCode.REVIEW_NOT_FOUND));

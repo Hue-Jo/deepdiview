@@ -9,7 +9,6 @@ import community.ddv.entity.User;
 import community.ddv.exception.DeepdiviewException;
 import community.ddv.repository.CertificationRepository;
 import java.io.IOException;
-import java.time.DayOfWeek;
 import java.time.LocalDateTime;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -37,17 +36,17 @@ public class CertificationService {
   @Transactional
   public CertificationResponseDto submitCertification(MultipartFile file) throws IOException {
 
-    log.info("인증샷 업로드 시도");
     User user = userService.getLoginUser();
+    log.info("인증샷 업로드 시도 : userId = {}", user.getId());
 
     // 이미 인증 승인을 받은 경우, 중복 인증 불가
     if (certificationRepository.existsByUser_IdAndStatus(user.getId(), CertificationStatus.APPROVED)) {
-      log.warn("이미 승인을 받은 사용자입니다.");
+      log.warn("이미 승인을 받은 사용자 : userId = {}", user.getId());
       throw new DeepdiviewException(ErrorCode.ALREADY_APPROVED);
     }
 
     String certificationUrl = fileStorageService.uploadFile(file);
-    log.info("S3에 인증샷 업로드 완료 : {} ", certificationUrl);
+    log.info("S3에 인증샷 업로드 완료 : url = {} ", certificationUrl);
 
     Certification certification = Certification.builder()
         .user(user)
@@ -57,7 +56,7 @@ public class CertificationService {
         .build();
 
     Certification savedCertification = certificationRepository.save(certification);
-    log.info("인증샷 업로드 성공");
+    log.info("인증샷 업로드 성공 : certificationId = {}", savedCertification.getId());
     return CertificationResponseDto.builder()
         .id(savedCertification.getId())
         .userId(savedCertification.getUser().getId())
@@ -91,7 +90,7 @@ public class CertificationService {
               .build());
     } else {
       // 인증 상태에 따른 조회
-      log.info("인증 상태에 따른 조회");
+      log.info("인증 상태에 따른 조회 : staus = {}", status);
       return certificationRepository.findByStatus(status, pageable)
           .map(certification -> CertificationResponseDto.builder()
               .id(certification.getId())
@@ -111,10 +110,14 @@ public class CertificationService {
    * @return
    */
   public CertificationResponseDto getCertification(Long certificationId) {
-    log.info("특정 인증 정보 조회 시작(인증 이미지 확인)");
+
+    log.info("특정 인증 정보 조회 시작(인증 이미지 확인) : certificationId = {}", certificationId);
     userService.getLoginUser();
     Certification certification = certificationRepository.findById(certificationId)
-        .orElseThrow(() -> new DeepdiviewException(ErrorCode.CERTIFICATION_NOT_FOUND));
+        .orElseThrow(() -> {
+          log.error("인증 정보를 찾을 수 없음");
+          return new DeepdiviewException(ErrorCode.CERTIFICATION_NOT_FOUND);
+        });
 
     log.info("특정 인증 정보 조회 성공(인증 이미지 확인 완료)");
     return CertificationResponseDto.builder()
@@ -134,21 +137,24 @@ public class CertificationService {
    * @param rejectionReason
    */
   public void proceedCertification(Long certificationId, boolean approve, RejectionReason rejectionReason) {
-    log.info("인증 처리 시작");
+    log.info("인증 처리 시작 : certificationId = {}", certificationId);
     userService.getLoginUser();
 
     Certification certification = certificationRepository.findById(certificationId)
-        .orElseThrow(() -> new DeepdiviewException(ErrorCode.CERTIFICATION_NOT_FOUND));
-    log.info("현재 인증 상태 : {}", certification.getStatus());
+        .orElseThrow(() -> {
+          log.error("인증 정보를 찾을 수 없음");
+          return new DeepdiviewException(ErrorCode.CERTIFICATION_NOT_FOUND);
+        });
+    log.info("현재 인증 상태 : status = {}", certification.getStatus());
 
     if (approve) {
       certification.setStatus(CertificationStatus.APPROVED, null);
-      log.info("인증 승인");
+      log.info("인증 승인 : certificationId = {}", certificationId);
     } else {
       certification.setStatus(CertificationStatus.REJECTED, rejectionReason);
-      log.info("인증 거절 : 거절 사유 = {}", rejectionReason);
+      log.info("인증 거절 : certificationId = {}, 거절 사유 = {}", certificationId, rejectionReason);
     }
-    log.info("인증 상태 변경 : {}", certification.getStatus());
+    log.info("인증 상태 변경 완료 : certificationId = {}, newStatus = {} ", certificationId, certification.getStatus());
     certificationRepository.save(certification);
 
     notificationService.certificateResult(certification.getId(), certification.getStatus());
