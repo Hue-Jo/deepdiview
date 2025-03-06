@@ -52,6 +52,7 @@ public class Movie {
   }
 
   @Setter
+  @Builder.Default
   private boolean isAvailable = true; // 넷플에서 제공중인지 여부 (기본값 true)
 
   public void changeAsUnavailable() {
@@ -59,6 +60,7 @@ public class Movie {
   }
 
   @OneToMany(mappedBy = "movie", cascade = CascadeType.ALL)
+  @Builder.Default
   private List<VoteMovie> voteMovies = new ArrayList<>();
 
 }

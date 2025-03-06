@@ -63,6 +63,7 @@ public class Review {
 
   @Setter
   @Column(nullable = false)
+  @Builder.Default
   private Integer likeCount = 0;
 
   private boolean certified;
@@ -74,6 +75,7 @@ public class Review {
 
 
   @OneToMany(mappedBy = "review", cascade = CascadeType.ALL)
+  @Builder.Default
   private List<Comment> comments = new ArrayList<>();
 
 }
