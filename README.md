@@ -12,8 +12,9 @@
 - ORM : Spring Data JPA
 - 보안 : Spring Security, JWT (jjwt 0.12)
 - 실시간 통신 : SSE
-- 배포 환경 : AWS EC2, Github Actions (CI/CD)
-- API 문서화 : Swagger
+- 배포 환경 : AWS EC2 + NginX + Spring Boot, Github Actions (CI/CD)
+- 프로토콜 : Https 지원
+- API 문서화 : [Swagger](https://deepdiview.site/swagger-ui/index.html) 
 
 ### 사용 오픈 API
 - [TMDB](https://api.themoviedb.org/3/discover/movie?include_adult=true&include_video=false&language=ko&sort_by=primary_release_date.desc&watch_region=KR&with_watch_providers=8)
