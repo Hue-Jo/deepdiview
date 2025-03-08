@@ -210,6 +210,12 @@ public class ReviewService {
 
 
   private ReviewResponseDTO convertToResponseDto(Review review) {
+
+    User loginUser = userService.getLoginOrNull();
+    Boolean likedByUser = (loginUser != null) ?
+        review.getLikes().stream().anyMatch(like -> like.getUser().equals(loginUser))
+        : null;
+
     Movie movie = review.getMovie();
     return ReviewResponseDTO.builder()
         .reviewId(review.getId())
@@ -221,6 +227,7 @@ public class ReviewService {
         .createdAt(review.getCreatedAt())
         .updatedAt(review.getUpdatedAt())
         .likeCount(review.getLikeCount())
+        .likedByUser(likedByUser)
         .tmdbId(movie.getTmdbId())
         .movieTitle(movie.getTitle())
         .posterPath(movie.getPosterPath())
@@ -229,6 +236,12 @@ public class ReviewService {
   }
 
   private ReviewResponseDTO convertToResponseWithCommentsDto(Review review) {
+
+    User loginUser = userService.getLoginOrNull();
+    Boolean likedByUser = (loginUser != null) ?
+        review.getLikes().stream().anyMatch(like -> like.getUser().equals(loginUser))
+        : null;
+
     Movie movie = review.getMovie();
     return ReviewResponseDTO.builder()
         .reviewId(review.getId())
@@ -240,6 +253,7 @@ public class ReviewService {
         .createdAt(review.getCreatedAt())
         .updatedAt(review.getUpdatedAt())
         .likeCount(review.getLikeCount())
+        .likedByUser(likedByUser)
         .tmdbId(movie.getTmdbId())
         .movieTitle(movie.getTitle())
         .posterPath(movie.getPosterPath())

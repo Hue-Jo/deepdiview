@@ -1,5 +1,6 @@
 package community.ddv.dto;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import community.ddv.dto.CommentDTO.CommentResponseDto;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -23,6 +24,7 @@ public class ReviewResponseDTO {
   private LocalDateTime createdAt;
   private LocalDateTime updatedAt;
   private Integer likeCount;
+  private Boolean likedByUser;
   private Long tmdbId;
   private String movieTitle;
   private String posterPath;

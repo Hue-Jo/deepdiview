@@ -66,6 +66,10 @@ public class Review {
   @Builder.Default
   private Integer likeCount = 0;
 
+  @OneToMany(mappedBy = "review", cascade = CascadeType.ALL)
+  @Builder.Default
+  private List<Like> likes = new ArrayList<>();
+
   private boolean certified;
 
   public void updateCertified(boolean certified) {

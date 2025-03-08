@@ -359,6 +359,15 @@ public class UserService {
         .orElseThrow(() -> new DeepdiviewException(ErrorCode.USER_NOT_FOUND));
   }
 
+  @Transactional(readOnly = true)
+  public User getLoginOrNull() {
+    try {
+      return getLoginUser();
+    } catch (DeepdiviewException e) {
+      return null;
+    }
+  }
+
   /**
    * 프로필 등록/수정
    * @param profileImage
