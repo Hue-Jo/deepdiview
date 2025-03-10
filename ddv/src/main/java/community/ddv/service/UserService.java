@@ -113,7 +113,9 @@ public class UserService {
         user.getId(),
         user.getEmail(),
         user.getNickname(),
-        user.getProfileImageUrl());
+        user.getProfileImageUrl(),
+        user.getRole()
+    );
   }
 
   /**

@@ -1,5 +1,6 @@
 package community.ddv.response;
 
+import community.ddv.constant.Role;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -17,5 +18,5 @@ public class LoginResponse {
   private String nickname;
   private String profileImageUrl;
 
-
+  private Role role;
 }
