@@ -382,9 +382,11 @@ public class UserService {
       throw new IOException("파일 크기는 5MB를 초과할 수 없습니다.");
     }
 
+    String existingProfileImageUrl = user.getProfileImageUrl();
+    String newProfileImageUrl;
+
     // 기존 프사가 존재하는 경우, 삭제 후 새 이미지로 대체됨
     if (user.getProfileImageUrl() != null && !user.getProfileImageUrl().isEmpty()) {
-      String existingProfileImageUrl = user.getProfileImageUrl();
       String existingProfileImageName = existingProfileImageUrl.substring(
           existingProfileImageUrl.lastIndexOf("/") + 1);
       try {
@@ -395,7 +397,6 @@ public class UserService {
       }
     }
 
-    String newProfileImageUrl;
     // 새 프로필 사진 업로드
     try {
       newProfileImageUrl = fileStorageService.uploadFile(profileImage);
@@ -417,7 +418,16 @@ public class UserService {
   public void deleteProfileImage() throws IOException {
     User user = getLoginUser();
     log.info("프로필사진 삭제 요청");
+
     if (user.getProfileImageUrl() != null && !user.getProfileImageUrl().isEmpty()) {
+
+      try {
+        fileStorageService.deleteFile(user.getProfileImageUrl());
+      } catch (IOException e) {
+        log.error("S3에서 프로필 사진 삭제 실패");
+        throw new IOException("프로필 사진 삭제 중 문제 발생");
+      }
+
       user.setProfileImageUrl(null);
       userRepository.save(user);
       log.info("프로필 사진 삭제 완료");
