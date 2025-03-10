@@ -4,8 +4,9 @@ import community.ddv.constant.Role;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.SignatureAlgorithm;
+import jakarta.annotation.PostConstruct;
 import java.util.Date;
+import javax.crypto.SecretKey;
 import javax.crypto.spec.SecretKeySpec;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -19,19 +20,30 @@ public class JwtProvider {
 
   @Value("${spring.jwt.secret}")
   private String secretKey;
+  private SecretKey key;
+
 
   // 엑세스 토큰 만료시간 : 1시간
   private static final long ACCESS_TOKEN_EXPIRED_TIME = 1000 * 60 * 60;
   // 리프레시 토큰 만료시간 : 15일
   private static final long REFRESH_TOKEN_EXPIRED_TIME = 1000 * 60 * 60 * 24 * 15;
   // 알고리즘
-  private static final SignatureAlgorithm algorithm = SignatureAlgorithm.HS256;
+  // private static final SignatureAlgorithm algorithm = SignatureAlgorithm.HS256;
+//  private SecretKey getSigningKey() {
+//    return SIG.HS256.key().build();
+//  }
+  @PostConstruct
+  public void init() {
+    if (secretKey == null || secretKey.isEmpty()) {
+      throw new IllegalArgumentException("JWT 비밀키가 없습니다.");
+    }
+    key = new SecretKeySpec(secretKey.getBytes(), "HmacSHA256");
+  }
 
 
   // 엑세스 토큰 생성
   public String generateAccessToken(String email, Role role) {
 
-    SecretKeySpec key = new SecretKeySpec(secretKey.getBytes(), algorithm.getJcaName());
     return Jwts.builder()
         .subject(email)
         .claim("role", role.name())
@@ -42,22 +54,15 @@ public class JwtProvider {
   }
 
   public Role getRoleFromToken(String token) {
-    SecretKeySpec key = new SecretKeySpec(secretKey.getBytes(), algorithm.getJcaName());
-    Claims claims = Jwts.parser()
-        .setSigningKey(key)
-        .build()
-        .parseClaimsJws(token)
-        .getBody();
 
-    String roleString = claims.get("role", String.class);
-    return Role.valueOf(roleString);
+    Claims claims = extractClaims(token);
+    return Role.valueOf(claims.get("role", String.class));
   }
 
 
   // 리프레시 토큰 생성
   public String generateRefreshToken(String email, Role role) {
 
-    SecretKeySpec key = new SecretKeySpec(secretKey.getBytes(), algorithm.getJcaName());
     return Jwts.builder()
         .subject(email)
         .claim("role", role.name())
@@ -69,8 +74,6 @@ public class JwtProvider {
 
 
   public Claims extractClaims(String token) {
-    SecretKeySpec key = new SecretKeySpec(secretKey.getBytes(), algorithm.getJcaName());
-
     return Jwts.parser()
         .verifyWith(key)
         .build()
