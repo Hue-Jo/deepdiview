@@ -171,10 +171,15 @@ public class CertificationService {
   @Transactional
   @Scheduled(cron = "0 0 0 * * MON")
   protected void resetCertificationStatus() {
-    LocalDateTime now = LocalDateTime.now();
-      log.info("새로운 주가 됨에 따라 인증상태 초기화");
-      int resetCount = certificationRepository.resetAllCertifications();
-      log.info("초기화된 인증 개수 : {} ", resetCount);
+
+    if (certificationRepository.count() == 0) {
+      log.warn("초기화할 인증 데이터가 없어 초기화를 스킵합니다.");
+      return;
+    }
+
+    log.info("새로운 주가 됨에 따라 인증상태 초기화");
+    int resetCount = certificationRepository.resetAllCertifications();
+    log.info("초기화된 인증 개수 : {} ", resetCount);
   }
 
 }
