@@ -6,6 +6,7 @@ import community.ddv.dto.ReviewResponseDTO;
 import community.ddv.entity.Movie;
 import community.ddv.exception.DeepdiviewException;
 import community.ddv.repository.MovieRepository;
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
@@ -26,29 +27,31 @@ public class MovieService {
   private final ReviewService reviewService;
 
   /**
+   * 넷플릭스 내 인기도 탑 n 영화 세부정보 조회
+   * @param size
+   */
+  public List<MovieDTO> getTopMovies(int size) {
+    Pageable pageable = PageRequest.of(0, size);
+    Page<Movie> topMovies = movieRepository.findTopByOrderByPopularityDesc(pageable);
+    log.info("인기도 탑{} 영화 조회 성공", size);
+    return topMovies.stream()
+        .map(this::convertToDtoWithoutReviews)
+        .collect(Collectors.toList());
+  }
+
+  /**
    * 넷플릭스 내 인기도 탑 20 영화 세부정보 조회
    */
   public List<MovieDTO> getTop20Movies() {
-    Pageable pageable = PageRequest.of(0, 20);
-    Page<Movie> top20Movies = movieRepository.findTop20ByOrderByPopularityDesc(pageable);
-    log.info("인기도 탑20 영화 조회 성공");
-    return top20Movies.stream()
-        .map(this::convertToDTO)
-        .collect(Collectors.toList());
+    return getTopMovies(20);
   }
 
   /**
    * 넷플릭스 내 인기도 탑 5 영화 세부정보 조회
    */
   public List<MovieDTO> getTop5Movies() {
-    Pageable pageable = PageRequest.of(0, 5);
-    Page<Movie> top5Movies = movieRepository.findTop5ByOrderByPopularityDesc(pageable);
-    log.info("인기도 탑5 영화 조회 성공");
-    return top5Movies.stream()
-        .map(this::convertToDTO)
-        .collect(Collectors.toList());
+    return getTopMovies(5);
   }
-
 
   /**
    * 영화 제목으로 해당 영화의 세부정보 조회 _ 공백 무시 가능 & 특정 글자가 포함되는 조회됨 & 넷플 인기도 순 정렬
@@ -68,7 +71,7 @@ public class MovieService {
         .map(movie -> {
           Pageable pageable = PageRequest.of(0, 5, Sort.by(Direction.DESC, "createdAt"));
           Page<ReviewResponseDTO> reviews = reviewService.getReviewByMovieId(movie.getTmdbId(), pageable, certifiedFilter);
-          return convertToDTOwithReviews(movie, reviews.getContent());
+          return convertToDtoWithReviews(movie, reviews.getContent());
         })
         .collect(Collectors.toList());
   }
@@ -86,12 +89,11 @@ public class MovieService {
     Pageable pageable = PageRequest.of(0, 5, Sort.by(Direction.DESC, "createdAt"));
     Page<ReviewResponseDTO> reviews = reviewService.getReviewByMovieId(tmdbId, pageable, certifiedFilter);
     log.info("영화 tmdbId = '{}'로 영화의 세부정보 조회 성공", tmdbId);
-    return convertToDTOwithReviews(movie, reviews.getContent());
+    return convertToDtoWithReviews(movie, reviews.getContent());
   }
 
-
-  public MovieDTO convertToDTOwithReviews(Movie movie, List<ReviewResponseDTO> reviews) {
-
+  // 리뷰 포함
+  public MovieDTO convertToDtoWithReviews(Movie movie, List<ReviewResponseDTO> reviews) {
     return MovieDTO.builder()
         .id(movie.getTmdbId())
         .title(movie.getTitle())
@@ -111,23 +113,8 @@ public class MovieService {
         .build();
   }
 
-  public MovieDTO convertToDTO(Movie movie) {
-
-    return MovieDTO.builder()
-        .id(movie.getTmdbId())
-        .title(movie.getTitle())
-        .original_title(movie.getOriginalTitle())
-        .overview(movie.getOverview())
-        .release_date(movie.getReleaseDate())
-        .popularity(movie.getPopularity())
-        .poster_path(movie.getPosterPath())
-        .backdrop_path(movie.getBackdropPath())
-        .genre_ids(movie.getMovieGenres().stream()
-            .map(movieGenre -> movieGenre.getGenre().getId())
-            .collect(Collectors.toList()))
-        .genre_names(movie.getMovieGenres().stream()
-            .map(movieGenre -> movieGenre.getGenre().getName())
-            .collect(Collectors.toList()))
-        .build();
+  // 리뷰 포함 X
+  public MovieDTO convertToDtoWithoutReviews(Movie movie) {
+    return convertToDtoWithReviews(movie, Collections.emptyList());
   }
 }

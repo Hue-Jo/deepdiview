@@ -13,19 +13,14 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface MovieRepository extends JpaRepository<Movie, Long> {
 
-  // 넷플 내 인기도 상위 20개의 영화 정보 조회 (페이징처리)
-  Page<Movie> findTop20ByOrderByPopularityDesc(Pageable pageable);
-
-  // 넷플 내 인기도 상위 5개의 영화 조회
-  Page<Movie> findTop5ByOrderByPopularityDesc(Pageable pageable);
+  // 넷플릭스 내 인기도 상위 n개의 영화정보 조회
+  Page<Movie> findTopByOrderByPopularityDesc(Pageable pageable);
 
   // 특정 단어가 포함된 영화 정보 리스트 조회(공백 무시)
   @Query("SELECT m FROM Movie m WHERE REPLACE(m.title, ' ', '') LIKE CONCAT('%', REPLACE(:title, ' ', ''), '%') ORDER BY m.popularity DESC")
   List<Movie> findByTitleFlexible(@Param("title") String title);
 
-  // 특정 영화 세부정보 조회 (공백 무시)
-  @Query("SELECT m FROM Movie m WHERE REPLACE(m.title, ' ', '') LIKE CONCAT('%', REPLACE(:title, ' ', ''), '%') ORDER BY m.popularity DESC")
-  Optional<Movie> findByTitle(@Param("title") String title);
-
+  // TMDB Id로 특정영화 조회
   Optional<Movie> findByTmdbId(Long tmdbId);
+
 }
