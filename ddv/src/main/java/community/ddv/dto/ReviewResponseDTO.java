@@ -1,6 +1,5 @@
 package community.ddv.dto;
 
-import com.fasterxml.jackson.annotation.JsonInclude;
 import community.ddv.dto.CommentDTO.CommentResponseDto;
 import java.time.LocalDateTime;
 import java.util.List;

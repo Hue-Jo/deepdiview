@@ -61,7 +61,7 @@ public class ReviewService {
 
     Review savedReview = reviewRepository.save(review);
     log.info("리뷰 작성 성공 - 리뷰 ID : {}", savedReview.getId());
-    return convertToResponseDto(savedReview);
+    return convertToReviewResponseDto(savedReview);
   }
 
   /**
@@ -117,7 +117,7 @@ public class ReviewService {
 
       Review updatedReview = reviewRepository.save(review);
       log.info("리뷰 수정 완료 - 리뷰 ID: {}", reviewId);
-      return convertToResponseDto(updatedReview);
+      return convertToReviewResponseDto(updatedReview);
 
     } else {
       log.warn("리뷰 수정 권한 없음 - 리뷰 ID: {}, 수정 요청 유저 ID: {}, 리뷰 작성자 ID: {}", reviewId, user.getId(),review.getUser().getId());
@@ -150,7 +150,7 @@ public class ReviewService {
     }
 
     log.info("특정 영화의 리뷰 조회 완료");
-    return reviews.map(this::convertToResponseDto);
+    return reviews.map(this::convertToReviewResponseDto);
   }
 
   /**
@@ -169,7 +169,7 @@ public class ReviewService {
         });
 
     log.info("특정 리뷰 조회 성공");
-    return convertToResponseWithCommentsDto(review);
+    return convertToReviewResponseWithCommentsDto(review);
   }
 
   /**
@@ -194,7 +194,7 @@ public class ReviewService {
     }
 
     log.info("특정 사용자의 리뷰 내역 조회 성공");
-    return reviews.map(this::convertToResponseDto);
+    return reviews.map(this::convertToReviewResponseDto);
 
   }
 
@@ -204,38 +204,20 @@ public class ReviewService {
     List<Review> reviews = reviewRepository.findTop3ByOrderByCreatedAtDesc();
     log.info("최신리뷰 3개 조회 성공");
     return reviews.stream()
-        .map(this::convertToResponseDto)
+        .map(this::convertToReviewResponseDto)
         .collect(Collectors.toList());
   }
 
 
-  private ReviewResponseDTO convertToResponseDto(Review review) {
-
-    User loginUser = userService.getLoginOrNull();
-    Boolean likedByUser = (loginUser != null) ?
-        review.getLikes().stream().anyMatch(like -> like.getUser().equals(loginUser))
-        : null;
-
-    Movie movie = review.getMovie();
-    return ReviewResponseDTO.builder()
-        .reviewId(review.getId())
-        .userId(review.getUser().getId())
-        .nickname(review.getUser().getNickname())
-        .reviewTitle(review.getTitle())
-        .reviewContent(review.getContent())
-        .rating(review.getRating())
-        .createdAt(review.getCreatedAt())
-        .updatedAt(review.getUpdatedAt())
-        .likeCount(review.getLikeCount())
-        .likedByUser(likedByUser)
-        .tmdbId(movie.getTmdbId())
-        .movieTitle(movie.getTitle())
-        .posterPath(movie.getPosterPath())
-        .certified(review.isCertified())
-        .build();
+  private ReviewResponseDTO convertToReviewResponseDto(Review review) {
+    return convertToReviewResponseDtoBase(review, false);
   }
 
-  private ReviewResponseDTO convertToResponseWithCommentsDto(Review review) {
+  private ReviewResponseDTO convertToReviewResponseWithCommentsDto(Review review) {
+    return convertToReviewResponseDtoBase(review, true);
+  }
+
+  private ReviewResponseDTO convertToReviewResponseDtoBase(Review review, boolean includeComments) {
 
     User loginUser = userService.getLoginOrNull();
     Boolean likedByUser = (loginUser != null) ?
@@ -243,7 +225,7 @@ public class ReviewService {
         : null;
 
     Movie movie = review.getMovie();
-    return ReviewResponseDTO.builder()
+    ReviewResponseDTO.ReviewResponseDTOBuilder builder  = ReviewResponseDTO.builder()
         .reviewId(review.getId())
         .userId(review.getUser().getId())
         .nickname(review.getUser().getNickname())
@@ -257,11 +239,16 @@ public class ReviewService {
         .tmdbId(movie.getTmdbId())
         .movieTitle(movie.getTitle())
         .posterPath(movie.getPosterPath())
-        .certified(review.isCertified())
-        .comments(review.getComments().stream()
-            .map(this::convertToCommentDto)
-            .collect(Collectors.toList()))
-        .build();
+        .certified(review.isCertified());
+
+    if (includeComments) {
+      builder.comments(review.getComments().stream()
+              .map(this::convertToCommentDto)
+              .collect(Collectors.toList()))
+          .build();
+    }
+
+    return builder.build();
   }
 
   private CommentResponseDto convertToCommentDto(Comment comment) {
