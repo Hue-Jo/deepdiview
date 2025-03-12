@@ -12,11 +12,12 @@ public class VoteParticipationDTO {
     private List<Long> tmdbIds; // 5개 선택지
   }
 
+
   @Getter
   public static class VoteParticipationRequestDto {
-
     private Long tmdbId; // 사용자가 선택한 영화
   }
+
 
   @Getter
   @AllArgsConstructor
