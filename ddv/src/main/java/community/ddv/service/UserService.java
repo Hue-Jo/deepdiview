@@ -100,8 +100,9 @@ public class UserService {
     // 리프레시 토큰 생성
     String refreshToken = redisTemplate.opsForValue().get(user.getEmail());
     if (refreshToken == null || jwtProvider.isTokenExpired(refreshToken)) {
-      // 리프레시 토큰이 없거나 만료되었으면 새로 생성 (15일 후 만료)
+      // 리프레시 토큰이 없거나 만료되었으면 새로 생성
       refreshToken = jwtProvider.generateRefreshToken(user.getEmail(), user.getRole());
+      // set(키, 값, 숫자, TimeUnit)으로  일정시간(15일) 후 자동 삭제되는 토큰 저장
       redisTemplate.opsForValue().set(user.getEmail(), refreshToken, 15, TimeUnit.DAYS);
     } else {
       log.info("기존 리프레시 토큰 사용");
@@ -133,6 +134,7 @@ public class UserService {
 
     // 리프레시 토큰 삭제
     Boolean deletedRefreshToken = redisTemplate.delete(email);
+    // NullPointException 방지를 위해 Boolean 객체 사용
     if (Boolean.TRUE.equals(deletedRefreshToken)) {
       log.info("리프레시 토큰 삭제 완료");
     } else {
