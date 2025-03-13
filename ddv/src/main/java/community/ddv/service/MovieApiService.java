@@ -53,8 +53,8 @@ public class MovieApiService {
           // DTO에서 Entity로 변환 후 저장
           List<Movie> movies = response.getBody().getResults()
               .stream()
-              .map(this::toEntity)
-              .collect(Collectors.toList());
+              .map(this::toMovieEntity)
+              .toList();
 
           for (Movie movie : movies) {
 
@@ -103,7 +103,7 @@ public class MovieApiService {
 
   }
 
-  private Movie toEntity(MovieDTO movieDTO) {
+  private Movie toMovieEntity(MovieDTO movieDTO) {
     Movie movie = Movie.builder()
         .tmdbId(movieDTO.getId())
         .title(movieDTO.getTitle())
