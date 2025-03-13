@@ -215,11 +215,11 @@ public class NotificationService {
     log.info("요청자 : userId = {}", user.getId());
     List<Notification> notifications = notificationRepository.findByUser_IdOrderByCreatedAtDesc(user.getId());
     return notifications.stream()
-        .map(this::convertToDTO)
+        .map(this::convertToNotificationResponseDTO)
         .collect(Collectors.toList());
   }
 
-  private NotificationResponseDTO convertToDTO(Notification notification) {
+  private NotificationResponseDTO convertToNotificationResponseDTO(Notification notification) {
     return NotificationResponseDTO.builder()
         .notificationId(notification.getId())
         .message(notification.getNotificationType().getMessage())
