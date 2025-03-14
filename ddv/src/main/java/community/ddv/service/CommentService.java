@@ -135,6 +135,7 @@ public class CommentService {
         .reviewId(comment.getReview().getId())
         .userId(comment.getUser().getId())
         .userNickname(comment.getUser().getNickname())
+        .profileImageUrl(comment.getUser().getProfileImageUrl())
         .content(comment.getContent())
         .createdAt(comment.getCreatedAt())
         .updatedAt(comment.getUpdatedAt())
