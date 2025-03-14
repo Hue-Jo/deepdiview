@@ -23,6 +23,7 @@ public class CommentDTO {
 
     private Long userId;
     private String userNickname;
+    private String profileImageUrl;
 
     private String content;
 

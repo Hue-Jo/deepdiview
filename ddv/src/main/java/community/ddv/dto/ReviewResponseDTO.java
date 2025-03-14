@@ -17,6 +17,7 @@ public class ReviewResponseDTO {
   private Long reviewId;
   private Long userId;
   private String nickname;
+  private String profileImageUrl;
   private String reviewTitle;
   private String reviewContent;
   private double rating;

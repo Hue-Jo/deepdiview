@@ -15,6 +15,8 @@ import community.ddv.service.UserService;
 import io.swagger.v3.oas.annotations.Operation;
 import jakarta.validation.Valid;
 import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -141,10 +143,12 @@ public class UserController {
 
   @Operation(summary = "프로필사진 업로드/수정", description = "프로필 사진이 존재하는 경우 수정, 존재하지 않는 경우 새롭게 업로드 됩니다.")
   @PutMapping("/profile-image")
-  public ResponseEntity<String> uploadProfileImage(
+  public ResponseEntity<Map<String, String>> uploadProfileImage(
       @RequestParam("file") MultipartFile file) throws IOException {
     String profileImageUrl = userService.updateProfileImage(file);
-    return ResponseEntity.ok(profileImageUrl);
+    Map<String, String> profileResponse = new HashMap<>();
+    profileResponse.put("profileImage Url", profileImageUrl);
+    return ResponseEntity.ok(profileResponse);
   }
 
   @Operation(summary = "프로필사진 삭제")
