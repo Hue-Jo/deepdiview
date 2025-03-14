@@ -32,7 +32,9 @@ public class LikeService {
     // 좋아요가 눌러져 있으면 좋아요 취소, 좋아요를 누른 적이 없으면 좋아요
     if (existingLike != null) {
       likeRepository.delete(existingLike);
-      review.setLikeCount(review.getLikeCount() - 1);
+      likeRepository.flush();
+      //review.setLikeCount(review.getLikeCount() - 1);
+      review.decreaseLikeCount();
       reviewRepository.save(review);
       log.info("좋아요 취소 (좋아요 -1)");
     } else {
@@ -41,11 +43,12 @@ public class LikeService {
           .review(review)
           .build();
       likeRepository.save(newlike);
-      if (review.getLikeCount() == null) {
-        review.setLikeCount(0);
-      }
-      review.setLikeCount(review.getLikeCount() + 1);
-      reviewRepository.save(review);
+//      if (review.getLikeCount() == null) {
+//        review.setLikeCount(0);
+//      }
+//      review.setLikeCount(review.getLikeCount() + 1);
+//      reviewRepository.save(review);
+      review.increaseLikeCount();
       log.info("졸아요 성공 (좋아요 +1)");
 
       notificationService.likeAdded(user.getId(), review.getId());

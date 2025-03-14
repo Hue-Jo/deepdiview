@@ -61,10 +61,15 @@ public class Review {
   @LastModifiedDate
   private LocalDateTime updatedAt;
 
-  @Setter
   @Column(nullable = false)
-  @Builder.Default
-  private Integer likeCount = 0;
+  private Integer likeCount;
+
+  public void increaseLikeCount() {
+    likeCount = (likeCount == null) ? 0 : likeCount + 1;
+  }
+  public void decreaseLikeCount() {
+    likeCount = (likeCount == null || likeCount <= 0) ? 0 : likeCount - 1;
+  }
 
   @OneToMany(mappedBy = "review", cascade = CascadeType.ALL)
   @Builder.Default
@@ -75,7 +80,6 @@ public class Review {
   public void updateCertified(boolean certified) {
     this.certified = certified;
   }
-
 
 
   @OneToMany(mappedBy = "review", cascade = CascadeType.ALL)
