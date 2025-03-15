@@ -26,7 +26,6 @@ import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 @NoArgsConstructor
 @AllArgsConstructor
 @Getter
-@Setter
 @Builder
 @EntityListeners(AuditingEntityListener.class)
 public class User {
@@ -49,6 +48,7 @@ public class User {
   private LocalDateTime createdAt;
   @LastModifiedDate
   private LocalDateTime updatedAt;
+
 
   @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
   @Builder.Default
@@ -73,4 +73,21 @@ public class User {
   @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
   @Builder.Default
   private List<Notification> notifications = new ArrayList<>();
+
+
+  public void updatePassword(String newPassword) {
+    this.password = newPassword;
+  }
+
+  public void updateNickname(String newNickname) {
+    this.nickname = newNickname;
+  }
+
+  public void updateProfileImageUrl(String newProfileImageUrl) {
+    this.profileImageUrl = newProfileImageUrl;
+  }
+
+  public void updateOneLineIntroduction(String newOneLineIntroduction) {
+    this.oneLineIntroduction = newOneLineIntroduction;
+  }
 }

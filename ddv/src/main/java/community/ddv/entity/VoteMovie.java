@@ -19,7 +19,6 @@ import lombok.Setter;
 @NoArgsConstructor
 @AllArgsConstructor
 @Getter
-@Setter
 public class VoteMovie {
 
   @Id
