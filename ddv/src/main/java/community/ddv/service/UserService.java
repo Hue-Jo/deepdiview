@@ -221,7 +221,7 @@ public class UserService {
       }
 
       // 존재하지 않는 닉네임일 시, 닉네임 변경 성공
-      user.setNickname(newNickname);
+      user.updateNickname(newNickname);
       log.info("닉네임 변경성공");
     }
 
@@ -229,16 +229,14 @@ public class UserService {
       log.info("비밀번호 변경시도");
 
       if (!isValidPassword(newPassword)) {
-        log.info("8자 이상 입력하지 않았기 때문에 비밀번호 변경 실패");
         throw new DeepdiviewException(ErrorCode.NOT_ENOUGH_PASSWORD);
       } else {
         if (!newPassword.equals(newConfirmPassword)) {
-          log.info("비밀번호 확인 번호와 일치 하지 않기 떄문에 비밀번호 변경 실패");
           throw new DeepdiviewException(ErrorCode.NOT_VALID_PASSWORD);
         }
       }
 
-      user.setPassword(passwordEncoder.encode(newPassword));
+      user.updatePassword(passwordEncoder.encode(newPassword));
       log.info("비밀번호 변경성공");
     }
 
@@ -269,16 +267,16 @@ public class UserService {
     // 기존의 한줄소개가 없었던 경우
     if (user.getOneLineIntroduction() == null) {
       if (!newOneLineIntro.isEmpty()) {
-        user.setOneLineIntroduction(newOneLineIntro);
+        user.updateOneLineIntroduction(newOneLineIntro);
         log.info("한줄소개 설정 완료");
       }
     } else {
       // 기존의 한줄 소개가 존재하는 경우
       if (newOneLineIntro.isEmpty()) {
-        user.setOneLineIntroduction(null);
+        user.updateOneLineIntroduction(null);
         log.info("한줄소개 삭제 완료");
       } else {
-        user.setOneLineIntroduction(newOneLineIntro);
+        user.updateOneLineIntroduction(newOneLineIntro);
         log.info("한줄소개 수정 완료");
       }
     }
@@ -413,7 +411,7 @@ public class UserService {
       throw new IOException("새 프로필 사진 업로드 중 문제가 발생했습니다.");
     }
 
-    user.setProfileImageUrl(newProfileImageUrl);
+    user.updateProfileImageUrl(newProfileImageUrl);
     userRepository.save(user);
     log.info("프로필 이미지 등록/수정 완료");
     return newProfileImageUrl;
@@ -436,7 +434,7 @@ public class UserService {
         throw new IOException("프로필 사진 삭제 중 문제 발생");
       }
 
-      user.setProfileImageUrl(null);
+      user.updateProfileImageUrl(null);
       userRepository.save(user);
       log.info("프로필 사진 삭제 완료");
     }
