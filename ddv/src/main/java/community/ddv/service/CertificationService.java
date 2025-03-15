@@ -80,26 +80,12 @@ public class CertificationService {
       // 전체 조회
       log.info("인증 전체 조회");
       return certificationRepository.findAll(pageable)
-          .map(certification -> CertificationResponseDto.builder()
-              .id(certification.getId())
-              .userId(certification.getUser().getId())
-              .certificationUrl(certification.getCertificationUrl())
-              .status(certification.getStatus())
-              .rejectionReason(certification.getRejectionReason())
-              .createdAt(certification.getCreatedAt())
-              .build());
+          .map(this::convertToCertificationDto);
     } else {
       // 인증 상태에 따른 조회
       log.info("인증 상태에 따른 조회 : staus = {}", status);
       return certificationRepository.findByStatus(status, pageable)
-          .map(certification -> CertificationResponseDto.builder()
-              .id(certification.getId())
-              .userId(certification.getUser().getId())
-              .certificationUrl(certification.getCertificationUrl())
-              .status(certification.getStatus())
-              .rejectionReason(certification.getRejectionReason())
-              .createdAt(certification.getCreatedAt())
-              .build());
+          .map(this::convertToCertificationDto);
     }
 
   }
@@ -120,14 +106,7 @@ public class CertificationService {
         });
 
     log.info("특정 인증 정보 조회 성공(인증 이미지 확인 완료)");
-    return CertificationResponseDto.builder()
-        .id(certificationId)
-        .userId(certification.getUser().getId())
-        .certificationUrl(certification.getCertificationUrl())
-        .createdAt(certification.getCreatedAt())
-        .status(certification.getStatus())
-        .rejectionReason(certification.getRejectionReason())
-        .build();
+    return convertToCertificationDto(certification);
   }
 
   /**
@@ -167,18 +146,29 @@ public class CertificationService {
     return certificationRepository.existsByUser_IdAndStatus(userId, CertificationStatus.APPROVED);
   }
 
+  private CertificationResponseDto convertToCertificationDto(Certification certification) {
+    return CertificationResponseDto.builder()
+        .id(certification.getId())
+        .userId(certification.getUser().getId())
+        .certificationUrl(certification.getCertificationUrl())
+        .createdAt(certification.getCreatedAt())
+        .status(certification.getStatus())
+        .rejectionReason(certification.getRejectionReason())
+        .build();
+  }
+
   // 인증상태 초기화 (새로운 주가 시작될 때 인증 상태를 null로 초기화)
   @Transactional
   @Scheduled(cron = "0 0 0 * * MON")
   protected void resetCertificationStatus() {
 
-    if (certificationRepository.count() == 0) {
+    log.info("새로운 주가 됨에 따라 인증상태 초기화");
+    int resetCount = certificationRepository.resetAllCertifications();
+
+    if (resetCount == 0) {
       log.warn("초기화할 인증 데이터가 없어 초기화를 스킵합니다.");
       return;
     }
-
-    log.info("새로운 주가 됨에 따라 인증상태 초기화");
-    int resetCount = certificationRepository.resetAllCertifications();
     log.info("초기화된 인증 개수 : {} ", resetCount);
   }
 
