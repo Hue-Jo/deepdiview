@@ -179,6 +179,10 @@ public class UserService {
     User user = getLoginUser();
     log.info("회원탈퇴 요청 : {}", user.getEmail());
 
+    if (user.getRole() == Role.ADMIN) {
+      throw new DeepdiviewException(ErrorCode.ADMIN_CANNOT_BE_DELETED);
+    }
+
     // 비밀번호 확인
     if (!passwordEncoder.matches(accountDeleteDto.getPassword(), user.getPassword())) {
       throw new DeepdiviewException(ErrorCode.NOT_VALID_PASSWORD);
