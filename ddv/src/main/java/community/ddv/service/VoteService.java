@@ -59,13 +59,13 @@ public class VoteService {
 
     // 투표 생성은 일요일만 가능, 한 주에 한 번만 가능
     LocalDateTime now = LocalDateTime.now();
-    if (now.getDayOfWeek() != DayOfWeek.SUNDAY) {
+    if (now.getDayOfWeek() != DayOfWeek.MONDAY) {
       log.error("투표 생성은 일요일만 가능합니다 : 현재요일 = {}", now.getDayOfWeek());
       throw new DeepdiviewException(ErrorCode.INVALID_VOTE_CREAT_DATE);
     }
 
     // 이번주에 이미 생성된 투표가 있는지 확인
-    LocalDateTime weekStart = now.with(DayOfWeek.SUNDAY).with(LocalTime.MIN);
+    LocalDateTime weekStart = now.with(DayOfWeek.MONDAY).with(LocalTime.MIN);
     LocalDateTime weekEnd = now.with(DayOfWeek.SATURDAY).with(LocalTime.MAX);
     boolean voteAlreadyExists = voteRepository.existsByStartDateBetween(weekStart, weekEnd);
     if (voteAlreadyExists) {
@@ -276,6 +276,29 @@ public class VoteService {
     log.info("지난 주 투표 1위 영화 : tmdbId = {}, 득표수 = {}", tmdbId, topVoteMovie.getVoteCount());
 
     return tmdbId;
+  }
+
+  /**
+   * 관리자의 투표 삭제 기능
+   * @param voteId
+   */
+  @Transactional
+  public void deleteVote(Long voteId) {
+
+    User user = userService.getLoginUser();
+
+    if (!user.getRole().equals(Role.ADMIN)) {
+      log.error("관리자만 투표 삭제 가능");
+      throw new DeepdiviewException(ErrorCode.ONLY_ADMIN_CAN);
+    }
+
+    log.info("투표 삭제 시도");
+    Vote vote = voteRepository.findById(voteId)
+        .orElseThrow(() -> new DeepdiviewException(ErrorCode.VOTE_NOT_FOUND));
+
+    voteRepository.delete(vote);
+    log.info("투표 삭제 완료 voteId = {}", voteId);
+
   }
 }
 

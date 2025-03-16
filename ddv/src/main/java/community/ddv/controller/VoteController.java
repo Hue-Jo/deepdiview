@@ -10,6 +10,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -53,5 +54,13 @@ public class VoteController {
       @PathVariable Long voteId) {
     VoteResultDTO voteResultDTO = voteService.getVoteResult(voteId);
     return ResponseEntity.ok(voteResultDTO);
+  }
+
+  @Operation(summary = "투표 삭제", description = "관리자만 삭제 가능")
+  @DeleteMapping("/{voteId}")
+  public ResponseEntity<Void> deleteVote(
+      @PathVariable Long voteId) {
+    voteService.deleteVote(voteId);
+    return ResponseEntity.noContent().build();
   }
 }
