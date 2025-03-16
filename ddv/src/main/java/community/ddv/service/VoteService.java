@@ -136,7 +136,7 @@ public class VoteService {
         .collect(Collectors.toList());
 
     log.info("투표 선택지 조회 완료");
-    return new VoteOptionsDto(tmdbIds);
+    return new VoteOptionsDto(activatingVote.getId(), tmdbIds);
   }
 
   /**
@@ -261,7 +261,7 @@ public class VoteService {
 
     //테스트용
     //LocalDateTime lastStart = now.minusMinutes(10);
-    LocalDateTime lastStart = now.minusHours(8);
+    LocalDateTime lastStart = now.minusHours(1);
     Vote lastWeekVote = voteRepository.findByStartDateBetween(lastStart, now)
         .orElseThrow(() -> new DeepdiviewException(ErrorCode.VOTE_NOT_FOUND));
 
