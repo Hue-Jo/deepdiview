@@ -27,7 +27,7 @@ public class Vote {
 
   private String title;
 
-  @OneToMany(mappedBy = "vote", cascade = CascadeType.ALL)
+  @OneToMany(mappedBy = "vote", cascade = CascadeType.ALL, orphanRemoval = true)
   @Builder.Default
   private List<VoteMovie> voteMovies = new ArrayList<>();
 
