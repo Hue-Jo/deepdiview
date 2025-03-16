@@ -277,5 +277,28 @@ public class VoteService {
 
     return tmdbId;
   }
+
+  /**
+   * 관리자의 투표 삭제 기능
+   * @param voteId
+   */
+  @Transactional
+  public void deleteVote(Long voteId) {
+
+    User user = userService.getLoginUser();
+
+    if (!user.getRole().equals(Role.ADMIN)) {
+      log.error("관리자만 투표 삭제 가능");
+      throw new DeepdiviewException(ErrorCode.ONLY_ADMIN_CAN);
+    }
+
+    log.info("투표 삭제 시도");
+    Vote vote = voteRepository.findById(voteId)
+        .orElseThrow(() -> new DeepdiviewException(ErrorCode.VOTE_NOT_FOUND));
+
+    voteRepository.delete(vote);
+    log.info("투표 삭제 완료 voteId = {}", voteId);
+
+  }
 }
 

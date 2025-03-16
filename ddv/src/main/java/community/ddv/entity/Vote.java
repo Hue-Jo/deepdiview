@@ -31,6 +31,10 @@ public class Vote {
   @Builder.Default
   private List<VoteMovie> voteMovies = new ArrayList<>();
 
+  @OneToMany(mappedBy = "vote", cascade = CascadeType.ALL, orphanRemoval = true)
+  @Builder.Default
+  private List<VoteParticipation> voteParticipations = new ArrayList<>();
+
   private LocalDateTime startDate; // 투표 시작 날짜
   private LocalDateTime endDate; // 투표 마감 날짜
 
