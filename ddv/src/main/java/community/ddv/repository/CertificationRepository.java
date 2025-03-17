@@ -1,5 +1,6 @@
 package community.ddv.repository;
 
+import aj.org.objectweb.asm.commons.Remapper;
 import community.ddv.constant.CertificationStatus;
 import community.ddv.entity.Certification;
 import java.util.Optional;
@@ -26,4 +27,6 @@ public interface CertificationRepository extends JpaRepository<Certification, Lo
   int resetAllCertifications();
 
   Optional<Certification> findByUser_Id(Long userId);
+
+  Page<Certification> findByStatusIsNotNull(Pageable pageable);
 }

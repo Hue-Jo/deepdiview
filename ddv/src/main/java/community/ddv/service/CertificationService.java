@@ -79,7 +79,8 @@ public class CertificationService {
     if (status == null) {
       // 전체 조회
       log.info("인증 전체 조회");
-      return certificationRepository.findAll(pageable)
+      //return certificationRepository.findAll(pageable)
+      return certificationRepository.findByStatusIsNotNull(pageable)
           .map(this::convertToCertificationDto);
     } else {
       // 인증 상태에 따른 조회
@@ -159,7 +160,9 @@ public class CertificationService {
 
   // 인증상태 초기화 (새로운 주가 시작될 때 인증 상태를 null로 초기화)
   @Transactional
-  @Scheduled(cron = "0 0 0 * * MON")
+  //@Scheduled(cron = "0 0 0 * * MON")
+  // 테스트를 위해 매일 0시 정각에 초기화
+  @Scheduled(cron = "0 0 0 * * *")
   protected void resetCertificationStatus() {
 
     log.info("새로운 주가 됨에 따라 인증상태 초기화");
