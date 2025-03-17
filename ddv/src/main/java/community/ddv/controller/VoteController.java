@@ -62,4 +62,11 @@ public class VoteController {
     voteService.deleteVote(voteId);
     return ResponseEntity.noContent().build();
   }
+
+  @Operation(summary = "현재 진행중인 투표에 참여했는지 여부 T/F")
+  @GetMapping("/participation-status")
+  public ResponseEntity<Boolean> checkParticipationStatus() {
+    boolean participated = voteService.isUserAlreadyParticipatedInCurrentVote();
+    return ResponseEntity.ok(participated);
+  }
 }

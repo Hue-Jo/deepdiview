@@ -289,5 +289,17 @@ public class VoteService {
     log.info("투표 삭제 완료 voteId = {}", voteId);
 
   }
+
+  @Transactional(readOnly = true)
+  public boolean isUserAlreadyParticipatedInCurrentVote() {
+
+    User user = userService.getLoginUser();
+    LocalDateTime now = LocalDateTime.now();
+
+    Vote currentVote = voteRepository.findByStartDateBeforeAndEndDateAfter(now, now)
+        .orElseThrow(() -> new DeepdiviewException(ErrorCode.INVALID_VOTE_PERIOD));
+
+    return voteParticipationRepository.existsByUserAndVote(user, currentVote);
+  }
 }
 
