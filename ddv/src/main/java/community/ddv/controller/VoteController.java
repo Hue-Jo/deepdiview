@@ -39,12 +39,11 @@ public class VoteController {
     return ResponseEntity.status(HttpStatus.OK).body(options);
   }
 
-  @Operation(summary = "투표 참여")
-  @PostMapping("/{voteId}")
+  @Operation(summary = "현재 진행중인 투표에 참여하기")
+  @PostMapping("/participate")
   public ResponseEntity<VoteParticipationResponseDto> participateVote(
-      @PathVariable Long voteId,
       @RequestBody VoteParticipationRequestDto voteParticipationRequestDto) {
-    VoteParticipationResponseDto responseDTO = voteService.participateVote(voteId, voteParticipationRequestDto);
+    VoteParticipationResponseDto responseDTO = voteService.participateVote(voteParticipationRequestDto);
     return ResponseEntity.status(HttpStatus.OK).body(responseDTO);
   }
 
@@ -62,5 +61,12 @@ public class VoteController {
       @PathVariable Long voteId) {
     voteService.deleteVote(voteId);
     return ResponseEntity.noContent().build();
+  }
+
+  @Operation(summary = "현재 진행중인 투표에 참여했는지 여부 T/F")
+  @GetMapping("/participation-status")
+  public ResponseEntity<Boolean> checkParticipationStatus() {
+    boolean participated = voteService.isUserAlreadyParticipatedInCurrentVote();
+    return ResponseEntity.ok(participated);
   }
 }

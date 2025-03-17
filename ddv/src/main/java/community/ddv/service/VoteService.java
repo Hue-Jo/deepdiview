@@ -59,13 +59,13 @@ public class VoteService {
 
     // 투표 생성은 일요일만 가능, 한 주에 한 번만 가능
     LocalDateTime now = LocalDateTime.now();
-    if (now.getDayOfWeek() != DayOfWeek.MONDAY) {
+    if (now.getDayOfWeek() != DayOfWeek.TUESDAY) {
       log.error("투표 생성은 일요일만 가능합니다 : 현재요일 = {}", now.getDayOfWeek());
       throw new DeepdiviewException(ErrorCode.INVALID_VOTE_CREAT_DATE);
     }
 
     // 이번주에 이미 생성된 투표가 있는지 확인
-    LocalDateTime weekStart = now.with(DayOfWeek.MONDAY).with(LocalTime.MIN);
+    LocalDateTime weekStart = now.with(DayOfWeek.TUESDAY).with(LocalTime.MIN);
     LocalDateTime weekEnd = now.with(DayOfWeek.SATURDAY).with(LocalTime.MAX);
     boolean voteAlreadyExists = voteRepository.existsByStartDateBetween(weekStart, weekEnd);
     if (voteAlreadyExists) {
@@ -142,17 +142,18 @@ public class VoteService {
   /**
    * 일반 사용자의 투표 참여
    * 중복 참여 불가
-   * @param voteId
    * @param voteParticipationRequestDto
    */
   @Transactional
-  public VoteParticipationResponseDto participateVote(Long voteId,
-      VoteParticipationRequestDto voteParticipationRequestDto) {
-    User user = userService.getLoginUser();
-    log.info("투표 시도 : userId = {}, voteId = {} ", user.getId(), voteId);
+  public VoteParticipationResponseDto participateVote(VoteParticipationRequestDto voteParticipationRequestDto) {
 
-    Vote vote = voteRepository.findById(voteId)
-        .orElseThrow(() -> new DeepdiviewException(ErrorCode.VOTE_NOT_FOUND));
+    User user = userService.getLoginUser();
+    log.info("투표 시도 : userId = {} ", user.getId());
+
+    LocalDateTime now = LocalDateTime.now();
+    // 현재시간 전에 투표가 시작됐어야 하고, 현재시간 후로도 투표가 진행되고 있는, 즉 끝나지 않은 투표 조회
+    Vote vote = voteRepository.findByStartDateBeforeAndEndDateAfter(now, now)
+        .orElseThrow(() -> new DeepdiviewException(ErrorCode.INVALID_VOTE_PERIOD));
 
     // 중복참여 불가
     boolean alreadyParticipated = voteParticipationRepository.existsByUserAndVote(user, vote);
@@ -161,21 +162,9 @@ public class VoteService {
       throw new DeepdiviewException(ErrorCode.AlREADY_VOTED);
     }
 
-    // 투표 기간 내에만 참여가능
-    LocalDateTime now = LocalDateTime.now();
-    if (now.isAfter(vote.getEndDate())) {
-      log.error("이미 종료된 투표입니다. voteId = {}, endDate = {}", voteId, vote.getEndDate());
-      throw new DeepdiviewException(ErrorCode.INVALID_VOTE_PERIOD_ENDED);
-    }
-    if (now.isBefore(vote.getStartDate())) {
-      log.error("아직 시작되지 않은 투표입니다. voteId = {}, startDate = {}", voteId, vote.getStartDate());
-      throw new DeepdiviewException(ErrorCode.INVALID_VOTE_PERIOD_NOT_STARTED);
-    }
-
     // 영화 선택
     VoteMovie selectedVotedMovie = vote.getVoteMovies().stream()
-        .filter(voteMovie -> voteMovie.getMovie().getTmdbId()
-            .equals(voteParticipationRequestDto.getTmdbId()))
+        .filter(voteMovie -> voteMovie.getMovie().getTmdbId().equals(voteParticipationRequestDto.getTmdbId()))
         .findFirst()
         .orElseThrow(() -> new DeepdiviewException(ErrorCode.VOTE_NOT_FOUND));
 
@@ -299,6 +288,18 @@ public class VoteService {
     voteRepository.delete(vote);
     log.info("투표 삭제 완료 voteId = {}", voteId);
 
+  }
+
+  @Transactional(readOnly = true)
+  public boolean isUserAlreadyParticipatedInCurrentVote() {
+
+    User user = userService.getLoginUser();
+    LocalDateTime now = LocalDateTime.now();
+
+    Vote currentVote = voteRepository.findByStartDateBeforeAndEndDateAfter(now, now)
+        .orElseThrow(() -> new DeepdiviewException(ErrorCode.INVALID_VOTE_PERIOD));
+
+    return voteParticipationRepository.existsByUserAndVote(user, currentVote);
   }
 }
 

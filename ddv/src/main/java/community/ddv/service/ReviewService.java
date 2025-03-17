@@ -155,7 +155,6 @@ public class ReviewService {
 
   /**
    * 특정 리뷰 조회
-   *
    * @param reviewId
    */
   @Transactional(readOnly = true)
@@ -209,11 +208,11 @@ public class ReviewService {
   }
 
 
-  private ReviewResponseDTO convertToReviewResponseDto(Review review) {
+  public ReviewResponseDTO convertToReviewResponseDto(Review review) {
     return convertToReviewResponseDtoBase(review, false);
   }
 
-  private ReviewResponseDTO convertToReviewResponseWithCommentsDto(Review review) {
+  public ReviewResponseDTO convertToReviewResponseWithCommentsDto(Review review) {
     return convertToReviewResponseDtoBase(review, true);
   }
 

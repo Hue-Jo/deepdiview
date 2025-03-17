@@ -4,10 +4,14 @@ import community.ddv.constant.ErrorCode;
 import community.ddv.dto.MovieDTO;
 import community.ddv.dto.ReviewResponseDTO;
 import community.ddv.entity.Movie;
+import community.ddv.entity.Review;
+import community.ddv.entity.User;
 import community.ddv.exception.DeepdiviewException;
 import community.ddv.repository.MovieRepository;
+import community.ddv.repository.ReviewRepository;
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -25,6 +29,8 @@ public class MovieService {
 
   private final MovieRepository movieRepository;
   private final ReviewService reviewService;
+  private final UserService userService;
+  private final ReviewRepository reviewRepository;
 
   /**
    * 넷플릭스 내 인기도 탑 n 영화 세부정보 조회
@@ -60,7 +66,6 @@ public class MovieService {
   public List<MovieDTO> searchMoviesByTitle(String title, Boolean certifiedFilter) {
 
     List<Movie> movies = movieRepository.findByTitleFlexible(title);
-
     if (movies.isEmpty()) {
       log.warn("키워드 '{}'를 포함하는 영화가 존재하지 않습니다.", title);
       throw new DeepdiviewException(ErrorCode.KEYWORD_NOT_FOUND);
@@ -81,6 +86,8 @@ public class MovieService {
    * @param tmdbId
    */
   public MovieDTO getMovieDetailsById(Long tmdbId, Boolean certifiedFilter) {
+
+    User loginUser = userService.getLoginOrNull();
     Movie movie = movieRepository.findByTmdbId(tmdbId)
         .orElseThrow(() -> {
           log.warn("영화 Id {}에 해당하는 영화가 없습니다.", tmdbId);
@@ -88,8 +95,17 @@ public class MovieService {
         });
     Pageable pageable = PageRequest.of(0, 5, Sort.by(Direction.DESC, "createdAt"));
     Page<ReviewResponseDTO> reviews = reviewService.getReviewByMovieId(tmdbId, pageable, certifiedFilter);
+
+    ReviewResponseDTO myReview = null;
+    if (loginUser != null) {
+      Optional<Review> optionalReview = reviewRepository.findByUserAndMovie(loginUser, movie);
+      if (optionalReview.isPresent()) {
+        myReview = reviewService.convertToReviewResponseDto(optionalReview.get());
+      }
+    }
+
     log.info("영화 tmdbId = '{}'로 영화의 세부정보 조회 성공", tmdbId);
-    return convertToDtoWithReviews(movie, reviews.getContent());
+    return convertToDtoWithReviewsAndMyReview(movie, reviews.getContent(), myReview);
   }
 
   // 리뷰 포함
@@ -110,6 +126,27 @@ public class MovieService {
             .map(movieGenre -> movieGenre.getGenre().getName())
             .collect(Collectors.toList()))
         .reviews(reviews)
+        .build();
+  }
+
+  public MovieDTO convertToDtoWithReviewsAndMyReview(Movie movie, List<ReviewResponseDTO> reviews, ReviewResponseDTO myReview) {
+    return MovieDTO.builder()
+        .id(movie.getTmdbId())
+        .title(movie.getTitle())
+        .original_title(movie.getOriginalTitle())
+        .overview(movie.getOverview())
+        .release_date(movie.getReleaseDate())
+        .popularity(movie.getPopularity())
+        .poster_path(movie.getPosterPath())
+        .backdrop_path(movie.getBackdropPath())
+        .genre_ids(movie.getMovieGenres().stream()
+            .map(movieGenre -> movieGenre.getGenre().getId())
+            .collect(Collectors.toList()))
+        .genre_names(movie.getMovieGenres().stream()
+            .map(movieGenre -> movieGenre.getGenre().getName())
+            .collect(Collectors.toList()))
+        .reviews(reviews)
+        .myReview(myReview)
         .build();
   }
 
