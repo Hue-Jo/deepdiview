@@ -78,7 +78,8 @@ public class ReviewService {
         .orElseThrow(() -> new DeepdiviewException(ErrorCode.REVIEW_NOT_FOUND));
 
     if (!review.getUser().equals(user)) {
-      log.warn("리뷰 삭제 권한 없음 - 리뷰 ID: {}, 삭제 요청 유저 ID: {}, 리뷰 작성자 ID: {}", reviewId, user.getId(),review.getUser().getId());
+      log.warn("리뷰 삭제 권한 없음 - 리뷰 ID: {}, 삭제 요청 유저 ID: {}, 리뷰 작성자 ID: {}", reviewId, user.getId(),
+          review.getUser().getId());
       throw new DeepdiviewException(ErrorCode.INVALID_USER);
     }
     reviewRepository.delete(review);
@@ -100,38 +101,38 @@ public class ReviewService {
     Review review = reviewRepository.findById(reviewId)
         .orElseThrow(() -> new DeepdiviewException(ErrorCode.REVIEW_NOT_FOUND));
 
-    if (review.getUser().equals(user)) {
-
-      if (!reviewUpdateDTO.getTitle().isEmpty()) {
-        log.info("리뷰 제목 변경");
-        review.setTitle(reviewUpdateDTO.getTitle());
-      }
-      if (!reviewUpdateDTO.getContent().isEmpty()) {
-        log.info("리뷰 내용 변경");
-        review.setContent(reviewUpdateDTO.getContent());
-      }
-      if (reviewUpdateDTO.getRating() != null) {
-        log.info("리뷰 별점 변경");
-        review.setRating(reviewUpdateDTO.getRating());
-      }
-
-      Review updatedReview = reviewRepository.save(review);
-      log.info("리뷰 수정 완료 - 리뷰 ID: {}", reviewId);
-      return convertToReviewResponseDto(updatedReview);
-
-    } else {
-      log.warn("리뷰 수정 권한 없음 - 리뷰 ID: {}, 수정 요청 유저 ID: {}, 리뷰 작성자 ID: {}", reviewId, user.getId(),review.getUser().getId());
+    if (!review.getUser().equals(user)) {
+      log.warn("리뷰 작성자가 아니므로 수정 불가");
       throw new DeepdiviewException(ErrorCode.INVALID_USER);
     }
+
+    if (!reviewUpdateDTO.getTitle().isEmpty()) {
+      log.info("리뷰 제목 변경");
+      review.setTitle(reviewUpdateDTO.getTitle());
+    }
+    if (!reviewUpdateDTO.getContent().isEmpty()) {
+      log.info("리뷰 내용 변경");
+      review.setContent(reviewUpdateDTO.getContent());
+    }
+    if (reviewUpdateDTO.getRating() != null) {
+      log.info("리뷰 별점 변경");
+      review.setRating(reviewUpdateDTO.getRating());
+    }
+
+    Review updatedReview = reviewRepository.save(review);
+    log.info("리뷰 수정 완료 - 리뷰 ID: {}", reviewId);
+    return convertToReviewResponseDto(updatedReview);
+
   }
 
   /**
    * 특정 영화의 리뷰 조회
-   *
    * @param tmdbId
    */
   @Transactional(readOnly = true)
-  public Page<ReviewResponseDTO> getReviewByMovieId(Long tmdbId, Pageable pageable, Boolean certifiedFilter) {
+  public Page<ReviewResponseDTO> getReviewByMovieId(Long tmdbId, Pageable pageable,
+      Boolean certifiedFilter) {
+
     log.info("특정 영화의 리뷰 조회 시도 - TMDB ID : {}", tmdbId);
     Movie movie = movieRepository.findByTmdbId(tmdbId)
         .orElseThrow(() -> {
@@ -178,7 +179,8 @@ public class ReviewService {
    * @return
    */
   @Transactional(readOnly = true)
-  public Page<ReviewResponseDTO> getReviewsByUserId(Long userId, Pageable pageable, Boolean certifiedFilter) {
+  public Page<ReviewResponseDTO> getReviewsByUserId(Long userId, Pageable pageable,
+      Boolean certifiedFilter) {
     log.info("특정 사용자의 리뷰 내역 조회 요청");
     userService.getLoginUser();
 
@@ -208,10 +210,12 @@ public class ReviewService {
   }
 
 
+  // 댓글 포함  X
   public ReviewResponseDTO convertToReviewResponseDto(Review review) {
     return convertToReviewResponseDtoBase(review, false);
   }
 
+  // 댓글 포함  O
   public ReviewResponseDTO convertToReviewResponseWithCommentsDto(Review review) {
     return convertToReviewResponseDtoBase(review, true);
   }
@@ -219,12 +223,12 @@ public class ReviewService {
   private ReviewResponseDTO convertToReviewResponseDtoBase(Review review, boolean includeComments) {
 
     User loginUser = userService.getLoginOrNull();
-    Boolean likedByUser = (loginUser != null) ?
-        review.getLikes().stream().anyMatch(like -> like.getUser().equals(loginUser))
+    Boolean likedByUser = (loginUser != null)
+        ? review.getLikes().stream().anyMatch(like -> like.getUser().equals(loginUser))
         : null;
 
     Movie movie = review.getMovie();
-    ReviewResponseDTO.ReviewResponseDTOBuilder builder  = ReviewResponseDTO.builder()
+    ReviewResponseDTO.ReviewResponseDTOBuilder builder = ReviewResponseDTO.builder()
         .reviewId(review.getId())
         .userId(review.getUser().getId())
         .nickname(review.getUser().getNickname())
@@ -243,11 +247,9 @@ public class ReviewService {
 
     if (includeComments) {
       builder.comments(review.getComments().stream()
-              .map(this::convertToCommentDto)
-              .collect(Collectors.toList()))
-          .build();
+          .map(this::convertToCommentDto)
+          .collect(Collectors.toList()));
     }
-
     return builder.build();
   }
 

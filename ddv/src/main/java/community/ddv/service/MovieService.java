@@ -87,7 +87,6 @@ public class MovieService {
    */
   public MovieDTO getMovieDetailsById(Long tmdbId, Boolean certifiedFilter) {
 
-    User loginUser = userService.getLoginOrNull();
     Movie movie = movieRepository.findByTmdbId(tmdbId)
         .orElseThrow(() -> {
           log.warn("영화 Id {}에 해당하는 영화가 없습니다.", tmdbId);
@@ -97,6 +96,7 @@ public class MovieService {
     Page<ReviewResponseDTO> reviews = reviewService.getReviewByMovieId(tmdbId, pageable, certifiedFilter);
 
     ReviewResponseDTO myReview = null;
+    User loginUser = userService.getLoginOrNull();
     if (loginUser != null) {
       Optional<Review> optionalReview = reviewRepository.findByUserAndMovie(loginUser, movie);
       if (optionalReview.isPresent()) {
@@ -108,28 +108,24 @@ public class MovieService {
     return convertToDtoWithReviewsAndMyReview(movie, reviews.getContent(), myReview);
   }
 
+
   // 리뷰 포함
   public MovieDTO convertToDtoWithReviews(Movie movie, List<ReviewResponseDTO> reviews) {
-    return MovieDTO.builder()
-        .id(movie.getTmdbId())
-        .title(movie.getTitle())
-        .original_title(movie.getOriginalTitle())
-        .overview(movie.getOverview())
-        .release_date(movie.getReleaseDate())
-        .popularity(movie.getPopularity())
-        .poster_path(movie.getPosterPath())
-        .backdrop_path(movie.getBackdropPath())
-        .genre_ids(movie.getMovieGenres().stream()
-            .map(movieGenre -> movieGenre.getGenre().getId())
-            .collect(Collectors.toList()))
-        .genre_names(movie.getMovieGenres().stream()
-            .map(movieGenre -> movieGenre.getGenre().getName())
-            .collect(Collectors.toList()))
-        .reviews(reviews)
-        .build();
+    return convertToDto(movie, reviews, null);
   }
 
+  // 리뷰 포함 X
+  public MovieDTO convertToDtoWithoutReviews(Movie movie) {
+    return convertToDto(movie, Collections.emptyList(), null);
+  }
+
+  // 리뷰 & 내 리뷰 포함
   public MovieDTO convertToDtoWithReviewsAndMyReview(Movie movie, List<ReviewResponseDTO> reviews, ReviewResponseDTO myReview) {
+    return convertToDto(movie, reviews, myReview);
+  }
+
+
+  public MovieDTO convertToDto(Movie movie, List<ReviewResponseDTO> reviews, ReviewResponseDTO myReview) {
     return MovieDTO.builder()
         .id(movie.getTmdbId())
         .title(movie.getTitle())
@@ -148,10 +144,5 @@ public class MovieService {
         .reviews(reviews)
         .myReview(myReview)
         .build();
-  }
-
-  // 리뷰 포함 X
-  public MovieDTO convertToDtoWithoutReviews(Movie movie) {
-    return convertToDtoWithReviews(movie, Collections.emptyList());
   }
 }
