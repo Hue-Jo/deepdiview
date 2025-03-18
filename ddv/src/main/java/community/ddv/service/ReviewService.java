@@ -146,7 +146,6 @@ public class ReviewService {
       log.info("인증된 리뷰만 조회");
       reviews = reviewRepository.findByMovieAndCertifiedTrue(movie, pageable);
     } else {
-      log.info("모든 리뷰 조회");
       reviews = reviewRepository.findByMovie(movie, pageable);
     }
 

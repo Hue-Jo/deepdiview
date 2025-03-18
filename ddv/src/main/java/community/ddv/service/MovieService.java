@@ -15,12 +15,14 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.domain.Sort.Direction;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
@@ -48,6 +50,8 @@ public class MovieService {
   /**
    * 넷플릭스 내 인기도 탑 20 영화 세부정보 조회
    */
+  @Transactional(readOnly = true)
+  @Cacheable(value = "top20Movies", key = "'top20Movies'")
   public List<MovieDTO> getTop20Movies() {
     return getTopMovies(20);
   }
@@ -55,6 +59,7 @@ public class MovieService {
   /**
    * 넷플릭스 내 인기도 탑 5 영화 세부정보 조회
    */
+  @Transactional(readOnly = true)
   public List<MovieDTO> getTop5Movies() {
     return getTopMovies(5);
   }

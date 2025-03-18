@@ -17,11 +17,4 @@ public class VoteMovieResultDTO {
   private int rank;      // 등수
   private LocalDateTime lastVotedTime; // 마지막 득표 시간
 
-  public VoteMovieResultDTO(Long tmdbId, int voteCount) {
-    this.tmdbId = tmdbId;
-    this.voteCount = voteCount;
-  }
-
-
-
 }
