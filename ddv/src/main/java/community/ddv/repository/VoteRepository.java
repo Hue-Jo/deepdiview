@@ -17,4 +17,6 @@ public interface VoteRepository extends JpaRepository<Vote, Long> {
 
   // 지난주 생성된 투표 조회
   Optional<Vote> findByStartDateBetween(LocalDateTime startDate, LocalDateTime endDate);
+
+  Optional<Vote> findTopByOrderByStartDateDesc();
 }
