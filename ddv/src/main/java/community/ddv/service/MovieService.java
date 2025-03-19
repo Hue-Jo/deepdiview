@@ -15,12 +15,14 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.domain.Sort.Direction;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
@@ -48,6 +50,8 @@ public class MovieService {
   /**
    * 넷플릭스 내 인기도 탑 20 영화 세부정보 조회
    */
+  @Transactional(readOnly = true)
+  @Cacheable(value = "top20Movies", key = "'top20Movies'")
   public List<MovieDTO> getTop20Movies() {
     return getTopMovies(20);
   }
@@ -55,6 +59,7 @@ public class MovieService {
   /**
    * 넷플릭스 내 인기도 탑 5 영화 세부정보 조회
    */
+  @Transactional(readOnly = true)
   public List<MovieDTO> getTop5Movies() {
     return getTopMovies(5);
   }
@@ -87,7 +92,6 @@ public class MovieService {
    */
   public MovieDTO getMovieDetailsById(Long tmdbId, Boolean certifiedFilter) {
 
-    User loginUser = userService.getLoginOrNull();
     Movie movie = movieRepository.findByTmdbId(tmdbId)
         .orElseThrow(() -> {
           log.warn("영화 Id {}에 해당하는 영화가 없습니다.", tmdbId);
@@ -97,6 +101,7 @@ public class MovieService {
     Page<ReviewResponseDTO> reviews = reviewService.getReviewByMovieId(tmdbId, pageable, certifiedFilter);
 
     ReviewResponseDTO myReview = null;
+    User loginUser = userService.getLoginOrNull();
     if (loginUser != null) {
       Optional<Review> optionalReview = reviewRepository.findByUserAndMovie(loginUser, movie);
       if (optionalReview.isPresent()) {
@@ -108,28 +113,24 @@ public class MovieService {
     return convertToDtoWithReviewsAndMyReview(movie, reviews.getContent(), myReview);
   }
 
+
   // 리뷰 포함
   public MovieDTO convertToDtoWithReviews(Movie movie, List<ReviewResponseDTO> reviews) {
-    return MovieDTO.builder()
-        .id(movie.getTmdbId())
-        .title(movie.getTitle())
-        .original_title(movie.getOriginalTitle())
-        .overview(movie.getOverview())
-        .release_date(movie.getReleaseDate())
-        .popularity(movie.getPopularity())
-        .poster_path(movie.getPosterPath())
-        .backdrop_path(movie.getBackdropPath())
-        .genre_ids(movie.getMovieGenres().stream()
-            .map(movieGenre -> movieGenre.getGenre().getId())
-            .collect(Collectors.toList()))
-        .genre_names(movie.getMovieGenres().stream()
-            .map(movieGenre -> movieGenre.getGenre().getName())
-            .collect(Collectors.toList()))
-        .reviews(reviews)
-        .build();
+    return convertToDto(movie, reviews, null);
   }
 
+  // 리뷰 포함 X
+  public MovieDTO convertToDtoWithoutReviews(Movie movie) {
+    return convertToDto(movie, Collections.emptyList(), null);
+  }
+
+  // 리뷰 & 내 리뷰 포함
   public MovieDTO convertToDtoWithReviewsAndMyReview(Movie movie, List<ReviewResponseDTO> reviews, ReviewResponseDTO myReview) {
+    return convertToDto(movie, reviews, myReview);
+  }
+
+
+  public MovieDTO convertToDto(Movie movie, List<ReviewResponseDTO> reviews, ReviewResponseDTO myReview) {
     return MovieDTO.builder()
         .id(movie.getTmdbId())
         .title(movie.getTitle())
@@ -148,10 +149,5 @@ public class MovieService {
         .reviews(reviews)
         .myReview(myReview)
         .build();
-  }
-
-  // 리뷰 포함 X
-  public MovieDTO convertToDtoWithoutReviews(Movie movie) {
-    return convertToDtoWithReviews(movie, Collections.emptyList());
   }
 }

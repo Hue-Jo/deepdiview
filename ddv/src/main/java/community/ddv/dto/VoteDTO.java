@@ -20,7 +20,6 @@ public class VoteDTO {
     private String title; // 투표 제목
     private LocalDateTime startDate;
     private LocalDateTime endDate;
-    //private List<Long> movieTmdbIds; // 투표에 포함된 영화 리스트
     private List<VoteMovieResultDTO> movieDetails = new ArrayList<>();  // tmdbIds, 등수, 투표수
 
     public VoteCreatedDTO(Vote vote) {
@@ -30,12 +29,6 @@ public class VoteDTO {
       endDate = vote.getEndDate();
 
       int rank = 1;
-//      for (Movie movie : vote.getVoteMovies().stream().map(VoteMovie::getMovie).toList()) {
-//        VoteMovieResultDTO movieVoteDto = new VoteMovieResultDTO(
-//            movie.getTmdbId(),
-//            0,
-//            rank
-//        );
       for (VoteMovie voteMovie : vote.getVoteMovies()) {
         Movie movie = voteMovie.getMovie();
         VoteMovieResultDTO voteMovieResultDTO = new VoteMovieResultDTO(
@@ -49,9 +42,6 @@ public class VoteDTO {
 
       }
     }
-//      movieTmdbIds = vote.getMovies().stream()
-//          .map(Movie::getTmdbId)
-//          .collect(Collectors.toList());
   }
 
   @Getter
