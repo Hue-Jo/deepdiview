@@ -58,7 +58,7 @@ public class DiscussionController {
   public ResponseEntity<Map<String, Long>> getThisWeekMovie() {
     Long tmdbId = voteService.getLastWeekTopVoteMovie();
     Map<String, Long> response = new HashMap<>();
-    response.put("이번주 영화 TmdbId", tmdbId);
+    response.put("TmdbId", tmdbId);
     return ResponseEntity.ok(response);
   }
 }

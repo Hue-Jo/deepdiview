@@ -27,7 +27,6 @@ import java.util.List;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -185,18 +184,9 @@ public class VoteService {
   }
 
   /**
-   * 특정 투표 결과 조회
-   * @param voteId
+   * 투표 결과 계산 메서드
    */
-  @Transactional(readOnly = true)
-  public VoteResultDTO getVoteResult(Long voteId){
-    log.info("투표 결과 조회 시도 : voteId = {}", voteId);
-
-    Vote vote = voteRepository.findById(voteId)
-        .orElseThrow(() -> {
-          log.error("투표를 찾을 수 없음 : voteId = {}", voteId);
-          return new DeepdiviewException(ErrorCode.VOTE_NOT_FOUND);
-        });
+  private List<VoteMovieResultDTO> calculateVoteResult(Vote vote) {
 
     // 투표 결과 저장 리스트 생성
     List<VoteMovieResultDTO> voteResults = new ArrayList<>();
@@ -215,10 +205,10 @@ public class VoteService {
     voteResults.sort(
         // 득표수 오름차순 정렬 (comparingInt는 기본적으로 오름차순 정렬만 제공)
         Comparator.comparingInt(VoteMovieResultDTO::getVoteCount)
-        // 내림차순 정렬로 변환
-        .reversed()
-        // 득표수가 같은 경우, 최신 득표 시간 기준 정렬
-        .thenComparing(VoteMovieResultDTO::getLastVotedTime, Comparator.nullsLast(Comparator.reverseOrder()))
+            // 내림차순 정렬로 변환
+            .reversed()
+            // 득표수가 같은 경우, 최신 득표 시간 기준 정렬
+            .thenComparing(VoteMovieResultDTO::getLastVotedTime, Comparator.nullsLast(Comparator.reverseOrder()))
     );
 
     // 랭크 할당
@@ -226,15 +216,62 @@ public class VoteService {
     for (VoteMovieResultDTO resultDTO : voteResults) {
       resultDTO.setRank(rank++);
     }
+    return voteResults;
+  }
 
+  /**
+   * 투표 결과 추출 메서드
+   */
+  private VoteResultDTO createVoteResultDto(Vote vote) {
+    List<VoteMovieResultDTO> voteResults = calculateVoteResult(vote);
     return new VoteResultDTO(
         vote.getId(),
         vote.getStartDate(),
         vote.getEndDate(),
         vote.getEndDate().isAfter(LocalDateTime.now()),
-        voteResults);
+        voteResults
+    );
   }
 
+  /**
+   * 특정투표 결과 조회
+   * @param voteId
+   */
+  @Transactional(readOnly = true)
+  public VoteResultDTO getVoteResult(Long voteId){
+    log.info("특정투표 결과 조회 시도 : voteId = {}", voteId);
+
+    Vote vote = voteRepository.findById(voteId)
+        .orElseThrow(() -> new DeepdiviewException(ErrorCode.VOTE_NOT_FOUND));
+
+    return createVoteResultDto(vote);
+  }
+
+  /**
+   * 현재 진행중인 투표 결과 조회
+   */
+  @Transactional(readOnly = true)
+  public VoteResultDTO getCurrentVoteResult(){
+
+    LocalDateTime now = LocalDateTime.now();
+    Vote currentVote = voteRepository.findByStartDateBeforeAndEndDateAfter(now, now)
+        .orElseThrow(() -> new DeepdiviewException(ErrorCode.VOTE_NOT_FOUND));
+
+    log.info("현재 진행중인 투표 결과 조회");
+    return createVoteResultDto(currentVote);
+  }
+
+
+  /**
+   * 가장 최근 진행됐던 투표 결과 조회
+   */
+  @Transactional(readOnly = true)
+  public VoteResultDTO getLatestVoteResult() {
+    Vote latestVote = voteRepository.findTopByOrderByStartDateDesc()
+        .orElseThrow(() -> new DeepdiviewException(ErrorCode.VOTE_NOT_FOUND));
+    log.info("가장 최근에 진행했던 투표 결과 조회");
+    return getVoteResult(latestVote.getId());
+  }
 
   /**
    * 지난 주 1위 영화 가져오는 메서드
@@ -243,15 +280,16 @@ public class VoteService {
   // @Cacheable(value = "topRankMovie", key = "'last_week_top_movie'")
   public Long getLastWeekTopVoteMovie() {
     log.info("지난주 투표 1위 영화조회 시작");
-    LocalDateTime now = LocalDateTime.now();
-//    LocalDateTime lastWeekStart = now.minusWeeks(1).with(DayOfWeek.MONDAY).with((LocalTime.MIN));
-//    LocalDateTime lastWeekEnd = now.minusWeeks(1).with(DayOfWeek.SATURDAY).with((LocalTime.MAX));
-//    Vote lastWeekVote = voteRepository.findByStartDateBetween(lastWeekStart, lastWeekEnd)
-//    Vote lastWeekVote = voteRepository.findByStartDateBetween(lastWeekStart, lastWeekEnd)
-//        .orElseThrow(() -> new DeepdiviewException(ErrorCode.VOTE_RESULT_NOT_FOUND));
 
-    //테스트용
-    //LocalDateTime lastStart = now.minusMinutes(10);
+    LocalDateTime now = LocalDateTime.now();
+    // 본래 코드
+//    LocalDateTime lastWeekStart = now.minusWeeks(1).with(DayOfWeek.MONDAY).with(LocalTime.MIN);
+//    LocalDateTime lastWeekEnd = now.minusWeeks(1).with(DayOfWeek.SATURDAY).with(LocalTime.MAX);
+//    Vote lastWeekVote = voteRepository.findByStartDateBetween(lastWeekStart, lastWeekEnd)
+//        .orElseThrow(() -> new DeepdiviewException(ErrorCode.VOTE_NOT_FOUND));
+//    VoteResultDTO voteResults = getVoteResult(lastWeekVote.getId());
+
+    // 테스트용코드
     LocalDateTime lastStart = now.minusHours(1);
     Vote lastWeekVote = voteRepository.findByStartDateBetween(lastStart, now)
         .orElseThrow(() -> new DeepdiviewException(ErrorCode.VOTE_NOT_FOUND));
@@ -264,7 +302,7 @@ public class VoteService {
 
     VoteMovieResultDTO topVoteMovie = voteResults.getResults().get(0);
     Long tmdbId = topVoteMovie.getTmdbId();
-    log.info("지난 주 투표 1위 영화 : tmdbId = {}, 득표수 = {}", tmdbId, topVoteMovie.getVoteCount());
+    log.info("지난 투표 1위 영화 : tmdbId = {}, 득표수 = {}", tmdbId, topVoteMovie.getVoteCount());
 
     return tmdbId;
   }

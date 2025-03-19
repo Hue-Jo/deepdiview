@@ -47,11 +47,17 @@ public class VoteController {
     return ResponseEntity.status(HttpStatus.OK).body(responseDTO);
   }
 
-  @Operation(summary = "투표 결과 확인")
-  @GetMapping("/{voteId}/result")
-  public ResponseEntity<VoteResultDTO> getVoteResult(
-      @PathVariable Long voteId) {
-    VoteResultDTO voteResultDTO = voteService.getVoteResult(voteId);
+  @Operation(summary = "현재 진행중인 투표 결과 확인", description = "현재 투표가 진행중일 때만 결과 확인 가능합니다.")
+  @GetMapping("/result")
+  public ResponseEntity<VoteResultDTO> getVoteResult() {
+    VoteResultDTO voteResultDTO = voteService.getCurrentVoteResult();
+    return ResponseEntity.ok(voteResultDTO);
+  }
+
+  @Operation(summary = "가장 최근 진행됐던 투표 결과 조회", description = "투표가 진행중일 때도, 끝났을 때도 결과 조회가 가능합니다.")
+  @GetMapping("/result/latest")
+  public ResponseEntity<VoteResultDTO> getLatestVoteResult() {
+    VoteResultDTO voteResultDTO = voteService.getLatestVoteResult();
     return ResponseEntity.ok(voteResultDTO);
   }
 
