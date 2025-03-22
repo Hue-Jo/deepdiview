@@ -59,13 +59,14 @@ public class VoteService {
 
     // 투표 생성은 일요일만 가능, 한 주에 한 번만 가능
     LocalDateTime now = LocalDateTime.now();
-    if (now.getDayOfWeek() != DayOfWeek.THURSDAY) {
+    if (now.getDayOfWeek() != DayOfWeek.SATURDAY) {
       log.error("투표 생성은 일요일만 가능합니다 : 현재요일 = {}", now.getDayOfWeek());
       throw new DeepdiviewException(ErrorCode.INVALID_VOTE_CREAT_DATE);
     }
 
     // 이번주에 이미 생성된 투표가 있는지 확인
-    LocalDateTime weekStart = now.with(DayOfWeek.THURSDAY).with(LocalTime.MIN);
+    //LocalDateTime weekStart = now.with(DayOfWeek.MONDAY).with(LocalTime.MIN);
+    LocalDateTime weekStart = now.with(DayOfWeek.SATURDAY).with(LocalTime.MIN);
     LocalDateTime weekEnd = now.with(DayOfWeek.SATURDAY).with(LocalTime.MAX);
     boolean voteAlreadyExists = voteRepository.existsByStartDateBetween(weekStart, weekEnd);
     if (voteAlreadyExists) {
@@ -78,6 +79,7 @@ public class VoteService {
     // 투표 종료일 : 토요일 23시 59분 59초
     //LocalDateTime endDate = now.with(TemporalAdjusters.next(DayOfWeek.SATURDAY))
     //    .withHour(23).withMinute(59).withSecond(59);
+
     // 테스트용
     LocalDateTime endDate = now.plusMinutes(3);
     log.info("테스트를 위해 3분으로 투표 종료 시간 조절");
