@@ -53,7 +53,7 @@ public class UserService {
    * @param signUpDto - 이메일(중복 불가), 비밀번호, 비밀번호 확인, 닉네임(중복 불가)
    */
   public void signUp(SignUpDto signUpDto) {
-    log.info("회원가입 시도 : {}", signUpDto);
+    log.info("회원가입 시도");
 
     // 같은 이메일로 중복 회원가입 불가
     if (userRepository.findByEmail(signUpDto.getEmail()).isPresent()) {
@@ -194,6 +194,9 @@ public class UserService {
     // 사용자 삭제
     userRepository.delete(user);
     log.info("회원탈퇴 완료");
+
+    SecurityContextHolder.clearContext();
+    log.info("SecurityContext 초기화");
   }
 
   /**

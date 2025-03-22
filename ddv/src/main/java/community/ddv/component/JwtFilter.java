@@ -43,7 +43,6 @@ public class JwtFilter extends OncePerRequestFilter {
       Authentication authentication = new UsernamePasswordAuthenticationToken(userDetails, null,
           Collections.singletonList(new SimpleGrantedAuthority(role.name())));
       SecurityContextHolder.getContext().setAuthentication(authentication);
-      log.info("인증된 유저");
     }
 //    else {
 //      log.error("유효하지 않은 토큰");
