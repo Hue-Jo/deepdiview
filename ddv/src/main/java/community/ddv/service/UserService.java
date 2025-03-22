@@ -194,6 +194,9 @@ public class UserService {
     // 사용자 삭제
     userRepository.delete(user);
     log.info("회원탈퇴 완료");
+
+    SecurityContextHolder.clearContext();
+    log.info("SecurityContext 초기화");
   }
 
   /**
