@@ -68,4 +68,11 @@ public class VoteController {
     boolean participated = voteService.isUserAlreadyParticipatedInCurrentVote();
     return ResponseEntity.ok(participated);
   }
+
+  @Operation(summary = "지난주 투표 전체 결과 조회", description = "지난주에 진행한 투표의 전체 결과를 볼 수 있습니다.")
+  @GetMapping("/result/latest")
+  public ResponseEntity<VoteResultDTO> getLatestVoteResult() {
+    VoteResultDTO voteResultDTO = voteService.getLatestVoteResult();
+    return ResponseEntity.ok(voteResultDTO);
+  }
 }
