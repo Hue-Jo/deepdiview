@@ -52,7 +52,6 @@ public class LikeService {
       log.info("졸아요 성공 (좋아요 +1)");
 
       notificationService.likeAdded(user.getId(), review.getId());
-      log.info("좋아요가 달렸다는 알림 전송 완료");
     }
   }
 

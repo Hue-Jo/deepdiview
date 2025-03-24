@@ -47,7 +47,6 @@ public class CommentService {
     log.info("댓글 작성 완료 - 댓글 ID : {}, 리뷰 ID : {}", newComment.getId(), reviewId);
 
     notificationService.commentAdded(user.getId(), reviewId);
-    log.info("댓글이 달렸다는 알림 전송 완료 ");
 
     return convertToCommentResponse(newComment);
   }
