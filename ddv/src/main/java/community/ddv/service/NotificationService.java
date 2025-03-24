@@ -15,6 +15,7 @@ import community.ddv.repository.NotificationRepository;
 import community.ddv.repository.ReviewRepository;
 import java.io.IOException;
 import java.time.LocalDateTime;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -48,9 +49,9 @@ public class NotificationService {
     // 이미 구독중이면 종료 후 제거
     SseEmitter existingEmitter = userEmitters.get(userId);
     if (existingEmitter != null) {
+      log.info("기존 SSE 연결 종료");
       existingEmitter.complete();
       userEmitters.remove(userId);
-      log.info("기존의 SSE 연결 종료");
     }
 
     // 새로운 SSE 연결
@@ -58,21 +59,21 @@ public class NotificationService {
 
     // 새 연결 저장
     userEmitters.put(userId, emitter);
-    log.info("새 SSE 연결 저장");
+    log.info("새로운 SSE 연결 추가 : userId = {}", userId);
 
     // 연결 종료시 emitter 제거
     emitter.onCompletion(() -> {
-      log.info("SSE 연결 완료");
+      log.info("SSE 연결 종료");
       userEmitters.remove(userId);
     });
 
     emitter.onTimeout(() -> {
-      log.info("SSE 연결 타임아웃");
+      log.warn("SSE 연결 타임아웃 : userId = {}", userId);
       userEmitters.remove(userId);
     });
 
     emitter.onError((e) -> {
-      log.info("SSE 연결 오류 발생");
+      log.error("SSE 연결 에러 발생 : userId = {}, error = {}", userId, e.getMessage());
       userEmitters.remove(userId);
     });
 
@@ -92,20 +93,24 @@ public class NotificationService {
   // 30초마다 ping 보내기
   @Scheduled(fixedRate = 30000)
   public void sendPingToClients() {
-    for(Map.Entry<Long, SseEmitter> entry : userEmitters.entrySet()) {
+    for (Map.Entry<Long, SseEmitter> entry : new HashMap<>(userEmitters).entrySet()) {
       Long userId = entry.getKey();
       SseEmitter sseEmitter = entry.getValue();
+
+      if (sseEmitter == null) {
+        continue;
+      }
 
       try {
         sseEmitter.send(SseEmitter.event()
             .name("ping")
-            .data("ping"));
+            .data("keep-alive"));
       } catch (IOException e) {
-        sseEmitter.completeWithError(e);
-        userEmitters.remove(userId);
+        log.error("ping 전송 실패: userId = {}, error = {}", userId, e.getMessage());
+        sseEmitter.completeWithError(e); // 연결 종료
+        userEmitters.remove(userId); // 목록에서 제거
       }
     }
-
   }
 
   /**
