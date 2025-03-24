@@ -135,6 +135,7 @@ public class NotificationService {
 
     notificationRepository.save(notification);
 
+    log.info("댓글이 달렸다는 알림 전송 완료 ");
     sendNotification(reviewer.getId(), notificationDTO);
   }
 
@@ -169,6 +170,7 @@ public class NotificationService {
         .build();
 
     notificationRepository.save(notification);
+    log.info("좋아요가 달렸다는 알림 전송 완료");
 
     sendNotification(reviewer.getId(), notificationDTO);
   }
@@ -205,6 +207,8 @@ public class NotificationService {
         .build();
 
     notificationRepository.save(notification);
+    log.info("인증 결과 알림 전송");
+
     sendNotification(user.getId(), notificationDTO);
   }
 
