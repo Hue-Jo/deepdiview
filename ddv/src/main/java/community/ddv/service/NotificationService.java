@@ -21,6 +21,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
@@ -43,8 +44,8 @@ public class NotificationService {
   public SseEmitter subscribe(Long userId) {
 
     log.info("SSE 구독 시작 : userId = {}", userId);
-    // 이미 구독중이면 종료 후 제거
 
+    // 이미 구독중이면 종료 후 제거
     SseEmitter existingEmitter = userEmitters.get(userId);
     if (existingEmitter != null) {
       existingEmitter.complete();
@@ -54,7 +55,7 @@ public class NotificationService {
 
     // 새로운 SSE 연결
     SseEmitter emitter = new SseEmitter(30 * 60 * 1000L); // 30 * 60 초 (타임아웃 30분)
-    log.info("새 SSE Emitter 생성 : 타임아웃 = 30분");
+
     // 새 연결 저장
     userEmitters.put(userId, emitter);
     log.info("새 SSE 연결 저장");
@@ -64,8 +65,14 @@ public class NotificationService {
       log.info("SSE 연결 완료");
       userEmitters.remove(userId);
     });
+
     emitter.onTimeout(() -> {
       log.info("SSE 연결 타임아웃");
+      userEmitters.remove(userId);
+    });
+
+    emitter.onError((e) -> {
+      log.info("SSE 연결 오류 발생");
       userEmitters.remove(userId);
     });
 
@@ -75,9 +82,30 @@ public class NotificationService {
           .data("SSE 연결 성공 초기 메시지"));
     } catch (IOException e) {
       emitter.completeWithError(e);
+      userEmitters.remove(userId);
     }
 
     return emitter;
+  }
+
+
+  // 30초마다 ping 보내기
+  @Scheduled(fixedRate = 30000)
+  public void sendPingToClients() {
+    for(Map.Entry<Long, SseEmitter> entry : userEmitters.entrySet()) {
+      Long userId = entry.getKey();
+      SseEmitter sseEmitter = entry.getValue();
+
+      try {
+        sseEmitter.send(SseEmitter.event()
+            .name("ping")
+            .data("ping"));
+      } catch (IOException e) {
+        sseEmitter.completeWithError(e);
+        userEmitters.remove(userId);
+      }
+    }
+
   }
 
   /**
