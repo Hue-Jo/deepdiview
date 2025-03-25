@@ -15,7 +15,6 @@ import community.ddv.repository.NotificationRepository;
 import community.ddv.repository.ReviewRepository;
 import java.io.IOException;
 import java.time.LocalDateTime;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -56,14 +55,12 @@ public class NotificationService {
 
     // 새로운 SSE 연결
     SseEmitter emitter = new SseEmitter(30 * 60 * 1000L); // 30 * 60 초 (타임아웃 30분)
-
-    // 새 연결 저장
     userEmitters.put(userId, emitter);
     log.info("새로운 SSE 연결 추가 : userId = {}", userId);
 
     // 연결 종료시 emitter 제거
     emitter.onCompletion(() -> {
-      log.info("SSE 연결 종료");
+      log.info("SSE 연결 종료 : userId = {}", userId);
       userEmitters.remove(userId);
     });
 
@@ -78,10 +75,12 @@ public class NotificationService {
     });
 
     try {
+      log.info("SSE 초기 메시지 전송 시도: userId = {}", userId);
       emitter.send(SseEmitter.event()
           .name("connect")
           .data("SSE 연결 성공 초기 메시지"));
     } catch (IOException e) {
+      log.error("SSE 초기 메시지 전송 실패: userId = {}, error = {}", userId, e.getMessage());
       emitter.completeWithError(e);
       userEmitters.remove(userId);
     }
@@ -93,7 +92,12 @@ public class NotificationService {
   // 30초마다 ping 보내기
   @Scheduled(fixedRate = 30000)
   public void sendPingToClients() {
-    for (Map.Entry<Long, SseEmitter> entry : new HashMap<>(userEmitters).entrySet()) {
+
+    if (userEmitters.isEmpty()) {
+      return; // ping 보낼 구독자가 없으면 return
+    }
+
+    for (Map.Entry<Long, SseEmitter> entry : userEmitters.entrySet()) {
       Long userId = entry.getKey();
       SseEmitter sseEmitter = entry.getValue();
 
@@ -106,8 +110,7 @@ public class NotificationService {
             .name("ping")
             .data("keep-alive"));
       } catch (IOException e) {
-        log.error("ping 전송 실패: userId = {}, error = {}", userId, e.getMessage());
-        sseEmitter.completeWithError(e); // 연결 종료
+        sseEmitter.complete(); // 연결 종료
         userEmitters.remove(userId); // 목록에서 제거
       }
     }
