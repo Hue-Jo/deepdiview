@@ -43,6 +43,12 @@ public class NotificationService {
    */
   public SseEmitter subscribe(Long userId) {
 
+    // 로그인된 사용자만 구독을 허용
+    User loggedInUser = userService.getLoginUser();  // 로그인된 사용자 확인
+    if (!loggedInUser.getId().equals(userId)) {
+      throw new DeepdiviewException(ErrorCode.UNAUTHORIZED);  // 예외 처리
+    }
+
     log.info("SSE 구독 시작 : userId = {}", userId);
 
     // 이미 구독중이면 종료 후 제거
