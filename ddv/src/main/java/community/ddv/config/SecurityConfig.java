@@ -59,6 +59,7 @@ public class SecurityConfig {
             .requestMatchers(HttpMethod.GET, "/api/reviews/{reviewId}/comments").permitAll()
             .requestMatchers(HttpMethod.GET, "/api/reviews/movie/{tmdbId}").permitAll()
             .requestMatchers(HttpMethod.GET, "/api/reviews/latest").permitAll()
+            .requestMatchers(HttpMethod.GET, "/api/sse/**").authenticated()
             .requestMatchers(HttpMethod.POST, "/api/votes").hasAuthority("ADMIN") // 관리자만 투표 생성 가능
             .requestMatchers(HttpMethod.GET, "/api/certifications/admin/**").hasAuthority("ADMIN")
             .requestMatchers(HttpMethod.POST, "/api/certifications/admin/**").hasAuthority("ADMIN")
