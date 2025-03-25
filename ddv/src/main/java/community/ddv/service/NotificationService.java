@@ -95,32 +95,32 @@ public class NotificationService {
   }
 
 
-  // 30초마다 ping 보내기
-  @Scheduled(fixedRate = 30000)
-  public void sendPingToClients() {
-
-    if (userEmitters.isEmpty()) {
-      return; // ping 보낼 구독자가 없으면 return
-    }
-
-    for (Map.Entry<Long, SseEmitter> entry : userEmitters.entrySet()) {
-      Long userId = entry.getKey();
-      SseEmitter sseEmitter = entry.getValue();
-
-      if (sseEmitter == null) {
-        continue;
-      }
-
-      try {
-        sseEmitter.send(SseEmitter.event()
-            .name("ping")
-            .data("keep-alive"));
-      } catch (IOException e) {
-        sseEmitter.complete(); // 연결 종료
-        userEmitters.remove(userId); // 목록에서 제거
-      }
-    }
-  }
+//  // 30초마다 ping 보내기
+//  @Scheduled(fixedRate = 30000)
+//  public void sendPingToClients() {
+//
+//    if (userEmitters.isEmpty()) {
+//      return; // ping 보낼 구독자가 없으면 return
+//    }
+//
+//    for (Map.Entry<Long, SseEmitter> entry : userEmitters.entrySet()) {
+//      Long userId = entry.getKey();
+//      SseEmitter sseEmitter = entry.getValue();
+//
+//      if (sseEmitter == null) {
+//        continue;
+//      }
+//
+//      try {
+//        sseEmitter.send(SseEmitter.event()
+//            .name("ping")
+//            .data("keep-alive"));
+//      } catch (IOException e) {
+//        sseEmitter.complete(); // 연결 종료
+//        userEmitters.remove(userId); // 목록에서 제거
+//      }
+//    }
+//  }
 
   /**
    * 알림 전송 메서드
