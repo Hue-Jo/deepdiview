@@ -22,6 +22,8 @@ import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.Scheduled;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
@@ -44,9 +46,9 @@ public class NotificationService {
   public SseEmitter subscribe(Long userId) {
 
     // 로그인된 사용자만 구독을 허용
-    User loggedInUser = userService.getLoginUser();  // 로그인된 사용자 확인
-    if (!loggedInUser.getId().equals(userId)) {
-      throw new DeepdiviewException(ErrorCode.UNAUTHORIZED);  // 예외 처리
+    Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+    if (authentication == null || !authentication.isAuthenticated()) {
+      throw new DeepdiviewException(ErrorCode.UNAUTHORIZED);  // 인증되지 않은 사용자 처리
     }
 
     log.info("SSE 구독 시작 : userId = {}", userId);
@@ -84,13 +86,13 @@ public class NotificationService {
       log.info("SSE 초기 메시지 전송 시도: userId = {}", userId);
       emitter.send(SseEmitter.event()
           .name("connect")
-          .data("SSE 연결 성공 초기 메시지"));
+          .data("SSE connect success"));
+      log.info("SSE 초기 메시지 전송 완료");
     } catch (IOException e) {
       log.error("SSE 초기 메시지 전송 실패: userId = {}, error = {}", userId, e.getMessage());
       emitter.completeWithError(e);
       userEmitters.remove(userId);
     }
-
     return emitter;
   }
 
