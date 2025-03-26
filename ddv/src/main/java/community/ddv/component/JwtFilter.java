@@ -33,11 +33,6 @@ public class JwtFilter extends OncePerRequestFilter {
   protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
       throws ServletException, IOException {
 
-    if (request.getRequestURI().startsWith("/api/sse/")) {
-      filterChain.doFilter(request, response);
-      return;
-    }
-
     String token = extractToken(request);
 
     // jwt 토큰이 있고 유효한 경우, 인증 처리

@@ -33,7 +33,6 @@ public class LikeService {
     if (existingLike != null) {
       likeRepository.delete(existingLike);
       likeRepository.flush();
-      //review.setLikeCount(review.getLikeCount() - 1);
       review.decreaseLikeCount();
       reviewRepository.save(review);
       log.info("좋아요 취소 (좋아요 -1)");
@@ -43,13 +42,8 @@ public class LikeService {
           .review(review)
           .build();
       likeRepository.save(newlike);
-//      if (review.getLikeCount() == null) {
-//        review.setLikeCount(0);
-//      }
-//      review.setLikeCount(review.getLikeCount() + 1);
-//      reviewRepository.save(review);
       review.increaseLikeCount();
-      log.info("졸아요 성공 (좋아요 +1)");
+      log.info("좋아요 성공 (좋아요 +1)");
 
       notificationService.likeAdded(user.getId(), review.getId());
     }

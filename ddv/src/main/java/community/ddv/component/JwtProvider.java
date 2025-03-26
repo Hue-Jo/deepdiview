@@ -27,11 +27,7 @@ public class JwtProvider {
   private static final long ACCESS_TOKEN_EXPIRED_TIME = 1000 * 60 * 60;
   // 리프레시 토큰 만료시간 : 15일
   private static final long REFRESH_TOKEN_EXPIRED_TIME = 1000 * 60 * 60 * 24 * 15;
-  // 알고리즘
-  // private static final SignatureAlgorithm algorithm = SignatureAlgorithm.HS256;
-//  private SecretKey getSigningKey() {
-//    return SIG.HS256.key().build();
-//  }
+
   @PostConstruct
   public void init() {
     if (secretKey == null || secretKey.isEmpty()) {

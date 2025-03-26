@@ -22,8 +22,6 @@ import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.Scheduled;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
@@ -45,20 +43,14 @@ public class NotificationService {
    */
   public SseEmitter subscribe(Long userId) {
 
-    // 로그인된 사용자만 구독을 허용
-    Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-    if (authentication == null || !authentication.isAuthenticated()) {
-      throw new DeepdiviewException(ErrorCode.UNAUTHORIZED);  // 인증되지 않은 사용자 처리
-    }
-
     log.info("SSE 구독 시작 : userId = {}", userId);
 
-    // 이미 구독중이면 종료 후 제거
+    // 이미 구독 중인 연결이 있으면 종료 후 제거
     SseEmitter existingEmitter = userEmitters.get(userId);
     if (existingEmitter != null) {
-      log.info("기존 SSE 연결 종료");
       existingEmitter.complete();
       userEmitters.remove(userId);
+      log.info("기존의 SSE 연결 종료");
     }
 
     // 새로운 SSE 연결
@@ -66,7 +58,6 @@ public class NotificationService {
     userEmitters.put(userId, emitter);
     log.info("새로운 SSE 연결 추가 : userId = {}", userId);
 
-    // 연결 종료시 emitter 제거
     emitter.onCompletion(() -> {
       log.info("SSE 연결 종료 : userId = {}", userId);
       userEmitters.remove(userId);
@@ -82,6 +73,14 @@ public class NotificationService {
       userEmitters.remove(userId);
     });
 
+    // 초기 메시지 전송
+    sendFirstMessage(userId, emitter);
+
+    return emitter;
+  }
+
+  //  SSE 초기 메시지 전송 메서드
+  private void sendFirstMessage(Long userId, SseEmitter emitter) {
     try {
       log.info("SSE 초기 메시지 전송 시도: userId = {}", userId);
       emitter.send(SseEmitter.event()
@@ -93,36 +92,31 @@ public class NotificationService {
       emitter.completeWithError(e);
       userEmitters.remove(userId);
     }
-    return emitter;
   }
 
 
-//  // 30초마다 ping 보내기
-//  @Scheduled(fixedRate = 30000)
-//  public void sendPingToClients() {
-//
-//    if (userEmitters.isEmpty()) {
-//      return; // ping 보낼 구독자가 없으면 return
-//    }
-//
-//    for (Map.Entry<Long, SseEmitter> entry : userEmitters.entrySet()) {
-//      Long userId = entry.getKey();
-//      SseEmitter sseEmitter = entry.getValue();
-//
-//      if (sseEmitter == null) {
-//        continue;
-//      }
-//
-//      try {
-//        sseEmitter.send(SseEmitter.event()
-//            .name("ping")
-//            .data("keep-alive"));
-//      } catch (IOException e) {
-//        sseEmitter.complete(); // 연결 종료
-//        userEmitters.remove(userId); // 목록에서 제거
-//      }
-//    }
-//  }
+  // 30초마다 ping 보내기
+  @Scheduled(fixedRate = 30000)
+  public void sendPingToClients() {
+    if (userEmitters.isEmpty()) {
+      return; // ping 보낼 구독자가 없으면 return
+    }
+
+    userEmitters.forEach((userId, sseEmitter) -> {
+      if (sseEmitter != null) {
+        try {
+          sseEmitter.send(SseEmitter.event()
+              .name("ping")
+              .data("keep-alive"));
+        } catch (IOException | IllegalStateException e) {
+          log.warn("Ping 전송 실패 : userId = {}, error = {}", userId, e.getMessage());
+          sseEmitter.completeWithError(e); // 오류 발생 시 연결 종료 처리
+          userEmitters.remove(userId); // 연결 종료
+        }
+      }
+    });
+  }
+
 
   /**
    * 알림 전송 메서드
@@ -285,7 +279,7 @@ public class NotificationService {
 
     if (!notification.isRead()) {
       notification.markAsRead();
-      notificationRepository.save(notification);;
+      notificationRepository.save(notification);
       log.info("알림 읽음처리 완료");
     }
   }
