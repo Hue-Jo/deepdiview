@@ -83,26 +83,6 @@ public class DiscussionService {
     return reviewService.createReview(reviewDTO);
   }
 
-  /**
-   * 인증 승인된 사용자의 댓글 작성
-   * @param reviewId
-   * @param commentRequestDto
-   */
-  @Transactional
-  public CommentResponseDto createDiscussionComment(Long reviewId, CommentRequestDto commentRequestDto) {
-
-    User user = userService.getLoginUser();
-    if (!certificationService.isUserCertified(user.getId())) {
-      log.warn("인증되지 않은 사용자 : userId = {}", user.getId());
-      throw new DeepdiviewException(ErrorCode.NOT_CERTIFIED_YET);
-    }
-    log.info("인증 상태 확인 완료 : userId = {}", user.getId());
-
-    Review review = reviewRepository.findById(reviewId)
-        .orElseThrow(() -> new DeepdiviewException(ErrorCode.REVIEW_NOT_FOUND));
-
-    return commentService.createComment(review.getId(), commentRequestDto);
-  }
 
   // 일요일 확인 API
   public boolean isTodaySunday() {
