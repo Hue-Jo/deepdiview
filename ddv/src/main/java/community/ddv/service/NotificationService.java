@@ -160,10 +160,6 @@ public class NotificationService {
       return;
     }
 
-    NotificationDTO notificationDTO = new NotificationDTO(
-        "comment", NotificationType.COMMENT_ADDED.getMessage(), reviewId
-    );
-
     Notification notification = Notification.builder()
         .user(reviewer)
         .notificationType(NotificationType.COMMENT_ADDED)
@@ -172,6 +168,10 @@ public class NotificationService {
         .build();
 
     notificationRepository.save(notification);
+
+    NotificationDTO notificationDTO = new NotificationDTO(
+        notification.getId(),"comment", NotificationType.COMMENT_ADDED.getMessage(), reviewId
+    );
 
     log.info("댓글이 달렸다는 알림 전송 완료 ");
     sendNotification(reviewer.getId(), notificationDTO);
@@ -196,10 +196,6 @@ public class NotificationService {
       return;
     }
 
-    NotificationDTO notificationDTO = new NotificationDTO(
-        "like", NotificationType.LIKE_ADDED.getMessage(), reviewId
-    );
-
     Notification notification = Notification.builder()
         .user(reviewer)
         .notificationType(NotificationType.LIKE_ADDED)
@@ -208,6 +204,11 @@ public class NotificationService {
         .build();
 
     notificationRepository.save(notification);
+
+    NotificationDTO notificationDTO = new NotificationDTO(
+        notification.getId(), "like", NotificationType.LIKE_ADDED.getMessage(), reviewId
+    );
+
     log.info("좋아요가 달렸다는 알림 전송 완료");
 
     sendNotification(reviewer.getId(), notificationDTO);
@@ -235,9 +236,6 @@ public class NotificationService {
       message = "인증이 거절되었습니다.";
     }
 
-    NotificationDTO notificationDTO = new NotificationDTO(
-        "certification", message, certificationId);
-
     Notification notification = Notification.builder()
         .user(user)
         .notificationType(NotificationType.CERTIFICATION_RESULT)
@@ -247,6 +245,9 @@ public class NotificationService {
 
     notificationRepository.save(notification);
     log.info("인증 결과 알림 전송");
+
+    NotificationDTO notificationDTO = new NotificationDTO(
+       notification.getId(), "certification", message, certificationId);
 
     sendNotification(user.getId(), notificationDTO);
   }
@@ -271,7 +272,10 @@ public class NotificationService {
         .build();
   }
 
-  // 알림 읽음 처리
+   /**
+   * 특정 알림 읽음 처리
+   * @param notificationId
+   */
   public void markNotificationAsRead(Long notificationId) {
     User user = userService.getLoginUser();
     log.info("알림 읽음 시도 : userId = {}", user.getId());
@@ -284,4 +288,24 @@ public class NotificationService {
       log.info("알림 읽음처리 완료");
     }
   }
+
+  /**
+   * 전체 알림 읽음 처리
+   */
+  public void markAllNotificationAsRead() {
+    User user = userService.getLoginUser();
+    log.info("전체 알림 읽음 시도 : userId = {}", user.getId());
+
+    List<Notification> notifications = notificationRepository.findByUser_IdAndIsReadFalseOrderByCreatedAtDesc(user.getId());
+
+    if (notifications.isEmpty()) {
+      log.info("읽지 않은 알림이 더이상 없습니다");
+      return;
+    }
+
+      notifications.forEach(Notification::markAsRead);
+      notificationRepository.saveAll(notifications);
+      log.info("전체 알림 읽음 처리 완료");
+  }
+
 }

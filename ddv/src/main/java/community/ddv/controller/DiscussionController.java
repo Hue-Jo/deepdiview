@@ -37,16 +37,6 @@ public class DiscussionController {
     return ResponseEntity.status(HttpStatus.CREATED).body(review);
   }
 
-  @Operation(summary = "인증승인된 사용자의 댓글 작성")
-  @PostMapping("/comments/{reviewId}")
-  public ResponseEntity<CommentResponseDto> createDiscussionComment(
-      @PathVariable Long reviewId,
-      @RequestBody @Valid CommentRequestDto commentRequestDto) {
-
-    CommentResponseDto comment = discussionService.createDiscussionComment(reviewId, commentRequestDto);
-    return ResponseEntity.status(HttpStatus.CREATED).body(comment);
-  }
-
   @Operation(summary = "일요일인지 여부 T/F")
   @GetMapping("/is-sunday")
   public ResponseEntity<Boolean> isSunday() {
