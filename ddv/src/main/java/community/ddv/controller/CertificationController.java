@@ -5,6 +5,7 @@ import community.ddv.dto.CertificationDTO.CertificationRequestDto;
 import community.ddv.dto.CertificationDTO.CertificationResponseDto;
 import community.ddv.service.CertificationService;
 import io.swagger.v3.oas.annotations.Operation;
+import java.io.IOException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -12,9 +13,11 @@ import org.springframework.data.domain.Sort.Direction;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -33,6 +36,27 @@ public class CertificationController {
   public ResponseEntity<CertificationResponseDto> submitCertification(
       @RequestParam("file") MultipartFile file) throws Exception {
     return ResponseEntity.ok(certificationService.submitCertification(file));
+  }
+
+  @Operation(summary = "인증샷, 상태 확인", description = "인증샷 url, 인증상태 반환")
+  @GetMapping("/me")
+  public ResponseEntity<CertificationResponseDto> getCertification() {
+    CertificationResponseDto certificationResponseDto = certificationService.getMyCertification();
+    return ResponseEntity.ok(certificationResponseDto);
+  }
+
+  @Operation(summary = "인증샷 수정", description = "파일 재업로드, PENDING/REJECTED 상태의 유저만 사용 가능")
+  @PutMapping
+  public ResponseEntity<CertificationResponseDto> updateCertification(
+      @RequestParam("file") MultipartFile file) throws Exception {
+    return ResponseEntity.ok(certificationService.updateCertification(file));
+  }
+
+  @Operation(summary = "인증샷 삭제", description = "PENDING/REJECTED 상태의 유저만 사용 가능")
+  @DeleteMapping
+  public ResponseEntity<Void> deleteCertification() throws IOException {
+    certificationService.deleteCertification();
+    return ResponseEntity.noContent().build();
   }
 
   @Operation(summary = "인증 목록 조회", description = "관리자 전용 - 보류, 승인, 거절 필터링 가능 | 한 페이지당 10개씩 반환 ㅣ 인증요청을 한 지 오래된 순서대로 정렬됩니다.")

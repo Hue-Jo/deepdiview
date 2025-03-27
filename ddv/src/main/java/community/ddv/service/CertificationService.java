@@ -66,6 +66,98 @@ public class CertificationService {
         .build();
   }
 
+  /**
+   * PENDING/REJECT 상태의 사용자 _ 자신이 올린 사진 URL, 상태 반환
+   */
+  @Transactional(readOnly = true)
+  public CertificationResponseDto getMyCertification() {
+    User user = userService.getLoginUser();  // 로그인된 사용자 정보 가져오기
+    log.info("인증샷 조회 시도 : userId = {}", user.getId());
+
+    // 사용자가 제출한 인증샷 조회
+    Certification certification = certificationRepository.findByUser_Id(user.getId())
+        .orElseThrow(() -> new DeepdiviewException(ErrorCode.CERTIFICATION_NOT_FOUND));
+
+    // PENDING 또는 REJECTED 상태에서만 반환
+    if (!certification.getStatus().equals(CertificationStatus.APPROVED)) {
+      return convertToCertificationDto(certification);
+    }
+    log.error("승인된 사용자는 자신의 상태를 조회할 필요가 없습니다.");
+    throw new DeepdiviewException(ErrorCode.ALREADY_APPROVED);
+  }
+
+  /**
+   * 일반사용자 _ 인증샷 수정
+   */
+  @Transactional
+  public CertificationResponseDto updateCertification(MultipartFile file) throws IOException {
+
+    User user = userService.getLoginUser();
+    log.info("인증샷 수정 시도 : userId = {}", user.getId());
+
+    // 이미 인증 승인을 받은 경우, 수정 불가
+    Certification certification = certificationRepository.findByUser_Id(user.getId())
+        .orElseThrow(() -> new DeepdiviewException(ErrorCode.CERTIFICATION_NOT_FOUND));
+
+    if (certification.getStatus() == CertificationStatus.APPROVED) {
+      log.warn("이미 승인 받은 사용자는 인증샷 수정 불가");
+      throw new DeepdiviewException(ErrorCode.ALREADY_APPROVED);
+    }
+
+    // 기존의 인증샷 S3에서 삭제
+    fileStorageService.deleteFile(certification.getCertificationUrl());
+    log.info("기존의 인증샷 파일 S3에서 삭제 완료");
+    // 새 인증샷 파일 업로드
+    String newCertificationUrl = fileStorageService.uploadFile(file);
+    log.info("새로운 인증샷 파일 S3에 업로드 완료");
+
+    // 인증샷 수정
+    certification.setCertificationUrl(newCertificationUrl);
+    certification.setStatus(CertificationStatus.PENDING);
+    certification.setCreatedAt(LocalDateTime.now());
+
+    Certification updatedCertification = certificationRepository.save(certification);
+    log.info("인증샷 수정 완료");
+
+    return CertificationResponseDto.builder()
+        .id(updatedCertification.getId())
+        .userId(updatedCertification.getUser().getId())
+        .certificationUrl(updatedCertification.getCertificationUrl())
+        .status(updatedCertification.getStatus())
+        .createdAt(updatedCertification.getCreatedAt())
+        .build();
+  }
+
+  /**
+   * 일반사용자 _ 인증샷 삭제
+   */
+  @Transactional
+  public void deleteCertification() throws IOException {
+
+    User user = userService.getLoginUser();
+    log.info("인증샷 삭제 시도 : userId = {}", user.getId());
+
+    // 인증샷 조회
+    Certification certification = certificationRepository.findByUser_Id(user.getId())
+        .orElseThrow(() -> new DeepdiviewException(ErrorCode.CERTIFICATION_NOT_FOUND));
+
+    // 이미 승인 받은 상태면 삭제 불가
+    if (certification.getStatus() == CertificationStatus.APPROVED) {
+      log.warn("승인된 사용자는 인증샷 삭제 불가");
+      throw new DeepdiviewException(ErrorCode.ALREADY_APPROVED);
+    }
+
+    // 인증 상태를 null로 초기화
+    certification.setStatus(null, null);
+
+    // S3에서 파일 삭제
+    fileStorageService.deleteFile(certification.getCertificationUrl());
+    log.info("인증샷 파일 S3에서 삭제 완료");
+
+    // DB에서 인증샷 삭제
+    certificationRepository.delete(certification);
+    log.info("인증샷 삭제 완료 : certificationId = {}", certification.getId());
+  }
 
   /**
    * 관리자 _ 인증 목록 조회 (인증 상태에 따른 필터링 가능)
@@ -79,7 +171,6 @@ public class CertificationService {
     if (status == null) {
       // 전체 조회
       log.info("인증 전체 조회");
-      //return certificationRepository.findAll(pageable)
       return certificationRepository.findByStatusIsNotNull(pageable)
           .map(this::convertToCertificationDto);
     } else {
