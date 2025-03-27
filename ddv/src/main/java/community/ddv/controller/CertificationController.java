@@ -45,13 +45,6 @@ public class CertificationController {
     return ResponseEntity.status(HttpStatus.OK).body(certifications);
   }
 
-  @Operation(summary = "특정 인증정보 조회_인증샷 확인", description = "관리자 전용")
-  @GetMapping("/admin/{certificationId}")
-  public ResponseEntity<CertificationResponseDto> getCertificationById(
-      @PathVariable Long certificationId) {
-    CertificationResponseDto certification = certificationService.getCertification(certificationId);
-    return ResponseEntity.status(HttpStatus.OK).body(certification);
-  }
 
   @Operation(summary = "인증 승인/거절", description = "관리자 전용 - 승인 : true / 거절 : false | 거절시 rejectionReason: OTHER_MOVIE_IMAGE, WRONG_IMAGE, UNIDENTIFIABLE_IMAGE")
   @PostMapping("/admin/proceeding/{certificationId}")

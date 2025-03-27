@@ -271,7 +271,10 @@ public class NotificationService {
         .build();
   }
 
-  // 알림 읽음 처리
+   /**
+   * 특정 알림 읽음 처리
+   * @param notificationId
+   */
   public void markNotificationAsRead(Long notificationId) {
     User user = userService.getLoginUser();
     log.info("알림 읽음 시도 : userId = {}", user.getId());
@@ -284,4 +287,10 @@ public class NotificationService {
       log.info("알림 읽음처리 완료");
     }
   }
+
+  /**
+   * 전체 알림 읽음 처리
+   */
+
+
 }

@@ -91,24 +91,6 @@ public class CertificationService {
 
   }
 
-  /**
-   * 관리자 _ 특정 인증 정보 가져오는 메서드 (이미지 확인용)
-   * @param certificationId
-   * @return
-   */
-  public CertificationResponseDto getCertification(Long certificationId) {
-
-    log.info("특정 인증 정보 조회 시작(인증 이미지 확인) : certificationId = {}", certificationId);
-    userService.getLoginUser();
-    Certification certification = certificationRepository.findById(certificationId)
-        .orElseThrow(() -> {
-          log.error("인증 정보를 찾을 수 없음");
-          return new DeepdiviewException(ErrorCode.CERTIFICATION_NOT_FOUND);
-        });
-
-    log.info("특정 인증 정보 조회 성공(인증 이미지 확인 완료)");
-    return convertToCertificationDto(certification);
-  }
 
   /**
    * 관리자 _ 인증 처리 (승인 : true, 거절 : false) & 거절 메시지
