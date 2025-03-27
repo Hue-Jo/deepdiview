@@ -41,7 +41,8 @@ public class SecurityConfig {
       "/api/movies/**",
       "/api/discussions/is-sunday",
       "/api/discussions/this-week-movie",
-      "/api/votes/result"
+      "/api/votes/result",
+      "/api/votes/result/latest"
   };
 
   @Bean
