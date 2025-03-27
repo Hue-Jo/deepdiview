@@ -31,7 +31,7 @@ import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 public class NotificationService {
 
   // SSE 연결을 저장할 Map
-  private final Map<Long, SseEmitter> userEmitters = new ConcurrentHashMap<>();
+  private final Map<Long, SseEmitter> emitters = new ConcurrentHashMap<>();
   private final UserService userService;
   private final NotificationRepository notificationRepository;
   private final CertificationRepository certificationRepository;
@@ -46,31 +46,31 @@ public class NotificationService {
     log.info("SSE 구독 시작 : userId = {}", userId);
 
     // 이미 구독 중인 연결이 있으면 종료 후 제거
-    SseEmitter existingEmitter = userEmitters.get(userId);
+    SseEmitter existingEmitter = emitters.get(userId);
     if (existingEmitter != null) {
       existingEmitter.complete();
-      userEmitters.remove(userId);
+      emitters.remove(userId);
       log.info("기존의 SSE 연결 종료");
     }
 
     // 새로운 SSE 연결
     SseEmitter emitter = new SseEmitter(30 * 60 * 1000L); // 30 * 60 초 (타임아웃 30분)
-    userEmitters.put(userId, emitter);
+    emitters.put(userId, emitter);
     log.info("새로운 SSE 연결 추가 : userId = {}", userId);
 
     emitter.onCompletion(() -> {
       log.info("SSE 연결 종료 : userId = {}", userId);
-      userEmitters.remove(userId);
+      emitters.remove(userId);
     });
 
     emitter.onTimeout(() -> {
       log.warn("SSE 연결 타임아웃 : userId = {}", userId);
-      userEmitters.remove(userId);
+      emitters.remove(userId);
     });
 
     emitter.onError((e) -> {
       log.error("SSE 연결 에러 발생 : userId = {}, error = {}", userId, e.getMessage());
-      userEmitters.remove(userId);
+      emitters.remove(userId);
     });
 
     // 초기 메시지 전송
@@ -90,7 +90,7 @@ public class NotificationService {
     } catch (IOException e) {
       log.error("SSE 초기 메시지 전송 실패: userId = {}, error = {}", userId, e.getMessage());
       emitter.completeWithError(e);
-      userEmitters.remove(userId);
+      emitters.remove(userId);
     }
   }
 
@@ -98,20 +98,20 @@ public class NotificationService {
   // 30초마다 ping 보내기
   @Scheduled(fixedRate = 30000)
   public void sendPingToClients() {
-    if (userEmitters.isEmpty()) {
+    if (emitters.isEmpty()) {
       return; // ping 보낼 구독자가 없으면 return
     }
 
-    userEmitters.forEach((userId, sseEmitter) -> {
-      if (sseEmitter != null) {
+    emitters.forEach((userId, emitter) -> {
+      if (emitter != null) {
         try {
-          sseEmitter.send(SseEmitter.event()
+          emitter.send(SseEmitter.event()
               .name("ping")
               .data("keep-alive"));
         } catch (IOException | IllegalStateException e) {
           log.warn("Ping 전송 실패 : userId = {}, error = {}", userId, e.getMessage());
-          sseEmitter.completeWithError(e); // 오류 발생 시 연결 종료 처리
-          userEmitters.remove(userId); // 연결 종료
+          emitter.completeWithError(e); // 오류 발생 시 연결 종료 처리
+          emitters.remove(userId); // 연결 종료
         }
       }
     });
@@ -124,7 +124,7 @@ public class NotificationService {
    * @param notificationDTO
    */
   public void sendNotification(Long userId, NotificationDTO notificationDTO) {
-    SseEmitter emitter = userEmitters.get(userId);
+    SseEmitter emitter = emitters.get(userId);
 
     if (emitter != null) {
       try {
@@ -133,7 +133,7 @@ public class NotificationService {
       } catch (IOException e) {
         log.info("알림 전송 실패 : userId = {}", userId);
         emitter.completeWithError(e);
-        userEmitters.remove(userId);
+        emitters.remove(userId);
         log.info("SSE Emitter 제거 : userId = {}", userId);
       }
     } else {
@@ -161,7 +161,7 @@ public class NotificationService {
     }
 
     NotificationDTO notificationDTO = new NotificationDTO(
-        NotificationType.COMMENT_ADDED.getMessage(), reviewId
+        "comment", NotificationType.COMMENT_ADDED.getMessage(), reviewId
     );
 
     Notification notification = Notification.builder()
@@ -197,7 +197,7 @@ public class NotificationService {
     }
 
     NotificationDTO notificationDTO = new NotificationDTO(
-        NotificationType.LIKE_ADDED.getMessage(), reviewId
+        "like", NotificationType.LIKE_ADDED.getMessage(), reviewId
     );
 
     Notification notification = Notification.builder()
@@ -235,7 +235,8 @@ public class NotificationService {
       message = "인증이 거절되었습니다.";
     }
 
-    NotificationDTO notificationDTO = new NotificationDTO(message, certificationId);
+    NotificationDTO notificationDTO = new NotificationDTO(
+        "certification", message, certificationId);
 
     Notification notification = Notification.builder()
         .user(user)
