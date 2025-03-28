@@ -7,12 +7,14 @@ import community.ddv.dto.UserDTO.AccountUpdateDto;
 import community.ddv.dto.UserDTO.LoginDto;
 import community.ddv.dto.UserDTO.OneLineIntro;
 import community.ddv.dto.UserDTO.SignUpDto;
+import community.ddv.dto.UserDTO.TokenDto;
 import community.ddv.dto.UserDTO.UserInfoDto;
 import community.ddv.response.LoginResponse;
 import community.ddv.service.CommentService;
 import community.ddv.service.ReviewService;
 import community.ddv.service.UserService;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import java.io.IOException;
 import java.util.HashMap;
@@ -38,6 +40,7 @@ import org.springframework.web.multipart.MultipartFile;
 @RestController
 @RequestMapping("/api/users")
 @RequiredArgsConstructor
+@Tag(name = "User", description = "회원관련 API에 대한 명세를 제공합니다.")
 public class UserController {
 
   private final UserService userService;
@@ -79,12 +82,12 @@ public class UserController {
 
   @Operation(summary = "리프레시 토큰으로 엑세스 토큰 재발급")
   @PostMapping("/reissue-access-token")
-  public ResponseEntity<String> reissueAccessToken(@RequestHeader("Authorization") String authorization) {
+  public ResponseEntity<TokenDto> reissueAccessToken(@RequestHeader("Authorization") String authorization) {
       // Authorization 헤더에서 'Bearer '를 제외한 리프레시 토큰 추출
     String refreshToken = authorization.replace("Bearer ", "");
 
       // 엑세스 토큰 재발급
-    String newAccessToken = userService.reissueAccessToken(refreshToken);
+    TokenDto newAccessToken = userService.reissueAccessToken(refreshToken);
     return ResponseEntity.ok(newAccessToken);
   }
 

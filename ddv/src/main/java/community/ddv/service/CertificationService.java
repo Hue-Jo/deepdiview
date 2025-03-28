@@ -10,6 +10,7 @@ import community.ddv.exception.DeepdiviewException;
 import community.ddv.repository.CertificationRepository;
 import java.io.IOException;
 import java.time.LocalDateTime;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -237,13 +238,28 @@ public class CertificationService {
   protected void resetCertificationStatus() {
 
     log.info("새로운 주가 됨에 따라 인증상태 초기화");
-    int resetCount = certificationRepository.resetAllCertifications();
 
-    if (resetCount == 0) {
+    List<Certification> certifications = certificationRepository.findAll();
+
+    if (certifications.isEmpty()) {
       log.warn("초기화할 인증 데이터가 없어 초기화를 스킵합니다.");
       return;
     }
+
+    // S3에서 파일 삭제
+    for(Certification certification : certifications) {
+      try {
+        fileStorageService.deleteFile(certification.getCertificationUrl());
+        log.info("인증샷 파일 S3에서 삭제 완료");
+      } catch (IOException e) {
+        log.info("인증샷 파일을 S3에서 삭제 실패 : url = {}", certification.getCertificationUrl());
+      }
+    }
+
+    int resetCount = certificationRepository.resetAllCertifications();
+
     log.info("초기화된 인증 개수 : {} ", resetCount);
+
   }
 
 }

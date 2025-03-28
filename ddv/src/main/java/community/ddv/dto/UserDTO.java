@@ -82,5 +82,11 @@ public class UserDTO {
     private RejectionReason rejectionReason; // 인증 거절 사유
   }
 
+  @Getter
+  @AllArgsConstructor
+  @Builder
+  public static class TokenDto {
+    private String newAccessToken;
+  }
 
 }
