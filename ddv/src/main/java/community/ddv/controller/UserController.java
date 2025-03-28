@@ -14,6 +14,7 @@ import community.ddv.service.CommentService;
 import community.ddv.service.ReviewService;
 import community.ddv.service.UserService;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import java.io.IOException;
 import java.util.HashMap;
@@ -39,6 +40,7 @@ import org.springframework.web.multipart.MultipartFile;
 @RestController
 @RequestMapping("/api/users")
 @RequiredArgsConstructor
+@Tag(name = "User", description = "회원관련 API에 대한 명세를 제공합니다.")
 public class UserController {
 
   private final UserService userService;
