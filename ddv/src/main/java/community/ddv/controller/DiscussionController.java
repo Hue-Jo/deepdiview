@@ -8,6 +8,7 @@ import community.ddv.dto.ReviewResponseDTO;
 import community.ddv.service.DiscussionService;
 import community.ddv.service.VoteService;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import java.util.HashMap;
 import java.util.Map;
@@ -24,6 +25,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping("/api/discussions")
 @RequiredArgsConstructor
+@Tag(name = "Discussion", description = "토론 관련 API에 대한 명세를 제공합니다.")
 public class DiscussionController {
   private final DiscussionService discussionService;
   private final VoteService voteService;

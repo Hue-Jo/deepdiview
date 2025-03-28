@@ -5,6 +5,7 @@ import community.ddv.dto.CertificationDTO.CertificationRequestDto;
 import community.ddv.dto.CertificationDTO.CertificationResponseDto;
 import community.ddv.service.CertificationService;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import java.io.IOException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -27,6 +28,7 @@ import org.springframework.web.multipart.MultipartFile;
 @RestController
 @RequestMapping("/api/certifications")
 @RequiredArgsConstructor
+@Tag(name = "Certification", description = "인증관련 API에 대한 명세를 제공합니다.")
 public class CertificationController {
 
   private final CertificationService certificationService;

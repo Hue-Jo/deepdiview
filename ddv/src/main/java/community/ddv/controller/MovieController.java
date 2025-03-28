@@ -3,6 +3,7 @@ package community.ddv.controller;
 import community.ddv.dto.MovieDTO;
 import community.ddv.service.MovieService;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -15,6 +16,8 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/movies")
+@Tag(name = "Movie", description = "영화 관련 API에 대한 명세를 제공합니다.")
+
 public class MovieController {
 
   private final MovieService movieService;

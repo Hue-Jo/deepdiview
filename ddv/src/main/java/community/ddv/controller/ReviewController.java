@@ -6,6 +6,7 @@ import community.ddv.dto.ReviewResponseDTO;
 import community.ddv.service.LikeService;
 import community.ddv.service.ReviewService;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
@@ -30,6 +31,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping("/api/reviews")
 @RequiredArgsConstructor
+@Tag(name = "Review", description = "리뷰 관련 API에 대한 명세를 제공합니다.")
 public class ReviewController {
 
   private final ReviewService reviewService;

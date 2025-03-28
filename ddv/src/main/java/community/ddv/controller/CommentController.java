@@ -4,6 +4,7 @@ import community.ddv.dto.CommentDTO.CommentRequestDto;
 import community.ddv.dto.CommentDTO.CommentResponseDto;
 import community.ddv.service.CommentService;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -23,6 +24,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping("/api/reviews/{reviewId}/comments")
 @RequiredArgsConstructor
+@Tag(name = "Comment", description = "댓글 관련 API에 대한 명세를 제공합니다.")
 public class CommentController {
 
   private final CommentService commentService;

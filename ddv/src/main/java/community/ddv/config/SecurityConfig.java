@@ -74,7 +74,7 @@ public class SecurityConfig {
   public CorsConfigurationSource corsConfigurationSource() {
     CorsConfiguration configuration = new CorsConfiguration();
     configuration.setAllowCredentials(true); // 자격증명 허용
-    configuration.setAllowedOrigins(List.of("http://localhost:3000", "https://deepdiview.vercel.app", "https://deepdiview.site/swagger-ui/index.html"));
+    configuration.setAllowedOrigins(List.of("http://localhost:3000", "https://deepdiview.vercel.app", "https://deepdiview.site"));
     configuration.addAllowedHeader("*"); // 모든 헤더
     configuration.addAllowedMethod("GET");
     configuration.addAllowedMethod("POST");
