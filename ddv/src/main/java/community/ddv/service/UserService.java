@@ -9,6 +9,7 @@ import community.ddv.dto.UserDTO.AccountUpdateDto;
 import community.ddv.dto.UserDTO.LoginDto;
 import community.ddv.dto.UserDTO.OneLineIntro;
 import community.ddv.dto.UserDTO.SignUpDto;
+import community.ddv.dto.UserDTO.TokenDto;
 import community.ddv.dto.UserDTO.UserInfoDto;
 import community.ddv.entity.Certification;
 import community.ddv.entity.Review;
@@ -149,7 +150,7 @@ public class UserService {
    * 리프레시 토큰으로 엑세스 토큰 재발급
    * @param refreshToken
    */
-  public String reissueAccessToken(String refreshToken) {
+  public TokenDto reissueAccessToken(String refreshToken) {
     log.info("리프레시 토큰으로 엑세스 토큰 재발급 요청");
 
     // 리프레시 토큰이 유효한지 확인
@@ -166,7 +167,7 @@ public class UserService {
     String newAccessToken = jwtProvider.generateAccessToken(user.getEmail(), user.getRole());
 
     log.info("엑세스 토큰 재발급 완료");
-    return newAccessToken;
+    return new TokenDto(newAccessToken);
   }
 
   /**
