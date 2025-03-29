@@ -26,20 +26,17 @@ public enum ErrorCode {
   REVIEW_NOT_FOUND("존재하지 않는 리뷰입니다.", HttpStatus.BAD_REQUEST),
   INVALID_USER("작성자만 가능합니다.", HttpStatus.FORBIDDEN),
   COMMENT_NOT_FOUND("댓글이 존재하지 않습니다.", HttpStatus.BAD_REQUEST),
-  NOT_MATCHED_CONTENT("유효하지 않은 내용입니다.", HttpStatus.BAD_REQUEST),
+  COMMENT_NOT_BELONG_TO_REVIEW("댓글이 해당 리뷰에 속하지 않습니다.", HttpStatus.BAD_REQUEST),
 
   // 관리자 관련 에러코드
-  ALREADY_EXIST_ADMIN("관리자는 한 명만 가능합니다.", HttpStatus.FORBIDDEN),
   ONLY_ADMIN_CAN("관리자만 할 수 있는 기능입니다.", HttpStatus.FORBIDDEN),
   ADMIN_CANNOT_BE_DELETED("관리자 계정은 삭제할 수 없습니다.", HttpStatus.BAD_REQUEST),
 
   // 투표 관련 에러코드
-  INVALID_VOTE_CREAT_DATE("투표 생성은 일,월요일에만 가능합니다.", HttpStatus.BAD_REQUEST),
+  INVALID_VOTE_CREAT_DATE("투표 생성은 일요일에만 가능합니다.", HttpStatus.BAD_REQUEST),
   VOTE_NOT_FOUND("존재하지 않는 투표입니다.", HttpStatus.BAD_REQUEST),
   AlREADY_VOTED("이미 참여한 투표입니다. 다음주에 다시 투표해주세요", HttpStatus.BAD_REQUEST),
   INVALID_VOTE_PERIOD("투표 기간이 아닙니다.", HttpStatus.BAD_REQUEST),
-  INVALID_VOTE_PERIOD_ENDED("이미 종료된 투표입니다.", HttpStatus.BAD_REQUEST),
-  INVALID_VOTE_PERIOD_NOT_STARTED("아직 진행중인 투표가 없습니다.", HttpStatus.BAD_REQUEST),
   DUPLICATION_NOT_ALLOW("한 개만 선택할 수 있습니다. ", HttpStatus.MULTIPLE_CHOICES),
   ALREADY_EXIST_VOTE("이미 이번주에 생성한 투표가 있습니다.", HttpStatus.BAD_REQUEST),
   VOTE_RESULT_NOT_FOUND("투표 결과가 존재하지 않습니다.", HttpStatus.NOT_FOUND),
@@ -54,9 +51,7 @@ public enum ErrorCode {
   INVALID_REVIEW_PERIOD("토론 작성 기간이 아닙니다. 다음 주에 새로운 영화로 만나요", HttpStatus.BAD_REQUEST),
 
   // 알림 관련 에러코드
-  NOTIFICATION_NOT_FOUND("존재하지 않는 알람입니다.", HttpStatus.NOT_FOUND),
-
-  INVALID_REQUEST("잘못된 요청입니다. 다시 확인해주세요", HttpStatus.BAD_REQUEST);
+  NOTIFICATION_NOT_FOUND("존재하지 않는 알람입니다.", HttpStatus.NOT_FOUND);
 
   private final String description;
   private final HttpStatus httpStatus;
