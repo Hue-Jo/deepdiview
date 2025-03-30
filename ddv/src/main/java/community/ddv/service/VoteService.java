@@ -168,7 +168,7 @@ public class VoteService {
     VoteMovie selectedVotedMovie = vote.getVoteMovies().stream()
         .filter(voteMovie -> voteMovie.getMovie().getTmdbId().equals(voteParticipationRequestDto.getTmdbId()))
         .findFirst()
-        .orElseThrow(() -> new DeepdiviewException(ErrorCode.VOTE_NOT_FOUND));
+        .orElseThrow(() -> new DeepdiviewException(ErrorCode.MOVIE_NOT_FOUND_IN_VOTE));
 
     // 투표 저장
     VoteParticipation voteParticipation = VoteParticipation.builder()
