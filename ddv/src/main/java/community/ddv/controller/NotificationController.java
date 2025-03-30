@@ -3,6 +3,7 @@ package community.ddv.controller;
 import community.ddv.dto.NotificationResponseDTO;
 import community.ddv.service.NotificationService;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.MediaType;
@@ -18,6 +19,7 @@ import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 @RestController
 @RequestMapping("/api/notifications")
 @RequiredArgsConstructor
+@Tag(name = "Notification", description = "알림 관련 API에 대한 명세를 제공합니다.")
 public class NotificationController {
 
   private final NotificationService notificationService;

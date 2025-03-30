@@ -1,7 +1,6 @@
 package community.ddv.dto;
 
-import jakarta.validation.constraints.Max;
-import jakarta.validation.constraints.Min;
+import community.ddv.custom.RatingValid;
 import jakarta.validation.constraints.NotBlank;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -13,14 +12,13 @@ public class ReviewDTO {
 
   private Long tmdbId;
 
-  @NotBlank
+  @NotBlank(message = "제목을 작성해주세요")
   private String title;
 
-  @NotBlank
+  @NotBlank(message = "내용을 작성해주세요")
   private String content;
 
-  @Min(value = 1, message = "별점은 1점부터 줄 수 있습니다.")
-  @Max(value = 5, message = "별점은 5점까지 줄 수 있습니다.")
+  @RatingValid
   private Double rating;
 
   private boolean isCertified;
@@ -33,8 +31,7 @@ public class ReviewDTO {
     private String title;
     private String content;
 
-    @Min(value = 1, message = "별점은 1점부터 줄 수 있습니다.")
-    @Max(value = 5, message = "별점은 5점까지 줄 수 있습니다.")
+    @RatingValid
     private Double rating;
 
   }

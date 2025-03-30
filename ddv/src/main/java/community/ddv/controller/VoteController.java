@@ -7,6 +7,7 @@ import community.ddv.dto.VoteParticipationDTO.VoteParticipationRequestDto;
 import community.ddv.dto.VoteParticipationDTO.VoteParticipationResponseDto;
 import community.ddv.service.VoteService;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -21,6 +22,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping("/api/votes")
 @RequiredArgsConstructor
+@Tag(name = "Vote", description = "투표 관련 API에 대한 명세를 제공합니다.")
 public class VoteController {
 
   private final VoteService voteService;

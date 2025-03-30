@@ -1,8 +1,6 @@
 package community.ddv.service;
 
 import community.ddv.constant.ErrorCode;
-import community.ddv.dto.CommentDTO.CommentRequestDto;
-import community.ddv.dto.CommentDTO.CommentResponseDto;
 import community.ddv.dto.ReviewDTO;
 import community.ddv.dto.ReviewDTO.ReviewUpdateDTO;
 import community.ddv.dto.ReviewResponseDTO;
@@ -32,7 +30,6 @@ public class DiscussionService {
 
   private final MovieRepository movieRepository;
   private final ReviewRepository reviewRepository;
-  private final CommentService commentService;
 
   /**
    * 인증 승인 받은 사용자의 투표 1위 영화에 대한 리뷰 작성

@@ -1,5 +1,6 @@
 package community.ddv.dto;
 
+import jakarta.validation.constraints.NotBlank;
 import java.time.LocalDateTime;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -9,6 +10,8 @@ public class CommentDTO {
 
   @Getter
   public static class CommentRequestDto {
+
+    @NotBlank(message = "댓글 내용을 작성해주세요.")
     private String content;
 
   }

@@ -72,7 +72,7 @@ public class UserController {
 
   // 회원탈퇴 API
   @Operation(summary = "회원탈퇴")
-  @DeleteMapping("/me")
+  @PostMapping("/me")
   public ResponseEntity<Void> deleteAccount(
       @RequestBody AccountDeleteDto accountDeleteDto
   ) {

@@ -96,7 +96,7 @@ public class CommentService {
     }
 
     if (!comment.getReview().getId().equals(review.getId())) {
-      throw new DeepdiviewException(ErrorCode.NOT_MATCHED_CONTENT);
+      throw new DeepdiviewException(ErrorCode.COMMENT_NOT_BELONG_TO_REVIEW);
     }
 
     log.info("댓글 삭제 완료 - 댓글 ID : {}", comment.getId());
