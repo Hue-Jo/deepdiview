@@ -5,6 +5,7 @@ import community.ddv.dto.CommentDTO.CommentResponseDto;
 import community.ddv.service.CommentService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -33,7 +34,7 @@ public class CommentController {
   @PostMapping
   public ResponseEntity<CommentResponseDto> createComment(
       @PathVariable Long reviewId,
-      @RequestBody CommentRequestDto commentRequestDto) {
+      @Valid @RequestBody CommentRequestDto commentRequestDto) {
 
     CommentResponseDto comment = commentService.createComment(reviewId,
         commentRequestDto);
@@ -47,7 +48,7 @@ public class CommentController {
   public ResponseEntity<CommentResponseDto> updateComment(
       @PathVariable Long reviewId,
       @PathVariable Long commentId,
-      @RequestBody CommentRequestDto commentRequestDto
+      @Valid @RequestBody CommentRequestDto commentRequestDto
   ) {
     CommentResponseDto commentResponseDto = commentService.updateComment(reviewId, commentId,
         commentRequestDto);
