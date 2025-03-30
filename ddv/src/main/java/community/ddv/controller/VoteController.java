@@ -8,6 +8,7 @@ import community.ddv.dto.VoteParticipationDTO.VoteParticipationResponseDto;
 import community.ddv.service.VoteService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -44,7 +45,7 @@ public class VoteController {
   @Operation(summary = "현재 진행중인 투표에 참여하기")
   @PostMapping("/participate")
   public ResponseEntity<VoteParticipationResponseDto> participateVote(
-      @RequestBody VoteParticipationRequestDto voteParticipationRequestDto) {
+      @Valid @RequestBody VoteParticipationRequestDto voteParticipationRequestDto) {
     VoteParticipationResponseDto responseDTO = voteService.participateVote(voteParticipationRequestDto);
     return ResponseEntity.status(HttpStatus.OK).body(responseDTO);
   }
