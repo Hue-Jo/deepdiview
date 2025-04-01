@@ -1,6 +1,6 @@
 package community.ddv.domain.board.service;
 
-import community.ddv.global.constant.ErrorCode;
+import community.ddv.global.exception.ErrorCode;
 import community.ddv.domain.board.dto.CommentDTO.CommentRequestDto;
 import community.ddv.domain.board.dto.CommentDTO.CommentResponseDto;
 import community.ddv.domain.board.entity.Comment;
