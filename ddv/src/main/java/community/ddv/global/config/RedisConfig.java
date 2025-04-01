@@ -13,6 +13,7 @@ import org.springframework.data.redis.connection.RedisConnectionFactory;
 import org.springframework.data.redis.connection.lettuce.LettuceConnectionFactory;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.serializer.GenericJackson2JsonRedisSerializer;
+import org.springframework.data.redis.serializer.Jackson2JsonRedisSerializer;
 import org.springframework.data.redis.serializer.RedisSerializationContext;
 import org.springframework.data.redis.serializer.StringRedisSerializer;
 
@@ -31,13 +32,22 @@ public class RedisConfig {
     return new LettuceConnectionFactory(redisHost, redisPort);
   }
 
-  // email이 키, 리프레시 토큰이 값
+  // 리프레시 토큰 용 RedisTemplate
   @Bean
-  RedisTemplate<String, String> redisTemplate() {
+  RedisTemplate<String, String> redisRefreshTokenTemplate() {
     RedisTemplate<String, String> template = new RedisTemplate<>();
     template.setConnectionFactory(redisConnectionFactory());
     template.setKeySerializer(new StringRedisSerializer());
     template.setValueSerializer(new StringRedisSerializer());
+    return template;
+  }
+
+  @Bean
+  public RedisTemplate<String, Long> redisVoteResultTemplate() {
+    RedisTemplate<String, Long> template = new RedisTemplate<>();
+    template.setConnectionFactory(redisConnectionFactory());
+    template.setKeySerializer(new StringRedisSerializer());
+    template.setValueSerializer(new Jackson2JsonRedisSerializer<>(Long.class));  // Long 타입에 대해 명시적으로 직렬화
     return template;
   }
 
@@ -58,9 +68,14 @@ public class RedisConfig {
         .serializeValuesWith(RedisSerializationContext.SerializationPair.fromSerializer(jackson2JsonRedisSerializer));
         // TTL 설정할 거면 여기에 추가하기
 
+    // topRankMovie 캐시에서 Long 타입에 대해서만 직렬화기 변경
+    RedisCacheConfiguration topRankMovieCacheConfig = RedisCacheConfiguration.defaultCacheConfig()
+        .serializeValuesWith(RedisSerializationContext.SerializationPair.fromSerializer(new Jackson2JsonRedisSerializer<>(Long.class)));
+
     // RedisCacheManager 설정
     return RedisCacheManager.builder(factory)
         .cacheDefaults(configuration)
+        .withCacheConfiguration("topRankMovie", topRankMovieCacheConfig)
         .build();
   }
 
