@@ -2,7 +2,7 @@ package community.ddv.domain.user.service;
 
 import community.ddv.global.component.JwtProvider;
 import community.ddv.global.constant.CertificationStatus;
-import community.ddv.global.constant.ErrorCode;
+import community.ddv.global.exception.ErrorCode;
 import community.ddv.global.constant.Role;
 import community.ddv.domain.user.dto.LoginResponse;
 import community.ddv.domain.user.dto.UserDTO.AccountDeleteDto;
@@ -47,7 +47,6 @@ public class UserService {
   private final JwtProvider jwtProvider;
   private final ReviewRepository reviewRepository;
   private final CommentRepository commentRepository;
-  private final FileStorageService fileStorageService;
   private final CertificationRepository certificationRepository;
 
   /**
@@ -376,72 +375,6 @@ public class UserService {
       return getLoginUser();
     } catch (DeepdiviewException e) {
       return null;
-    }
-  }
-
-  /**
-   * 프로필 등록/수정
-   * @param profileImage
-   * */
-  @Transactional
-  public String updateProfileImage(MultipartFile profileImage) throws IOException {
-    User user = getLoginUser();
-
-    // 파일 크기 제한
-    long maxFileSize = 5 * 1024 * 1024;
-    if (profileImage.getSize() > maxFileSize) {
-      throw new IOException("파일 크기는 5MB를 초과할 수 없습니다.");
-    }
-
-    String existingProfileImageUrl = user.getProfileImageUrl();
-    String newProfileImageUrl;
-
-    // 기존 프사가 존재하는 경우, 삭제 후 새 이미지로 대체됨
-    if (user.getProfileImageUrl() != null && !user.getProfileImageUrl().isEmpty()) {
-      String existingProfileImageName = existingProfileImageUrl.substring(
-          existingProfileImageUrl.lastIndexOf("/") + 1);
-      try {
-        fileStorageService.deleteFile(existingProfileImageName);
-      } catch (IOException e) {
-        log.error("기존 프로필사진 삭제 실패");
-        throw new IOException("기존 프로필 사진 삭제 중 문제 발생");
-      }
-    }
-
-    // 새 프로필 사진 업로드
-    try {
-      newProfileImageUrl = fileStorageService.uploadFile(profileImage);
-    } catch (IOException e) {
-      log.info("새 프로필 사진 업로드 실패 ");
-      throw new IOException("새 프로필 사진 업로드 중 문제가 발생했습니다.");
-    }
-
-    user.updateProfileImageUrl(newProfileImageUrl);
-    userRepository.save(user);
-    log.info("프로필 이미지 등록/수정 완료");
-    return newProfileImageUrl;
-  }
-
-  /**
-   * 프로필 사진 삭제
-   */
-  @Transactional
-  public void deleteProfileImage() throws IOException {
-    User user = getLoginUser();
-    log.info("프로필사진 삭제 요청");
-
-    if (user.getProfileImageUrl() != null && !user.getProfileImageUrl().isEmpty()) {
-
-      try {
-        fileStorageService.deleteFile(user.getProfileImageUrl());
-      } catch (IOException e) {
-        log.error("S3에서 프로필 사진 삭제 실패");
-        throw new IOException("프로필 사진 삭제 중 문제 발생");
-      }
-
-      user.updateProfileImageUrl(null);
-      userRepository.save(user);
-      log.info("프로필 사진 삭제 완료");
     }
   }
 }

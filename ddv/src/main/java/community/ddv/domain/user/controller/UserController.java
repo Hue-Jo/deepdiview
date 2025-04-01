@@ -9,13 +9,13 @@ import community.ddv.domain.user.dto.UserDTO.AccountUpdateDto;
 import community.ddv.domain.user.dto.UserDTO.OneLineIntro;
 import community.ddv.domain.user.dto.UserDTO.TokenDto;
 import community.ddv.domain.user.dto.UserDTO.UserInfoDto;
+import community.ddv.domain.user.service.ProfileImageService;
 import community.ddv.domain.user.service.UserService;
 import community.ddv.domain.board.service.CommentService;
 import community.ddv.domain.board.service.ReviewService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
-import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 import lombok.RequiredArgsConstructor;
@@ -45,6 +45,7 @@ public class UserController {
   private final UserService userService;
   private final CommentService commentService;
   private final ReviewService reviewService;
+  private final ProfileImageService profileImageService;
 
   // 회원가입 API
   @Operation(summary = "회원가입")
@@ -143,11 +144,21 @@ public class UserController {
     return ResponseEntity.ok(reviews);
   }
 
-  @Operation(summary = "프로필사진 업로드/수정", description = "프로필 사진이 존재하는 경우 수정, 존재하지 않는 경우 새롭게 업로드 됩니다.")
-  @PutMapping("/profile-image")
+  @Operation(summary = "프로필사진 등록")
+  @PostMapping("/profile-image")
   public ResponseEntity<Map<String, String>> uploadProfileImage(
-      @RequestParam("file") MultipartFile file) throws IOException {
-    String profileImageUrl = userService.updateProfileImage(file);
+      @RequestParam("file") MultipartFile file) {
+    String profileImageUrl = profileImageService.uploadProfileImage(file);
+    Map<String, String> profileResponse = new HashMap<>();
+    profileResponse.put("profileImage Url", profileImageUrl);
+    return ResponseEntity.ok(profileResponse);
+  }
+
+  @Operation(summary = "프로필사진 수정")
+  @PutMapping("/profile-image")
+  public ResponseEntity<Map<String, String>> updateProfileImage(
+      @RequestParam("file") MultipartFile file) {
+    String profileImageUrl = profileImageService.updateProfileImage(file);
     Map<String, String> profileResponse = new HashMap<>();
     profileResponse.put("profileImage Url", profileImageUrl);
     return ResponseEntity.ok(profileResponse);
@@ -155,8 +166,8 @@ public class UserController {
 
   @Operation(summary = "프로필사진 삭제")
   @DeleteMapping("/profile-image")
-  public ResponseEntity<Void> deleteProfileImage() throws IOException {
-    userService.deleteProfileImage();
+  public ResponseEntity<Void> deleteProfileImage() {
+    profileImageService.deleteProfileImage();
     return ResponseEntity.noContent().build();
   }
 
