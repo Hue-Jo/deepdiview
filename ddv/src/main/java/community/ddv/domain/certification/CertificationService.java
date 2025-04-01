@@ -2,7 +2,7 @@ package community.ddv.domain.certification;
 
 import community.ddv.domain.notification.NotificationService;
 import community.ddv.global.constant.CertificationStatus;
-import community.ddv.global.constant.ErrorCode;
+import community.ddv.global.exception.ErrorCode;
 import community.ddv.global.constant.RejectionReason;
 import community.ddv.domain.certification.CertificationDTO.CertificationResponseDto;
 import community.ddv.domain.user.entity.User;
@@ -33,10 +33,10 @@ public class CertificationService {
 
   /**
    * 일반사용자 _ 영화를 봤는지 인증을 위한 인증샷 제출 (특정 영화의 리뷰에 참여하기 위함)
-   * @param file
+   * @param certificationImageFile
    */
   @Transactional
-  public CertificationResponseDto submitCertification(MultipartFile file) throws IOException {
+  public CertificationResponseDto submitCertification(MultipartFile certificationImageFile) {
 
     User user = userService.getLoginUser();
     log.info("인증샷 업로드 시도 : userId = {}", user.getId());
@@ -47,7 +47,7 @@ public class CertificationService {
       throw new DeepdiviewException(ErrorCode.ALREADY_APPROVED);
     }
 
-    String certificationUrl = fileStorageService.uploadFile(file);
+    String certificationUrl = fileStorageService.uploadFile(certificationImageFile);
     log.info("S3에 인증샷 업로드 완료 : url = {} ", certificationUrl);
 
     Certification certification = Certification.builder()
@@ -92,7 +92,7 @@ public class CertificationService {
    * 일반사용자 _ 인증샷 수정
    */
   @Transactional
-  public CertificationResponseDto updateCertification(MultipartFile file) throws IOException {
+  public CertificationResponseDto updateCertification(MultipartFile certificationImageFile) {
 
     User user = userService.getLoginUser();
     log.info("인증샷 수정 시도 : userId = {}", user.getId());
@@ -109,8 +109,9 @@ public class CertificationService {
     // 기존의 인증샷 S3에서 삭제
     fileStorageService.deleteFile(certification.getCertificationUrl());
     log.info("기존의 인증샷 파일 S3에서 삭제 완료");
+
     // 새 인증샷 파일 업로드
-    String newCertificationUrl = fileStorageService.uploadFile(file);
+    String newCertificationUrl = fileStorageService.uploadFile(certificationImageFile);
     log.info("새로운 인증샷 파일 S3에 업로드 완료");
 
     // 인증샷 수정
@@ -252,7 +253,7 @@ public class CertificationService {
       try {
         fileStorageService.deleteFile(certification.getCertificationUrl());
         log.info("인증샷 파일 S3에서 삭제 완료");
-      } catch (IOException e) {
+      } catch (RuntimeException e) {
         log.info("인증샷 파일을 S3에서 삭제 실패 : url = {}", certification.getCertificationUrl());
       }
     }

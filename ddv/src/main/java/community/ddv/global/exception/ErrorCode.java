@@ -1,4 +1,4 @@
-package community.ddv.global.constant;
+package community.ddv.global.exception;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -41,8 +41,14 @@ public enum ErrorCode {
   VOTE_RESULT_NOT_FOUND("투표 결과가 존재하지 않습니다.", HttpStatus.NOT_FOUND),
   MOVIE_NOT_FOUND_IN_VOTE("해당 영화가 투표 내에 존재하지 않습니다.", HttpStatus.BAD_REQUEST),
 
-  // 인증 관련 에러코드
+  // 파일 업로드 관련 에러코드
   IMAGE_FILE_ONLY("이미지 파일(jpg, jpeg, png, gif)만 업로드 가능합니다.", HttpStatus.BAD_REQUEST),
+  FILE_SIZE_EXCEEDED("파일 크기는 5MB를 초과할 수 없습니다", HttpStatus.PAYLOAD_TOO_LARGE),
+  FILE_NOT_FOUND("파일을 업로드해주세요", HttpStatus.NOT_FOUND),
+  FILE_UPLOAD_FAILED("파일 업로드 중 문제가 발생했습니다", HttpStatus.BAD_REQUEST),
+  FILE_DELETE_FAILED("파일 삭제 중 문제가 발생했습니다.", HttpStatus.BAD_REQUEST),
+
+  // 인증 관련 에러코드
   CERTIFICATION_NOT_FOUND("인증요청이 존재하지 않습니다.", HttpStatus.BAD_REQUEST),
   ALREADY_APPROVED("이미 승인되었습니다.", HttpStatus.BAD_REQUEST),
 

@@ -1,7 +1,7 @@
 package community.ddv.domain.movie.service;
 
 import community.ddv.domain.board.service.ReviewService;
-import community.ddv.global.constant.ErrorCode;
+import community.ddv.global.exception.ErrorCode;
 import community.ddv.domain.movie.dto.MovieDTO;
 import community.ddv.domain.board.dto.ReviewResponseDTO;
 import community.ddv.domain.movie.entity.Movie;

@@ -3,7 +3,7 @@ package community.ddv.domain.notification;
 import community.ddv.domain.notification.dto.NotificationDTO;
 import community.ddv.domain.notification.dto.NotificationResponseDTO;
 import community.ddv.global.constant.CertificationStatus;
-import community.ddv.global.constant.ErrorCode;
+import community.ddv.global.exception.ErrorCode;
 import community.ddv.global.constant.NotificationType;
 import community.ddv.domain.certification.Certification;
 import community.ddv.domain.board.entity.Review;

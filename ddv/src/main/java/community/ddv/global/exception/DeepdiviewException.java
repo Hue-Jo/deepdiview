@@ -1,6 +1,5 @@
 package community.ddv.global.exception;
 
-import community.ddv.global.constant.ErrorCode;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 

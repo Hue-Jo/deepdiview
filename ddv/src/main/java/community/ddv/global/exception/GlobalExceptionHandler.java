@@ -1,6 +1,5 @@
 package community.ddv.global.exception;
 
-import community.ddv.global.constant.ErrorCode;
 import java.util.HashMap;
 import java.util.Map;
 import lombok.AllArgsConstructor;
@@ -11,6 +10,7 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.multipart.MaxUploadSizeExceededException;
 
 @RestControllerAdvice
 @AllArgsConstructor
@@ -44,5 +44,13 @@ public class GlobalExceptionHandler {
       errors.put(fieldName, errorMessage);
     });
     return ResponseEntity.badRequest().body(errors);
+  }
+
+  @ExceptionHandler(MaxUploadSizeExceededException.class)
+  public ResponseEntity<ErrorResponse> handleMaxSizeException(MaxUploadSizeExceededException ex) {
+    ErrorCode errorCode = ErrorCode.FILE_SIZE_EXCEEDED;
+    ErrorResponse errorResponse = new ErrorResponse(errorCode.name(), errorCode.getDescription());
+    return ResponseEntity.status(errorCode.getHttpStatus())
+        .body(errorResponse);
   }
 }
