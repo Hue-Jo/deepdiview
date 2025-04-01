@@ -1,9 +1,10 @@
 package community.ddv.domain.user.service;
 
-import community.ddv.global.component.JwtProvider;
-import community.ddv.global.constant.CertificationStatus;
-import community.ddv.global.exception.ErrorCode;
-import community.ddv.global.constant.Role;
+import community.ddv.domain.board.entity.Review;
+import community.ddv.domain.board.repository.CommentRepository;
+import community.ddv.domain.board.repository.ReviewRepository;
+import community.ddv.domain.certification.Certification;
+import community.ddv.domain.certification.CertificationRepository;
 import community.ddv.domain.user.dto.LoginResponse;
 import community.ddv.domain.user.dto.UserDTO.AccountDeleteDto;
 import community.ddv.domain.user.dto.UserDTO.AccountUpdateDto;
@@ -14,14 +15,11 @@ import community.ddv.domain.user.dto.UserDTO.TokenDto;
 import community.ddv.domain.user.dto.UserDTO.UserInfoDto;
 import community.ddv.domain.user.entity.User;
 import community.ddv.domain.user.repository.UserRepository;
-import community.ddv.domain.certification.Certification;
-import community.ddv.domain.board.entity.Review;
+import community.ddv.global.component.JwtProvider;
+import community.ddv.global.constant.CertificationStatus;
+import community.ddv.global.constant.Role;
 import community.ddv.global.exception.DeepdiviewException;
-import community.ddv.domain.certification.CertificationRepository;
-import community.ddv.domain.board.repository.CommentRepository;
-import community.ddv.domain.board.repository.ReviewRepository;
-import community.ddv.global.fileUpload.FileStorageService;
-import java.io.IOException;
+import community.ddv.global.exception.ErrorCode;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import java.util.regex.Pattern;
@@ -34,7 +32,6 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.multipart.MultipartFile;
 
 @Service
 @RequiredArgsConstructor

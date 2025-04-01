@@ -1,7 +1,6 @@
 package community.ddv.domain.user.service;
 
 import community.ddv.domain.user.entity.User;
-import community.ddv.domain.user.repository.UserRepository;
 import community.ddv.global.fileUpload.FileStorageService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -16,7 +15,6 @@ public class ProfileImageService {
 
   private final UserService userService;
   private final FileStorageService fileStorageService;
-  private final UserRepository userRepository;
 
   /**
    * 프로필 등록
