@@ -35,12 +35,15 @@ public class Scheduler {
     log.info("인기영화 캐시 초기화 완료");
   }
 
-//
-//  @Scheduled(cron = "0 0 0 * * *")
-//  @CacheEvict(value = "topRankMovie", key = "'last_week_top_movie'")
-//  public void evictTopRankMovie() {
-//    log.info("투표결과 캐시 무효화 완료");
-//  }
+  @Scheduled(cron = "0 0 0 * * SUN")
+  private void clearTopRankMovieCache() {
+    Cache topVotedCache = cacheManager.getCache("topRankMovie");
+
+    if (topVotedCache != null) {
+      topVotedCache.clear();
+    }
+    log.info("지난 주 1위 영화 캐시 초기화 완료");
+  }
 
 }
 
