@@ -28,7 +28,7 @@ public class VoteController {
 
   private final VoteService voteService;
 
-  @Operation(summary = "투표 생성", description = "관리자 전용, 일/월요일만 투표 생성 가능")
+  @Operation(summary = "투표 생성", description = "관리자 전용, 일요일만 투표 생성 가능")
   @PostMapping
   public ResponseEntity<VoteCreatedDTO> createVote() {
     VoteCreatedDTO responseDTO = voteService.createVote();

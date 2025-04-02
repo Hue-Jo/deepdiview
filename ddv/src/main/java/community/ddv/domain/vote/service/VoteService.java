@@ -30,6 +30,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -283,7 +284,7 @@ public class VoteService {
    * 지난 주 1위 영화 가져오는 메서드
    */
   @Transactional(readOnly = true)
-  // @Cacheable(value = "topRankMovie", key = "'last_week_top_movie'")
+  @Cacheable(value = "topRankMovie", key = "'topRankMovie'")
   public Long getLastWeekTopVoteMovie() {
     log.info("지난주 투표 1위 영화조회 시작");
 
