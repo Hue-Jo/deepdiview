@@ -1,15 +1,15 @@
 package community.ddv.domain.certification;
 
-import community.ddv.domain.notification.NotificationService;
-import community.ddv.global.constant.CertificationStatus;
-import community.ddv.global.exception.ErrorCode;
-import community.ddv.global.constant.RejectionReason;
 import community.ddv.domain.certification.CertificationDTO.CertificationResponseDto;
+import community.ddv.domain.notification.NotificationService;
 import community.ddv.domain.user.entity.User;
-import community.ddv.global.exception.DeepdiviewException;
-import community.ddv.global.fileUpload.FileStorageService;
 import community.ddv.domain.user.service.UserService;
-import java.io.IOException;
+import community.ddv.global.constant.CertificationStatus;
+import community.ddv.global.constant.RejectionReason;
+import community.ddv.global.constant.Role;
+import community.ddv.global.exception.DeepdiviewException;
+import community.ddv.global.exception.ErrorCode;
+import community.ddv.global.fileUpload.FileStorageService;
 import java.time.LocalDateTime;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
@@ -135,7 +135,7 @@ public class CertificationService {
    * 일반사용자 _ 인증샷 삭제
    */
   @Transactional
-  public void deleteCertification() throws IOException {
+  public void deleteCertification() {
 
     User user = userService.getLoginUser();
     log.info("인증샷 삭제 시도 : userId = {}", user.getId());
@@ -169,8 +169,11 @@ public class CertificationService {
    */
   public Page<CertificationResponseDto> getCertificationsByStatus(CertificationStatus status, Pageable pageable) {
     log.info("관리자의 인증 목록 조회 시작");
-    userService.getLoginUser();
-
+    User admin = userService.getLoginUser();
+    if (!admin.getRole().equals(Role.ADMIN)) {
+      log.error("관리자만 처리 가능합니다.");
+      throw new DeepdiviewException(ErrorCode.ONLY_ADMIN_CAN);
+    }
     if (status == null) {
       // 전체 조회
       log.info("인증 전체 조회");
@@ -194,8 +197,11 @@ public class CertificationService {
    */
   public void proceedCertification(Long certificationId, boolean approve, RejectionReason rejectionReason) {
     log.info("인증 처리 시작 : certificationId = {}", certificationId);
-    userService.getLoginUser();
-
+    User admin = userService.getLoginUser();
+    if (!admin.getRole().equals(Role.ADMIN)) {
+      log.error("관리자만 처리 가능합니다.");
+      throw new DeepdiviewException(ErrorCode.ONLY_ADMIN_CAN);
+    }
     Certification certification = certificationRepository.findById(certificationId)
         .orElseThrow(() -> {
           log.error("인증 정보를 찾을 수 없음");
@@ -234,9 +240,9 @@ public class CertificationService {
 
   // 인증상태 초기화 (새로운 주가 시작될 때 인증 상태를 null로 초기화)
   @Transactional
-  //@Scheduled(cron = "0 0 0 * * MON")
+  @Scheduled(cron = "0 0 0 * * MON")
   // 테스트를 위해 매일 0시 정각에 초기화
-  @Scheduled(cron = "0 0 0 * * *")
+  //@Scheduled(cron = "0 0 0 * * *")
   protected void resetCertificationStatus() {
 
     log.info("새로운 주가 됨에 따라 인증상태 초기화");

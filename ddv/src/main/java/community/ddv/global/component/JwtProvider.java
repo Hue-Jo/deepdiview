@@ -3,6 +3,7 @@ package community.ddv.global.component;
 import community.ddv.global.constant.Role;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.ExpiredJwtException;
+import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
 import jakarta.annotation.PostConstruct;
 import java.util.Date;
@@ -83,25 +84,23 @@ public class JwtProvider {
   }
 
   // 토큰 유효성 검사
-  public boolean validateToken(String token, String email) {
+  public void validateToken(String token, String email) {
 
     try {
       String extractedEmail = extractEmail(token);
-
       if (!extractedEmail.equals(email)) {
-        log.warn("토큰 유효성 검사 실패");
-        return false;
+        throw new JwtException("유효하지 않은 토큰입니다.");
       }
 
       if (isTokenExpired(token)) {
-        log.warn("만료된 토큰");
-        return false;
+        throw new ExpiredJwtException(null, null, "만료된 토큰입니다.");
       }
-      return true;
-
     } catch (ExpiredJwtException e) {
-      log.error("JWT 토큰 검증 실패" + e.getMessage());
-      return false;
+      log.warn("JWT 토큰 만료" + e.getMessage());
+      throw e;
+    } catch (JwtException e) {
+      log.warn("JWT 토큰 검증 실패" + e.getMessage());
+      throw e;
     }
   }
 

@@ -1,5 +1,6 @@
 package community.ddv.global.config;
 
+import community.ddv.global.component.JwtAuthenticationEntryPoint;
 import community.ddv.global.component.JwtFilter;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
@@ -46,7 +47,7 @@ public class SecurityConfig {
   };
 
   @Bean
-  public SecurityFilterChain securityFilterChain(HttpSecurity httpSecurity, JwtFilter jwtFilter)
+  public SecurityFilterChain securityFilterChain(HttpSecurity httpSecurity, JwtFilter jwtFilter, JwtAuthenticationEntryPoint jwtAuthenticationEntryPoint)
       throws Exception {
 
     return httpSecurity
@@ -60,12 +61,11 @@ public class SecurityConfig {
             .requestMatchers(HttpMethod.GET, "/api/reviews/{reviewId}/comments").permitAll()
             .requestMatchers(HttpMethod.GET, "/api/reviews/movie/{tmdbId}").permitAll()
             .requestMatchers(HttpMethod.GET, "/api/reviews/latest").permitAll()
-            .requestMatchers(HttpMethod.POST, "/api/votes").hasAuthority("ADMIN") // 관리자만 투표 생성 가능
-            .requestMatchers(HttpMethod.GET, "/api/certifications/admin/**").hasAuthority("ADMIN")
-            .requestMatchers(HttpMethod.POST, "/api/certifications/admin/**").hasAuthority("ADMIN")
             .anyRequest().authenticated()
         )
-        .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class) // jwt 필터
+        .exceptionHandling(exception ->
+            exception.authenticationEntryPoint(jwtAuthenticationEntryPoint)) // 401 처리
+        .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class)
         .build();
   }
 

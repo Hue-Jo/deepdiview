@@ -53,7 +53,7 @@ public enum ErrorCode {
   ALREADY_APPROVED("이미 승인되었습니다.", HttpStatus.BAD_REQUEST),
 
   // 토론 관련 에러코드
-  NOT_CERTIFIED_YET("토론 작성 권한이 없습니다. 인증을 먼저 완료해주세요", HttpStatus.UNAUTHORIZED),
+  NOT_CERTIFIED_YET("토론 작성 권한이 없습니다. 인증을 먼저 완료해주세요", HttpStatus.FORBIDDEN),
   INVALID_REVIEW_PERIOD("토론 작성 기간이 아닙니다. 다음 주에 새로운 영화로 만나요", HttpStatus.BAD_REQUEST),
 
   // 알림 관련 에러코드
