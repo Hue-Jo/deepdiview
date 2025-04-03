@@ -50,6 +50,7 @@ public class UserService {
    * 회원가입
    * @param signUpDto - 이메일(중복 불가), 비밀번호, 비밀번호 확인, 닉네임(중복 불가)
    */
+  @Transactional
   public void signUp(SignUpDto signUpDto) {
     log.info("회원가입 시도");
 
@@ -241,7 +242,7 @@ public class UserService {
       log.info("비밀번호 변경성공");
     }
 
-    userRepository.save(user);
+    //userRepository.save(user);
     log.info("회원정보 수정완료");
 
 
