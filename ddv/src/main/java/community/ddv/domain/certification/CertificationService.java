@@ -10,6 +10,7 @@ import community.ddv.global.constant.Role;
 import community.ddv.global.exception.DeepdiviewException;
 import community.ddv.global.exception.ErrorCode;
 import community.ddv.global.fileUpload.FileStorageService;
+import java.time.DayOfWeek;
 import java.time.LocalDateTime;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
@@ -40,6 +41,11 @@ public class CertificationService {
 
     User user = userService.getLoginUser();
     log.info("인증샷 업로드 시도 : userId = {}", user.getId());
+
+    if (LocalDateTime.now().getDayOfWeek() == DayOfWeek.SUNDAY) {
+      log.warn("일요일에는 인증샷 제출 불가");
+      throw new DeepdiviewException(ErrorCode.CERTIFICATION_NOT_ALLOWED_ON_SUNDAY);
+    }
 
     // 이미 인증 승인을 받은 경우, 중복 인증 불가
     if (certificationRepository.existsByUser_IdAndStatus(user.getId(), CertificationStatus.APPROVED)) {
@@ -96,6 +102,11 @@ public class CertificationService {
 
     User user = userService.getLoginUser();
     log.info("인증샷 수정 시도 : userId = {}", user.getId());
+
+    if (LocalDateTime.now().getDayOfWeek() == DayOfWeek.SUNDAY) {
+      log.warn("일요일에는 인증샷 수정이 불가");
+      throw new DeepdiviewException(ErrorCode.CERTIFICATION_NOT_ALLOWED_ON_SUNDAY);
+    }
 
     // 이미 인증 승인을 받은 경우, 수정 불가
     Certification certification = certificationRepository.findByUser_Id(user.getId())
@@ -238,9 +249,9 @@ public class CertificationService {
         .build();
   }
 
-  // 인증상태 초기화 (새로운 주가 시작될 때 인증 상태를 null로 초기화)
+  // 인증상태 초기화 (새로운 주가 시작되기 전, 인증 상태를 null로 초기화)
   @Transactional
-  @Scheduled(cron = "0 0 0 * * MON")
+  @Scheduled(cron = "0 0 0 * * SUN")
   // 테스트를 위해 매일 0시 정각에 초기화
   //@Scheduled(cron = "0 0 0 * * *")
   protected void resetCertificationStatus() {

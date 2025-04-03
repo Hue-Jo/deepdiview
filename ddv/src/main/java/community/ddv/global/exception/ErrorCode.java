@@ -49,6 +49,7 @@ public enum ErrorCode {
   FILE_DELETE_FAILED("파일 삭제 중 문제가 발생했습니다.", HttpStatus.BAD_REQUEST),
 
   // 인증 관련 에러코드
+  CERTIFICATION_NOT_ALLOWED_ON_SUNDAY("인증 가능 기간은 '월-토'입니다.", HttpStatus.BAD_REQUEST),
   CERTIFICATION_NOT_FOUND("인증요청이 존재하지 않습니다.", HttpStatus.BAD_REQUEST),
   ALREADY_APPROVED("이미 승인되었습니다.", HttpStatus.BAD_REQUEST),
 
