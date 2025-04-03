@@ -138,6 +138,7 @@ public class CertificationService {
         .userId(updatedCertification.getUser().getId())
         .certificationUrl(updatedCertification.getCertificationUrl())
         .status(updatedCertification.getStatus())
+        .rejectionReason(null)
         .createdAt(updatedCertification.getCreatedAt())
         .build();
   }
