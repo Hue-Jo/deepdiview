@@ -1,7 +1,7 @@
 package community.ddv.domain.user.dto;
 
-import community.ddv.global.constant.CertificationStatus;
-import community.ddv.global.constant.RejectionReason;
+import community.ddv.domain.certification.constant.CertificationStatus;
+import community.ddv.domain.certification.constant.RejectionReason;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;

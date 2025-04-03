@@ -1,6 +1,5 @@
 package community.ddv.domain.notification;
 
-import community.ddv.global.constant.NotificationType;
 import community.ddv.domain.user.entity.User;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;

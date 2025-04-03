@@ -1,8 +1,8 @@
 package community.ddv.domain.certification;
 
-import community.ddv.global.constant.CertificationStatus;
 import community.ddv.domain.certification.CertificationDTO.CertificationRequestDto;
 import community.ddv.domain.certification.CertificationDTO.CertificationResponseDto;
+import community.ddv.domain.certification.constant.CertificationStatus;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import java.io.IOException;

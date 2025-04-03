@@ -1,6 +1,6 @@
 package community.ddv.domain.user.entity;
 
-import community.ddv.global.constant.Role;
+import community.ddv.domain.user.constant.Role;
 import community.ddv.domain.certification.Certification;
 import community.ddv.domain.board.entity.Comment;
 import community.ddv.domain.board.entity.Like;

@@ -1,7 +1,7 @@
 package community.ddv.domain.certification;
 
-import community.ddv.global.constant.CertificationStatus;
-import community.ddv.global.constant.RejectionReason;
+import community.ddv.domain.certification.constant.CertificationStatus;
+import community.ddv.domain.certification.constant.RejectionReason;
 import community.ddv.domain.user.entity.User;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;

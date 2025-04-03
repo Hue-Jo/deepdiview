@@ -2,7 +2,7 @@ package community.ddv.domain.vote.service;
 
 import community.ddv.domain.movie.service.MovieService;
 import community.ddv.global.exception.ErrorCode;
-import community.ddv.global.constant.Role;
+import community.ddv.domain.user.constant.Role;
 import community.ddv.domain.movie.dto.MovieDTO;
 import community.ddv.domain.vote.dto.VoteDTO.VoteCreatedDTO;
 import community.ddv.domain.vote.dto.VoteDTO.VoteResultDTO;

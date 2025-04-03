@@ -1,6 +1,6 @@
 package community.ddv.domain.certification;
 
-import community.ddv.global.constant.CertificationStatus;
+import community.ddv.domain.certification.constant.CertificationStatus;
 import java.util.Optional;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
