@@ -81,7 +81,6 @@ public class ReviewService {
       throw new DeepdiviewException(ErrorCode.INVALID_USER);
     }
     reviewRepository.delete(review);
-    log.info("리뷰 삭제 완료 - 리뷰 ID: {}", reviewId);
   }
 
   /**
@@ -174,7 +173,6 @@ public class ReviewService {
       reviews = reviewRepository.findByUser_Id(userId, pageable);
     }
 
-    log.info("특정 사용자의 리뷰 내역 조회 성공");
     return reviews.map(this::convertToReviewResponseDto);
 
   }
