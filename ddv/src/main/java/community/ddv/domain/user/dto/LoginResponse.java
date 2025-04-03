@@ -1,6 +1,6 @@
 package community.ddv.domain.user.dto;
 
-import community.ddv.global.constant.Role;
+import community.ddv.domain.user.constant.Role;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;

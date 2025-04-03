@@ -1,8 +1,8 @@
 package community.ddv.domain.certification;
 
-import community.ddv.global.constant.CertificationStatus;
 import community.ddv.domain.certification.CertificationDTO.CertificationRequestDto;
 import community.ddv.domain.certification.CertificationDTO.CertificationResponseDto;
+import community.ddv.domain.certification.constant.CertificationStatus;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import java.io.IOException;
@@ -35,7 +35,7 @@ public class CertificationController {
   @Operation(summary = "인증샷 제출", description = "파일 업로드")
   @PostMapping
   public ResponseEntity<CertificationResponseDto> submitCertification(
-      @RequestParam("file") MultipartFile file) throws Exception {
+      @RequestParam("file") MultipartFile file) {
     return ResponseEntity.ok(certificationService.submitCertification(file));
   }
 

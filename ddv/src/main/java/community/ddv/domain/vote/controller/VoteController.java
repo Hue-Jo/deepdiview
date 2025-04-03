@@ -9,6 +9,7 @@ import community.ddv.domain.vote.service.VoteService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
+import java.util.Map;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -67,9 +68,9 @@ public class VoteController {
 
   @Operation(summary = "현재 진행중인 투표에 참여했는지 여부 T/F")
   @GetMapping("/participation-status")
-  public ResponseEntity<Boolean> checkParticipationStatus() {
+  public ResponseEntity<Map<String, Boolean>> checkParticipationStatus() {
     boolean participated = voteService.isUserAlreadyParticipatedInCurrentVote();
-    return ResponseEntity.ok(participated);
+    return ResponseEntity.ok(Map.of("participated", participated));
   }
 
   @Operation(summary = "지난주 투표 전체 결과 조회", description = "지난주에 진행한 투표의 전체 결과를 볼 수 있습니다.")

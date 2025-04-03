@@ -47,14 +47,11 @@ public class Review {
 
   private Long tmdbId;
 
-  @Setter
   private String title; // 제목
 
   @Column(length = 1000)
-  @Setter
   private String content; // 내용 (1000자 이내로 제한)
 
-  @Setter
   private double rating; // 별점
 
   @CreatedDate
@@ -81,6 +78,19 @@ public class Review {
 
   public void updateCertified(boolean certified) {
     this.certified = certified;
+  }
+
+
+  public void updateReview(String title, String content, Double rating) {
+    if (title != null && !title.isEmpty()) {
+      this.title = title;
+    }
+    if (content != null && !content.isEmpty()) {
+      this.content = content;
+    }
+    if (rating != null) {
+      this.rating = rating;
+    }
   }
 
 

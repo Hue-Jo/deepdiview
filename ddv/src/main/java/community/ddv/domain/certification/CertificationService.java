@@ -1,12 +1,12 @@
 package community.ddv.domain.certification;
 
 import community.ddv.domain.certification.CertificationDTO.CertificationResponseDto;
+import community.ddv.domain.certification.constant.CertificationStatus;
+import community.ddv.domain.certification.constant.RejectionReason;
 import community.ddv.domain.notification.NotificationService;
 import community.ddv.domain.user.entity.User;
 import community.ddv.domain.user.service.UserService;
-import community.ddv.global.constant.CertificationStatus;
-import community.ddv.global.constant.RejectionReason;
-import community.ddv.global.constant.Role;
+import community.ddv.domain.user.constant.Role;
 import community.ddv.global.exception.DeepdiviewException;
 import community.ddv.global.exception.ErrorCode;
 import community.ddv.global.fileUpload.FileStorageService;

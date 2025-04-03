@@ -1,6 +1,6 @@
 package community.ddv.global.component;
 
-import community.ddv.global.constant.Role;
+import community.ddv.domain.user.constant.Role;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.JwtException;

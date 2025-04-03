@@ -1,7 +1,7 @@
 package community.ddv.domain.certification;
 
-import community.ddv.global.constant.CertificationStatus;
-import community.ddv.global.constant.RejectionReason;
+import community.ddv.domain.certification.constant.CertificationStatus;
+import community.ddv.domain.certification.constant.RejectionReason;
 import java.time.LocalDateTime;
 import lombok.Builder;
 import lombok.Getter;

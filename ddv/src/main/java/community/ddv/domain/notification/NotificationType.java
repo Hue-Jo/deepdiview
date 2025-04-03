@@ -1,4 +1,4 @@
-package community.ddv.global.constant;
+package community.ddv.domain.notification;
 
 import lombok.Getter;
 

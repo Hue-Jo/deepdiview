@@ -1,6 +1,6 @@
 package community.ddv.global.component;
 
-import community.ddv.global.constant.Role;
+import community.ddv.domain.user.constant.Role;
 import community.ddv.domain.user.entity.User;
 import community.ddv.domain.user.repository.UserRepository;
 import jakarta.annotation.PostConstruct;

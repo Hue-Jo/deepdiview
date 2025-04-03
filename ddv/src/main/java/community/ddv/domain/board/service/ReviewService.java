@@ -107,18 +107,7 @@ public class ReviewService {
       throw new DeepdiviewException(ErrorCode.INVALID_USER);
     }
 
-    if (!reviewUpdateDTO.getTitle().isEmpty()) {
-      log.info("리뷰 제목 변경");
-      review.setTitle(reviewUpdateDTO.getTitle());
-    }
-    if (!reviewUpdateDTO.getContent().isEmpty()) {
-      log.info("리뷰 내용 변경");
-      review.setContent(reviewUpdateDTO.getContent());
-    }
-    if (reviewUpdateDTO.getRating() != null) {
-      log.info("리뷰 별점 변경");
-      review.setRating(reviewUpdateDTO.getRating());
-    }
+    review.updateReview(reviewUpdateDTO.getTitle(), reviewUpdateDTO.getContent(), reviewUpdateDTO.getRating());
 
     Review updatedReview = reviewRepository.save(review);
     log.info("리뷰 수정 완료 - 리뷰 ID: {}", reviewId);
