@@ -34,10 +34,6 @@ public class VoteParticipation {
   @JoinColumn(name = "vote_Id")
   private Vote vote;
 
-//  @ManyToOne(fetch = FetchType.LAZY)
-//  @JoinColumn(name = "movie_id")
-//  private Movie selectedMovie;
-
   @ManyToOne(fetch = FetchType.LAZY)
   private VoteMovie selectedVoteMovie;
 

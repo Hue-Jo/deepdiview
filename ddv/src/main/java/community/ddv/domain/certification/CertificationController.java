@@ -35,7 +35,7 @@ public class CertificationController {
   @Operation(summary = "인증샷 제출", description = "파일 업로드")
   @PostMapping
   public ResponseEntity<CertificationResponseDto> submitCertification(
-      @RequestParam("file") MultipartFile file) throws Exception {
+      @RequestParam("file") MultipartFile file) {
     return ResponseEntity.ok(certificationService.submitCertification(file));
   }
 

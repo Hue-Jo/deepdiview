@@ -37,8 +37,9 @@ public class DiscussionController {
 
   @Operation(summary = "일요일인지 여부 T/F")
   @GetMapping("/is-sunday")
-  public ResponseEntity<Boolean> isSunday() {
-    return ResponseEntity.ok(discussionService.isTodaySunday());
+  public ResponseEntity<Map<String, Boolean>> isSunday() {
+    boolean isSunday = discussionService.isTodaySunday();
+    return ResponseEntity.ok(Map.of("isSunday", isSunday));
   }
 
   @Operation(summary = "이번주 토론 영화(= 지난주 1위 영화) id 조회")
