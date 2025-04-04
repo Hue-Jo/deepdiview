@@ -150,7 +150,7 @@ public class UserController {
       @RequestParam("file") MultipartFile file) {
     String profileImageUrl = profileImageService.uploadProfileImage(file);
     Map<String, String> profileResponse = new HashMap<>();
-    profileResponse.put("profileImage Url", profileImageUrl);
+    profileResponse.put("profileImageUrl", profileImageUrl);
     return ResponseEntity.ok(profileResponse);
   }
 
@@ -160,7 +160,7 @@ public class UserController {
       @RequestParam("file") MultipartFile file) {
     String profileImageUrl = profileImageService.updateProfileImage(file);
     Map<String, String> profileResponse = new HashMap<>();
-    profileResponse.put("profileImage Url", profileImageUrl);
+    profileResponse.put("profileImageUrl", profileImageUrl);
     return ResponseEntity.ok(profileResponse);
   }
 
