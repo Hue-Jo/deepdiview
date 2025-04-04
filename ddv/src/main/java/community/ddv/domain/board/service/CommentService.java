@@ -33,7 +33,6 @@ public class CommentService {
 
     log.info("댓글 작성 요청");
     User user = userService.getLoginUser();
-    log.info("댓글 작성자 : {}", user.getId());
 
     Review review = reviewRepository.findById(reviewId)
         .orElseThrow(() -> new DeepdiviewException(ErrorCode.REVIEW_NOT_FOUND));
@@ -73,7 +72,6 @@ public class CommentService {
     }
 
     comment.updateContent(commentRequestDto.getContent());
-    log.info("댓글 수정 완료 - 댓글 ID : {}", comment.getId());
 
     return convertToCommentResponse(comment);
   }
@@ -101,7 +99,6 @@ public class CommentService {
       throw new DeepdiviewException(ErrorCode.COMMENT_NOT_BELONG_TO_REVIEW);
     }
 
-    log.info("댓글 삭제 완료 - 댓글 ID : {}", comment.getId());
     commentRepository.delete(comment);
   }
 
@@ -113,7 +110,6 @@ public class CommentService {
         .orElseThrow(() -> new DeepdiviewException(ErrorCode.REVIEW_NOT_FOUND));
 
     Page<Comment> comments = commentRepository.findByReview(review, pageable);
-    log.info("댓글 조회 성공");
 
     return comments.map(this::convertToCommentResponse);
   }
@@ -124,7 +120,6 @@ public class CommentService {
     userService.getLoginUser();
 
     Page<Comment> comments = commentRepository.findByUser_Id(userId, pageable);
-    log.info("특정 이용자가 작성한 댓글 조회 성공");
 
     return comments.map(this::convertToCommentResponse);
   }

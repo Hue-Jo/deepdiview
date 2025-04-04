@@ -96,7 +96,7 @@ public class MovieService {
 
     Movie movie = movieRepository.findByTmdbId(tmdbId)
         .orElseThrow(() -> {
-          log.warn("영화 Id {}에 해당하는 영화가 없습니다.", tmdbId);
+          log.warn("영화 Id '{}'에 해당하는 영화가 없습니다.", tmdbId);
           return new DeepdiviewException(ErrorCode.MOVIE_NOT_FOUND);
         });
     Pageable pageable = PageRequest.of(0, 5, Sort.by(Direction.DESC, "createdAt"));

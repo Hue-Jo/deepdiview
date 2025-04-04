@@ -56,14 +56,17 @@ public class UserService {
 
     // 같은 이메일로 중복 회원가입 불가
     if (userRepository.findByEmail(signUpDto.getEmail()).isPresent()) {
+      log.warn("중복 회원가입 불가");
       throw new DeepdiviewException(ErrorCode.ALREADY_EXIST_MEMBER);
     }
     // 비밀번호 확인 로직 통과 여부
     if (!signUpDto.getPassword().equals(signUpDto.getConfirmPassword())) {
+      log.warn("비밀번호 확인 로직 통과 X");
       throw new DeepdiviewException(ErrorCode.NOT_VALID_PASSWORD);
     }
     // 중복 닉네임 사용불가
     if (userRepository.findByNickname(signUpDto.getNickname()).isPresent()) {
+      log.warn("중복 닉네임 불가");
       throw new DeepdiviewException(ErrorCode.ALREADY_EXIST_NICKNAME);
     }
 
@@ -221,15 +224,12 @@ public class UserService {
         log.info("이미 존재하는 닉네임이 있어 해당 닉네임으로 변경 불가");
         throw new DeepdiviewException(ErrorCode.ALREADY_EXIST_NICKNAME);
       }
-
       // 존재하지 않는 닉네임일 시, 닉네임 변경 성공
       user.updateNickname(newNickname);
-      log.info("닉네임 변경성공");
     }
 
     if (!newPassword.isBlank()) {
       log.info("비밀번호 변경시도");
-
       if (!isValidPassword(newPassword)) {
         throw new DeepdiviewException(ErrorCode.NOT_ENOUGH_PASSWORD);
       } else {
@@ -237,14 +237,10 @@ public class UserService {
           throw new DeepdiviewException(ErrorCode.NOT_VALID_PASSWORD);
         }
       }
-
       user.updatePassword(passwordEncoder.encode(newPassword));
-      log.info("비밀번호 변경성공");
     }
 
-    //userRepository.save(user);
     log.info("회원정보 수정완료");
-
 
   }
 

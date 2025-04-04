@@ -22,7 +22,6 @@ public class ProfileImageService {
   @Transactional
   public String uploadProfileImage(MultipartFile profileImage) {
     User user = userService.getLoginUser();
-    log.info("프로필사진 등록 요청");
 
     String profileImageUrl = fileStorageService.uploadFile(profileImage);
     log.info("S3에 프로필 이미지 업로드 완료");

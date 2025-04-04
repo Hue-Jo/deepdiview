@@ -40,7 +40,6 @@ public class CertificationService {
   public CertificationResponseDto submitCertification(MultipartFile certificationImageFile) {
 
     User user = userService.getLoginUser();
-    log.info("인증샷 업로드 시도 : userId = {}", user.getId());
 
     if (LocalDateTime.now().getDayOfWeek() == DayOfWeek.SUNDAY) {
       log.warn("일요일에는 인증샷 제출 불가");
@@ -80,7 +79,6 @@ public class CertificationService {
   @Transactional(readOnly = true)
   public CertificationResponseDto getMyCertification() {
     User user = userService.getLoginUser();  // 로그인된 사용자 정보 가져오기
-    log.info("인증샷 조회 시도 : userId = {}", user.getId());
 
     // 사용자가 제출한 인증샷 조회
     Certification certification = certificationRepository.findByUser_Id(user.getId())
@@ -90,7 +88,7 @@ public class CertificationService {
     if (!certification.getStatus().equals(CertificationStatus.APPROVED)) {
       return convertToCertificationDto(certification);
     }
-    log.error("승인된 사용자는 자신의 상태를 조회할 필요가 없습니다.");
+    log.warn("승인된 사용자는 자신의 상태를 조회할 필요가 없습니다.");
     throw new DeepdiviewException(ErrorCode.ALREADY_APPROVED);
   }
 
@@ -101,7 +99,6 @@ public class CertificationService {
   public CertificationResponseDto updateCertification(MultipartFile certificationImageFile) {
 
     User user = userService.getLoginUser();
-    log.info("인증샷 수정 시도 : userId = {}", user.getId());
 
     if (LocalDateTime.now().getDayOfWeek() == DayOfWeek.SUNDAY) {
       log.warn("일요일에는 인증샷 수정이 불가");
@@ -138,6 +135,7 @@ public class CertificationService {
         .userId(updatedCertification.getUser().getId())
         .certificationUrl(updatedCertification.getCertificationUrl())
         .status(updatedCertification.getStatus())
+        .rejectionReason(null)
         .createdAt(updatedCertification.getCreatedAt())
         .build();
   }
@@ -149,7 +147,6 @@ public class CertificationService {
   public void deleteCertification() {
 
     User user = userService.getLoginUser();
-    log.info("인증샷 삭제 시도 : userId = {}", user.getId());
 
     // 인증샷 조회
     Certification certification = certificationRepository.findByUser_Id(user.getId())
