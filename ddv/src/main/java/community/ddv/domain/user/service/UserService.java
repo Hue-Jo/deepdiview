@@ -305,8 +305,10 @@ public class UserService {
     int reviewCount = reviewRepository.countByUser_Id(user.getId());
     int commentCount = commentRepository.countByUser_Id(user.getId());
 
-    Map<Double, Long> ratingDistribution = reviewRepository.findAllByUser_Id(user.getId()).stream()
-        .map(Review::getRating)
+    Map<Double, Long> ratingDistribution
+        = reviewRepository.findAllByUser_Id(user.getId()) // List<Review> 가져옴
+        .stream() // Stream<Review>로 변환
+        .map(Review::getRating) // Stream<Double> 로 변환
         .collect(Collectors.groupingBy(
             rating -> rating,
             Collectors.counting()
