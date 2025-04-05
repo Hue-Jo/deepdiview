@@ -52,7 +52,7 @@ public class Review {
   @Column(length = 1000)
   private String content; // 내용 (1000자 이내로 제한)
 
-  private double rating; // 별점
+  private Double rating; // 별점
 
   @CreatedDate
   private LocalDateTime createdAt;
