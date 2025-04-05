@@ -22,12 +22,11 @@ public class ProfileImageService {
   @Transactional
   public String uploadProfileImage(MultipartFile profileImage) {
     User user = userService.getLoginUser();
+    log.info("프로필 사진 등록 요청");
 
     String profileImageUrl = fileStorageService.uploadFile(profileImage);
-    log.info("S3에 프로필 이미지 업로드 완료");
 
     user.updateProfileImageUrl(profileImageUrl);
-    log.info("프로필 이미지 등록 완료");
     return profileImageUrl;
   }
 
@@ -43,12 +42,12 @@ public class ProfileImageService {
     // 기존 프로필 삭제
     if (user.getProfileImageUrl() != null) {
       fileStorageService.deleteFile(user.getProfileImageUrl());
-      log.info("기존 프로필 사진 삭제 완료");
+      log.info("기존 프로필 사진 삭제");
     }
 
     String newProfileImageUrl = fileStorageService.uploadFile(profileImage);
     user.updateProfileImageUrl(newProfileImageUrl);
-    log.info("프로필 이미지 수정 완료");
+    log.info("프로필 이미지 수정");
 
     return newProfileImageUrl;
   }
@@ -66,7 +65,6 @@ public class ProfileImageService {
       fileStorageService.deleteFile(user.getProfileImageUrl());
 
       user.updateProfileImageUrl(null);
-      log.info("프로필 사진 삭제 완료");
     }
   }
 }

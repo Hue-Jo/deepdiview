@@ -116,11 +116,9 @@ public class CertificationService {
 
     // 기존의 인증샷 S3에서 삭제
     fileStorageService.deleteFile(certification.getCertificationUrl());
-    log.info("기존의 인증샷 파일 S3에서 삭제 완료");
 
     // 새 인증샷 파일 업로드
     String newCertificationUrl = fileStorageService.uploadFile(certificationImageFile);
-    log.info("새로운 인증샷 파일 S3에 업로드 완료");
 
     // 인증샷 수정
     certification.setCertificationUrl(newCertificationUrl);
@@ -163,7 +161,6 @@ public class CertificationService {
 
     // S3에서 파일 삭제
     fileStorageService.deleteFile(certification.getCertificationUrl());
-    log.info("인증샷 파일 S3에서 삭제 완료");
 
     // DB에서 인증샷 삭제
     certificationRepository.delete(certification);
@@ -266,7 +263,6 @@ public class CertificationService {
     for(Certification certification : certifications) {
       try {
         fileStorageService.deleteFile(certification.getCertificationUrl());
-        log.info("인증샷 파일 S3에서 삭제 완료");
       } catch (RuntimeException e) {
         log.info("인증샷 파일을 S3에서 삭제 실패 : url = {}", certification.getCertificationUrl());
       }
