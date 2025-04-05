@@ -99,16 +99,15 @@ public class UserService {
 
     // 엑세스 토큰 생성
     String accessToken = jwtProvider.generateAccessToken(user.getEmail(), user.getRole());
-    // 리프레시 토큰 생성
+
     String refreshToken = redisRefreshTokenTemplate.opsForValue().get(user.getEmail());
+    // 리프레시 토큰 생성 (없거나 만료되었으면 새로 생성)
     if (refreshToken == null || jwtProvider.isTokenExpired(refreshToken)) {
-      // 리프레시 토큰이 없거나 만료되었으면 새로 생성
-      refreshToken = jwtProvider.generateRefreshToken(user.getEmail(), user.getRole());
-      // set(키, 값, 숫자, TimeUnit)으로  일정시간(15일) 후 자동 삭제되는 토큰 저장
-      redisRefreshTokenTemplate.opsForValue().set(user.getEmail(), refreshToken, 15, TimeUnit.DAYS);
+      refreshToken = generateAndStoreRefreshToken(user);
     } else {
-      log.info("기존 리프레시 토큰 사용");
+      log.info("유효한 리프레시 토큰 사용");
     }
+
     log.info("로그인 성공");
     return new LoginResponse(
         accessToken,
@@ -119,6 +118,13 @@ public class UserService {
         user.getProfileImageUrl(),
         user.getRole()
     );
+  }
+
+  private String generateAndStoreRefreshToken(User user) {
+    String newRefreshToken = jwtProvider.generateRefreshToken(user.getEmail(), user.getRole());
+    // set(키, 값, 숫자, TimeUnit)으로  일정시간(15일) 후 자동 삭제되는 토큰 저장
+    redisRefreshTokenTemplate.opsForValue().set(user.getEmail(), newRefreshToken, 15, TimeUnit.DAYS);
+    return newRefreshToken;
   }
 
   /**
@@ -159,12 +165,18 @@ public class UserService {
       throw new DeepdiviewException(ErrorCode.INVALID_REFRESH_TOKEN);
     }
 
-    // 리프레시 토큰에서 이메일 추출
+    // 리프레시 토큰에서 이메일 추출 후, Redis에 저장된 토큰과 일치 여부 확인
     String email = jwtProvider.extractEmail(refreshToken);
+    String storedRefreshToken = redisRefreshTokenTemplate.opsForValue().get(email);
+    if(!refreshToken.equals(storedRefreshToken)) {
+      throw new DeepdiviewException(ErrorCode.INVALID_REFRESH_TOKEN);
+    }
+
+    // 사용자 정보 가져오기
     User user = userRepository.findByEmail(email)
         .orElseThrow(() -> new DeepdiviewException(ErrorCode.USER_NOT_FOUND));
 
-    // 새 엑세스 토큰 생성
+    // 새 엑세스 토큰 생성/발급
     String newAccessToken = jwtProvider.generateAccessToken(user.getEmail(), user.getRole());
 
     log.info("엑세스 토큰 재발급 완료");
@@ -293,8 +305,10 @@ public class UserService {
     int reviewCount = reviewRepository.countByUser_Id(user.getId());
     int commentCount = commentRepository.countByUser_Id(user.getId());
 
-    Map<Double, Long> ratingDistribution = reviewRepository.findAllByUser_Id(user.getId()).stream()
-        .map(Review::getRating)
+    Map<Double, Long> ratingDistribution
+        = reviewRepository.findAllByUser_Id(user.getId()) // List<Review> 가져옴
+        .stream() // Stream<Review>로 변환
+        .map(Review::getRating) // Stream<Double> 로 변환
         .collect(Collectors.groupingBy(
             rating -> rating,
             Collectors.counting()

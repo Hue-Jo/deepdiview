@@ -82,11 +82,12 @@ public class UserController {
 
   @Operation(summary = "리프레시 토큰으로 엑세스 토큰 재발급")
   @PostMapping("/reissue-access-token")
-  public ResponseEntity<TokenDto> reissueAccessToken(@RequestHeader("Authorization") String authorization) {
-      // Authorization 헤더에서 'Bearer '를 제외한 리프레시 토큰 추출
+  public ResponseEntity<TokenDto> reissueAccessToken(
+      @RequestHeader("Authorization") String authorization) {
+    // Authorization 헤더에서 'Bearer '를 제외한 리프레시 토큰 추출
     String refreshToken = authorization.replace("Bearer ", "");
 
-      // 엑세스 토큰 재발급
+    // 엑세스 토큰 재발급
     TokenDto newAccessToken = userService.reissueAccessToken(refreshToken);
     return ResponseEntity.ok(newAccessToken);
   }
