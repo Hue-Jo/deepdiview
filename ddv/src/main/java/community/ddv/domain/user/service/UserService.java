@@ -165,12 +165,18 @@ public class UserService {
       throw new DeepdiviewException(ErrorCode.INVALID_REFRESH_TOKEN);
     }
 
-    // 리프레시 토큰에서 이메일 추출
+    // 리프레시 토큰에서 이메일 추출 후, Redis에 저장된 토큰과 일치 여부 확인
     String email = jwtProvider.extractEmail(refreshToken);
+    String storedRefreshToken = redisRefreshTokenTemplate.opsForValue().get(email);
+    if(!refreshToken.equals(storedRefreshToken)) {
+      throw new DeepdiviewException(ErrorCode.INVALID_REFRESH_TOKEN);
+    }
+
+    // 사용자 정보 가져오기
     User user = userRepository.findByEmail(email)
         .orElseThrow(() -> new DeepdiviewException(ErrorCode.USER_NOT_FOUND));
 
-    // 새 엑세스 토큰 생성
+    // 새 엑세스 토큰 생성/발급
     String newAccessToken = jwtProvider.generateAccessToken(user.getEmail(), user.getRole());
 
     log.info("엑세스 토큰 재발급 완료");
