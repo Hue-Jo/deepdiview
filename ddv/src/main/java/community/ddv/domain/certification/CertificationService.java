@@ -85,11 +85,15 @@ public class CertificationService {
         .orElseThrow(() -> new DeepdiviewException(ErrorCode.CERTIFICATION_NOT_FOUND));
 
     // PENDING 또는 REJECTED 상태에서만 반환
-    if (!certification.getStatus().equals(CertificationStatus.APPROVED)) {
-      return convertToCertificationDto(certification);
+    CertificationStatus status = certification.getStatus();
+    if (status == null) {
+      throw new DeepdiviewException(ErrorCode.CERTIFICATION_NOT_FOUND);
     }
-    log.warn("승인된 사용자는 자신의 상태를 조회할 필요가 없습니다.");
-    throw new DeepdiviewException(ErrorCode.ALREADY_APPROVED);
+    if (status.equals(CertificationStatus.APPROVED)) {
+      throw new DeepdiviewException(ErrorCode.ALREADY_APPROVED);
+    }
+
+    return convertToCertificationDto(certification);
   }
 
   /**
