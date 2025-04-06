@@ -20,7 +20,7 @@ public class ReviewResponseDTO {
   private String profileImageUrl;
   private String reviewTitle;
   private String reviewContent;
-  private double rating;
+  private Double rating;
   private LocalDateTime createdAt;
   private LocalDateTime updatedAt;
   private Integer likeCount;
@@ -28,7 +28,7 @@ public class ReviewResponseDTO {
   private Long tmdbId;
   private String movieTitle;
   private String posterPath;
-  private boolean certified;
+  private Boolean certified;
 
   private List<CommentResponseDto> comments;
 }

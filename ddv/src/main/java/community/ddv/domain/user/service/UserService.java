@@ -5,6 +5,7 @@ import community.ddv.domain.board.repository.CommentRepository;
 import community.ddv.domain.board.repository.ReviewRepository;
 import community.ddv.domain.certification.Certification;
 import community.ddv.domain.certification.CertificationRepository;
+import community.ddv.domain.certification.constant.RejectionReason;
 import community.ddv.domain.user.dto.LoginResponse;
 import community.ddv.domain.user.dto.UserDTO.AccountDeleteDto;
 import community.ddv.domain.user.dto.UserDTO.AccountUpdateDto;
@@ -315,6 +316,11 @@ public class UserService {
         ));
 
     Certification certification = certificationRepository.findByUser_Id(user.getId()).orElse(null);
+    CertificationStatus certificationStatus = certification != null ?
+        certification.getStatus() : null;
+    RejectionReason rejectionReason = certification != null && certification.getStatus() == CertificationStatus.REJECTED ?
+        certification.getRejectionReason() : null;
+
 
     return UserInfoDto.builder()
         .nickname(user.getNickname())
@@ -324,9 +330,8 @@ public class UserService {
         .reviewCount(reviewCount)
         .commentCount(commentCount)
         .ratingDistribution(ratingDistribution)
-        .certificationStatus(certification != null ? certification.getStatus() : null)
-        .rejectionReason(certification != null && certification.getStatus() == CertificationStatus.REJECTED
-        ? certification.getRejectionReason() : null)
+        .certificationStatus(certificationStatus)
+        .rejectionReason(rejectionReason)
     .build();
   }
 

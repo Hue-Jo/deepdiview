@@ -85,11 +85,15 @@ public class CertificationService {
         .orElseThrow(() -> new DeepdiviewException(ErrorCode.CERTIFICATION_NOT_FOUND));
 
     // PENDING 또는 REJECTED 상태에서만 반환
-    if (!certification.getStatus().equals(CertificationStatus.APPROVED)) {
-      return convertToCertificationDto(certification);
+    CertificationStatus status = certification.getStatus();
+    if (status == null) {
+      throw new DeepdiviewException(ErrorCode.CERTIFICATION_NOT_FOUND);
     }
-    log.warn("승인된 사용자는 자신의 상태를 조회할 필요가 없습니다.");
-    throw new DeepdiviewException(ErrorCode.ALREADY_APPROVED);
+    if (status.equals(CertificationStatus.APPROVED)) {
+      throw new DeepdiviewException(ErrorCode.ALREADY_APPROVED);
+    }
+
+    return convertToCertificationDto(certification);
   }
 
   /**
@@ -116,15 +120,14 @@ public class CertificationService {
 
     // 기존의 인증샷 S3에서 삭제
     fileStorageService.deleteFile(certification.getCertificationUrl());
-    log.info("기존의 인증샷 파일 S3에서 삭제 완료");
 
     // 새 인증샷 파일 업로드
     String newCertificationUrl = fileStorageService.uploadFile(certificationImageFile);
-    log.info("새로운 인증샷 파일 S3에 업로드 완료");
 
     // 인증샷 수정
     certification.setCertificationUrl(newCertificationUrl);
     certification.setStatus(CertificationStatus.PENDING);
+    certification.setRejectionReason(null);
     certification.setCreatedAt(LocalDateTime.now());
 
     Certification updatedCertification = certificationRepository.save(certification);
@@ -163,7 +166,6 @@ public class CertificationService {
 
     // S3에서 파일 삭제
     fileStorageService.deleteFile(certification.getCertificationUrl());
-    log.info("인증샷 파일 S3에서 삭제 완료");
 
     // DB에서 인증샷 삭제
     certificationRepository.delete(certification);
@@ -266,7 +268,6 @@ public class CertificationService {
     for(Certification certification : certifications) {
       try {
         fileStorageService.deleteFile(certification.getCertificationUrl());
-        log.info("인증샷 파일 S3에서 삭제 완료");
       } catch (RuntimeException e) {
         log.info("인증샷 파일을 S3에서 삭제 실패 : url = {}", certification.getCertificationUrl());
       }
