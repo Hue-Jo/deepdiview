@@ -123,6 +123,7 @@ public class CertificationService {
     // 인증샷 수정
     certification.setCertificationUrl(newCertificationUrl);
     certification.setStatus(CertificationStatus.PENDING);
+    certification.setRejectionReason(null);
     certification.setCreatedAt(LocalDateTime.now());
 
     Certification updatedCertification = certificationRepository.save(certification);
