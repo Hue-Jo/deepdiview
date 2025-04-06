@@ -202,6 +202,7 @@ public class ReviewService {
     Boolean likedByUser = (loginUser != null)
         ? review.getLikes().stream().anyMatch(like -> like.getUser().equals(loginUser))
         : null;
+    int commentCount = review.getComments().size();
 
     Movie movie = review.getMovie();
     ReviewResponseDTO.ReviewResponseDTOBuilder builder = ReviewResponseDTO.builder()
@@ -214,6 +215,7 @@ public class ReviewService {
         .rating(review.getRating())
         .createdAt(review.getCreatedAt())
         .updatedAt(review.getUpdatedAt())
+        .commentCount(commentCount)
         .likeCount(review.getLikeCount())
         .likedByUser(likedByUser)
         .tmdbId(movie.getTmdbId())
