@@ -23,6 +23,7 @@ public class ReviewResponseDTO {
   private Double rating;
   private LocalDateTime createdAt;
   private LocalDateTime updatedAt;
+  private Integer commentCount;
   private Integer likeCount;
   private Boolean likedByUser;
   private Long tmdbId;
