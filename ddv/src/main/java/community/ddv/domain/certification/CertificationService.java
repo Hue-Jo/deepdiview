@@ -217,7 +217,6 @@ public class CertificationService {
           log.error("인증 정보를 찾을 수 없음");
           return new DeepdiviewException(ErrorCode.CERTIFICATION_NOT_FOUND);
         });
-    log.info("현재 인증 상태 : status = {}", certification.getStatus());
 
     if (approve) {
       certification.setStatus(CertificationStatus.APPROVED, null);

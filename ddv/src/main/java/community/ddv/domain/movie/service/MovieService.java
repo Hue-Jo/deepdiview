@@ -78,7 +78,7 @@ public class MovieService {
       throw new DeepdiviewException(ErrorCode.KEYWORD_NOT_FOUND);
     }
 
-    log.info("영화 제목 '{}'으로 영화의 세부정보 조회 성공", title);
+    //log.info("영화 제목 '{}'으로 영화의 세부정보 조회 성공", title);
     return movies.stream()
         .map(movie -> {
           Pageable pageable = PageRequest.of(0, 5, Sort.by(Direction.DESC, "createdAt"));
@@ -111,7 +111,7 @@ public class MovieService {
       }
     }
 
-    log.info("영화 tmdbId = '{}'로 영화의 세부정보 조회 성공", tmdbId);
+  //  log.info("영화 tmdbId = '{}'로 영화의 세부정보 조회 성공", tmdbId);
     return convertToDtoWithReviewsAndMyReview(movie, reviews.getContent(), myReview);
   }
 
