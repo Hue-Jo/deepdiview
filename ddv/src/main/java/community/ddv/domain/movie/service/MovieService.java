@@ -1,18 +1,19 @@
 package community.ddv.domain.movie.service;
 
-import community.ddv.domain.board.service.ReviewService;
-import community.ddv.global.exception.ErrorCode;
-import community.ddv.domain.movie.dto.MovieDTO;
 import community.ddv.domain.board.dto.ReviewResponseDTO;
-import community.ddv.domain.movie.entity.Movie;
 import community.ddv.domain.board.entity.Review;
-import community.ddv.domain.user.entity.User;
-import community.ddv.global.exception.DeepdiviewException;
-import community.ddv.domain.movie.repostitory.MovieRepository;
 import community.ddv.domain.board.repository.ReviewRepository;
+import community.ddv.domain.board.service.ReviewService;
+import community.ddv.domain.movie.dto.MovieDTO;
+import community.ddv.domain.movie.entity.Movie;
+import community.ddv.domain.movie.repostitory.MovieRepository;
+import community.ddv.domain.user.entity.User;
 import community.ddv.domain.user.service.UserService;
+import community.ddv.global.exception.DeepdiviewException;
+import community.ddv.global.exception.ErrorCode;
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
@@ -123,7 +124,7 @@ public class MovieService {
 
   // 리뷰 포함 X
   public MovieDTO convertToDtoWithoutReviews(Movie movie) {
-    return convertToDto(movie, Collections.emptyList(), null);
+    return convertToDto(movie, null, null);
   }
 
   // 리뷰 & 내 리뷰 포함
@@ -133,6 +134,20 @@ public class MovieService {
 
 
   public MovieDTO convertToDto(Movie movie, List<ReviewResponseDTO> reviews, ReviewResponseDTO myReview) {
+
+    double ratingAverage;
+
+    if (reviews == null || reviews.isEmpty()) {
+        ratingAverage = 0.0;
+    } else {
+      ratingAverage = reviews.stream()
+          .map(ReviewResponseDTO::getRating)
+          .filter(Objects::nonNull)
+          .mapToDouble(Double::doubleValue)
+          .average()
+          .orElse(0.0);
+    }
+
     return MovieDTO.builder()
         .id(movie.getTmdbId())
         .title(movie.getTitle())
@@ -148,8 +163,9 @@ public class MovieService {
         .genre_names(movie.getMovieGenres().stream()
             .map(movieGenre -> movieGenre.getGenre().getName())
             .collect(Collectors.toList()))
-        .reviews(reviews)
+        .reviews(reviews != null ? reviews : Collections.emptyList())
         .myReview(myReview)
+        .ratingAverage(ratingAverage)
         .build();
   }
 }

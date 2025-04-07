@@ -1,5 +1,6 @@
 package community.ddv.domain.movie.entity;
 
+import community.ddv.domain.board.entity.Review;
 import community.ddv.domain.vote.entity.VoteMovie;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
@@ -64,4 +65,6 @@ public class Movie {
   @Builder.Default
   private List<VoteMovie> voteMovies = new ArrayList<>();
 
+  @OneToMany(mappedBy = "movie", cascade = CascadeType.ALL)
+  private List<Review> reviews = new ArrayList<>();
 }
