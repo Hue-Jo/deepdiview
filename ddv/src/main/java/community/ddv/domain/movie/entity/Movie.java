@@ -66,5 +66,6 @@ public class Movie {
   private List<VoteMovie> voteMovies = new ArrayList<>();
 
   @OneToMany(mappedBy = "movie", cascade = CascadeType.ALL)
+  @Builder.Default
   private List<Review> reviews = new ArrayList<>();
 }
