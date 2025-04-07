@@ -64,16 +64,24 @@ public class VoteService {
     // 투표 생성은 일요일만 가능, 한 주에 한 번만 가능
     LocalDateTime now = LocalDateTime.now();
 
-    if (now.getDayOfWeek() != DayOfWeek.SUNDAY) {
+    //if (now.getDayOfWeek() != DayOfWeek.SUNDAY) {
+    if (now.getDayOfWeek() != DayOfWeek.MONDAY) {
       log.error("투표 생성은 일요일만 가능합니다 : 현재요일 = {}", now.getDayOfWeek());
       throw new DeepdiviewException(ErrorCode.INVALID_VOTE_CREAT_DATE);
     }
 
-    // 다음주에 진행할 투표가 이미 생성되어 있는지 확인
-    LocalDateTime nextWeekMondayStart = now.with(TemporalAdjusters.next(DayOfWeek.MONDAY)).with(LocalTime.MIN);
-    LocalDateTime nextWeekSaturdayEnd = now.with(TemporalAdjusters.next(DayOfWeek.SATURDAY)).with(LocalTime.MAX);
 
-    boolean voteAlreadyExists = voteRepository.existsByStartDateBetween(nextWeekMondayStart, nextWeekSaturdayEnd);
+    // 다음주에 진행할 투표가 이미 생성되어 있는지 확인
+//    LocalDateTime nextWeekMondayStart = now.with(TemporalAdjusters.next(DayOfWeek.MONDAY)).with(LocalTime.MIN);
+//    LocalDateTime nextWeekSaturdayEnd = now.with(TemporalAdjusters.next(DayOfWeek.SATURDAY)).with(LocalTime.MAX);
+//    boolean voteAlreadyExists = voteRepository.existsByStartDateBetween(nextWeekMondayStart, nextWeekSaturdayEnd);
+
+    // 테스트용 임시
+    LocalDateTime thisWeekStart = now.with(DayOfWeek.MONDAY).with(LocalTime.MIN);
+    LocalDateTime thisWeekEnd = now.with(DayOfWeek.SATURDAY).with(LocalTime.MAX);
+    boolean voteAlreadyExists = voteRepository.existsByStartDateBetween(thisWeekStart, thisWeekEnd);
+
+
 
     if (voteAlreadyExists) {
       log.error("이미 생성한 투표가 있습니다.");
@@ -81,13 +89,13 @@ public class VoteService {
     }
 
 //    // 투표 시작일 : 생성 다음날(월요일) 자정(0시 0분)
-    LocalDateTime startDate = nextWeekMondayStart;
+//    LocalDateTime startDate = nextWeekMondayStart;
 //    // 투표 종료일 : 토요일 23시 59분 59초
-    LocalDateTime endDate = nextWeekSaturdayEnd;
+//    LocalDateTime endDate = nextWeekSaturdayEnd;
 
-//    // 테스트용
-//    LocalDateTime endDate = now.plusMinutes(3);
-//    log.info("테스트를 위해 3분으로 투표 종료 시간 조절");
+    // 테스트용 임시
+    LocalDateTime startDate = thisWeekStart;
+    LocalDateTime endDate = thisWeekEnd;
 
     // 인기도 탑 5의 영화 세부 정보 가져오기
     List<MovieDTO> top5Movies = movieService.getTop5Movies();
@@ -95,9 +103,6 @@ public class VoteService {
 
     Vote vote = Vote.builder()
         .title("다음주의 영화를 선택해주세요")
-
-        // 테스트용
-        //.startDate(now)
         .startDate(startDate)
         .endDate(endDate)
         .voteMovies(new ArrayList<>())
