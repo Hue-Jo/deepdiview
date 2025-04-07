@@ -25,5 +25,6 @@ public class MovieDTO {
 
   private List<ReviewResponseDTO> reviews;
   private ReviewResponseDTO myReview;
+  private Double ratingAverage;
 
 }

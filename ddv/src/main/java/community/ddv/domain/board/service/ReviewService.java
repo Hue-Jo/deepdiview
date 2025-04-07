@@ -1,6 +1,5 @@
 package community.ddv.domain.board.service;
 
-import community.ddv.global.exception.ErrorCode;
 import community.ddv.domain.board.dto.CommentDTO.CommentResponseDto;
 import community.ddv.domain.board.dto.ReviewDTO;
 import community.ddv.domain.board.dto.ReviewDTO.ReviewUpdateDTO;
@@ -9,10 +8,11 @@ import community.ddv.domain.board.entity.Comment;
 import community.ddv.domain.board.entity.Review;
 import community.ddv.domain.board.repository.ReviewRepository;
 import community.ddv.domain.movie.entity.Movie;
-import community.ddv.domain.user.entity.User;
-import community.ddv.global.exception.DeepdiviewException;
 import community.ddv.domain.movie.repostitory.MovieRepository;
+import community.ddv.domain.user.entity.User;
 import community.ddv.domain.user.service.UserService;
+import community.ddv.global.exception.DeepdiviewException;
+import community.ddv.global.exception.ErrorCode;
 import java.util.List;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
@@ -132,7 +132,6 @@ public class ReviewService {
       reviews = reviewRepository.findByMovie(movie, pageable);
     }
 
-    log.info("특정 영화의 리뷰 조회 완료");
     return reviews.map(this::convertToReviewResponseDto);
   }
 
@@ -177,6 +176,7 @@ public class ReviewService {
 
   }
 
+  // 최신 리뷰 3개 조회
   @Transactional(readOnly = true)
   public List<ReviewResponseDTO> getLatestReviews() {
     List<Review> reviews = reviewRepository.findTop3ByOrderByCreatedAtDesc();
