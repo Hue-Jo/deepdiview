@@ -80,7 +80,6 @@ public class Review {
     this.certified = certified;
   }
 
-
   public void updateReview(String title, String content, Double rating) {
     if (title != null && !title.isEmpty()) {
       this.title = title;

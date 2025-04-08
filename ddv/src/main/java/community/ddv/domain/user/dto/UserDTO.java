@@ -13,7 +13,6 @@ import lombok.NoArgsConstructor;
 
 public class UserDTO {
 
-
   @Getter
   public static class SignUpDto {
 

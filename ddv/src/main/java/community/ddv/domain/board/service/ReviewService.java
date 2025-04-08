@@ -102,10 +102,13 @@ public class ReviewService {
       throw new DeepdiviewException(ErrorCode.INVALID_USER);
     }
 
-    review.updateReview(reviewUpdateDTO.getTitle(), reviewUpdateDTO.getContent(), reviewUpdateDTO.getRating());
+    review.updateReview(
+        reviewUpdateDTO.getTitle(),
+        reviewUpdateDTO.getContent(),
+        reviewUpdateDTO.getRating()
+    );
 
-    Review updatedReview = reviewRepository.save(review);
-    return convertToReviewResponseDto(updatedReview);
+    return convertToReviewResponseDto(review);
 
   }
 
@@ -202,6 +205,7 @@ public class ReviewService {
     Boolean likedByUser = (loginUser != null)
         ? review.getLikes().stream().anyMatch(like -> like.getUser().equals(loginUser))
         : null;
+
     int commentCount = review.getComments().size();
 
     Movie movie = review.getMovie();
