@@ -64,7 +64,7 @@ public class ProfileImageService {
 
       fileStorageService.deleteFile(user.getProfileImageUrl());
 
-      user.updateProfileImageUrl(null);
+      user.deleteProfileImageUrl();
     }
   }
 }

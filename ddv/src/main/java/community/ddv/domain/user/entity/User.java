@@ -92,6 +92,10 @@ public class User {
     this.profileImageUrl = newProfileImageUrl;
   }
 
+  public void deleteProfileImageUrl(){
+    this.profileImageUrl = null;
+  }
+
   public void updateOneLineIntroduction(String newOneLineIntroduction) {
     this.oneLineIntroduction = newOneLineIntroduction;
   }
