@@ -45,7 +45,7 @@ public class ReviewService {
 
     if (reviewRepository.existsByUserAndMovie(user, movie)) {
       log.warn("리뷰 작성 실패 (이미 리뷰를 작성함) - User Id : {}, TMDB Id: {} ", user.getId(), reviewDTO.getTmdbId());
-      throw new DeepdiviewException(ErrorCode.ALREADY_COMMITED_REVIEW);
+      throw new DeepdiviewException(ErrorCode.ALREADY_COMMITTED_REVIEW);
     }
 
     Review review = Review.builder()
