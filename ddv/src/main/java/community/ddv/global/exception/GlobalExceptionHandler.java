@@ -12,13 +12,10 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 import org.springframework.web.multipart.MaxUploadSizeExceededException;
-import org.springframework.web.servlet.View;
 
 @RestControllerAdvice
 @AllArgsConstructor
 public class GlobalExceptionHandler {
-
-  private final View error;
 
   @ExceptionHandler(DeepdiviewException.class)
   public ResponseEntity<ErrorResponse> handleDeepdiviewException(DeepdiviewException e) {
