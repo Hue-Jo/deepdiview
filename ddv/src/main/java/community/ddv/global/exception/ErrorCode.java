@@ -22,10 +22,10 @@ public enum ErrorCode {
   KEYWORD_NOT_FOUND("해당 키워드를 포함하는 영화가 존재하지 않습니다", HttpStatus.NOT_FOUND),
 
   // 리뷰, 댓글 관련 에러코드
-  ALREADY_COMMITED_REVIEW("이미 해당 영화에 대한 리뷰를 작성했습니다. 수정만 가능합니다.", HttpStatus.BAD_REQUEST),
-  REVIEW_NOT_FOUND("존재하지 않는 리뷰입니다.", HttpStatus.BAD_REQUEST),
+  ALREADY_COMMITTED_REVIEW("이미 해당 영화에 대한 리뷰를 작성했습니다. 수정만 가능합니다.", HttpStatus.BAD_REQUEST),
+  REVIEW_NOT_FOUND("존재하지 않는 리뷰입니다.", HttpStatus.NOT_FOUND),
   INVALID_USER("작성자만 가능합니다.", HttpStatus.FORBIDDEN),
-  COMMENT_NOT_FOUND("댓글이 존재하지 않습니다.", HttpStatus.BAD_REQUEST),
+  COMMENT_NOT_FOUND("댓글이 존재하지 않습니다.", HttpStatus.NOT_FOUND),
   COMMENT_NOT_BELONG_TO_REVIEW("댓글이 해당 리뷰에 속하지 않습니다.", HttpStatus.BAD_REQUEST),
 
   // 관리자 관련 에러코드
@@ -34,12 +34,12 @@ public enum ErrorCode {
 
   // 투표 관련 에러코드
   INVALID_VOTE_CREAT_DATE("투표 생성은 일요일에만 가능합니다.", HttpStatus.BAD_REQUEST),
-  VOTE_NOT_FOUND("존재하지 않는 투표입니다.", HttpStatus.BAD_REQUEST),
+  VOTE_NOT_FOUND("존재하지 않는 투표입니다.", HttpStatus.NOT_FOUND),
   AlREADY_VOTED("이미 참여한 투표입니다. 다음주에 다시 투표해주세요", HttpStatus.BAD_REQUEST),
   INVALID_VOTE_PERIOD("투표 기간이 아닙니다.", HttpStatus.BAD_REQUEST),
   ALREADY_EXIST_VOTE("이미 이번주에 생성한 투표가 있습니다.", HttpStatus.BAD_REQUEST),
   VOTE_RESULT_NOT_FOUND("투표 결과가 존재하지 않습니다.", HttpStatus.NOT_FOUND),
-  MOVIE_NOT_FOUND_IN_VOTE("해당 영화가 투표 내에 존재하지 않습니다.", HttpStatus.BAD_REQUEST),
+  MOVIE_NOT_FOUND_IN_VOTE("해당 영화가 투표 내에 존재하지 않습니다.", HttpStatus.NOT_FOUND),
 
   // 파일 업로드 관련 에러코드
   IMAGE_FILE_ONLY("이미지 파일(jpg, jpeg, png, gif)만 업로드 가능합니다.", HttpStatus.BAD_REQUEST),
@@ -50,7 +50,7 @@ public enum ErrorCode {
 
   // 인증 관련 에러코드
   CERTIFICATION_NOT_ALLOWED_ON_SUNDAY("인증 가능 기간은 '월-토'입니다.", HttpStatus.BAD_REQUEST),
-  CERTIFICATION_NOT_FOUND("인증요청이 존재하지 않습니다.", HttpStatus.BAD_REQUEST),
+  CERTIFICATION_NOT_FOUND("인증요청이 존재하지 않습니다.", HttpStatus.NOT_FOUND),
   ALREADY_APPROVED("이미 승인되었습니다.", HttpStatus.BAD_REQUEST),
 
   // 토론 관련 에러코드

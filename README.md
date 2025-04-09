@@ -14,7 +14,6 @@
 - 실시간 통신 : SSE
 - 배포 환경 : AWS EC2 + NginX + Spring Boot, Github Actions(CI/CD)
 - 프로토콜 : Https 지원
-- API 문서화 : Swagger
 
 ### 사용 오픈 API
 - [TMDB](https://api.themoviedb.org/3/discover/movie?include_adult=true&include_video=false&language=ko&sort_by=primary_release_date.desc&watch_region=KR&with_watch_providers=8)
@@ -47,14 +46,14 @@ https://github.com/user-attachments/assets/d3e371d5-d93e-41f9-94f6-cf885f38626e
 - 영화 제목 및 키워드 검색 지원
   - 띄어쓰기 무시 가능 (ex. 다크나이트 = 다크 나이트)
 - 자주 조회되는 인기 Top 20 영화는 Redis 캐시에 저장하여 빠르게 조회 가능
-  - 매주 월요일 0시, 캐시 초기화  
+  - 매주 월요일 0시, 캐시 초기화
 ### 3️⃣ 영화 투표 (매주 진행)
 - 투표 대상 : 넷플릭스 인기 TOP 5 영화
 - 생성 (관리자 권한)
   - 매주 일요일에만 생성 가능
 - 참여 (일반 사용자)
-  - 월요일~토요일 중 한 번만 참여 가능
-  - 한 번의 투표에서 하나의 영화만 선택 가능
+  - 투표 기간 : 월요일-토요일 
+  - 투표 방법 : 일주일에 1회 참여 가능, 한 번의 투표에서 하나의 영화만 선택 가능
   - 투표 후 결과 즉시 확인 가능
 - 동률 발생 시
   - 마지막에 득표한 영화가 상위 랭크 차지 
@@ -63,21 +62,28 @@ https://github.com/user-attachments/assets/d3e371d5-d93e-41f9-94f6-cf885f38626e
 
 ### 4️⃣ 영화 감상 인증
 - 지난주 투표에서 1위를 한 영화에 대한 감상 인증
+- 인증 기간 : 월-토
 - 인증 방식
   - 사용자 : 인증샷 업로드
   - 관리자 : 업로드된 사진 확인 후 승인/거절(사유포함)
   - 승인을 받은 사용자만 해당 영화에 대한 토론 참여 가능
 - 기타 규칙
-  - 이미 승인을 받은 경우, 중복 인증 불가 
+  - 이미 승인을 받은 경우, 중복 인증 & 인증 수정/삭제 불가 
   - 매주 일요일 0시, 인증 상태 초기화 (스케줄링)
-
+- 상태 : PENDING(보류), APPROVCED(승인), REFECTED(거절, 거절사유 포함)
+- SSE를 통해 인증 승인/거절 알림 전송
+ 
 ### 5️⃣ 리뷰/댓글
 - 리뷰(일반) : 특정 영화에 대해 한 번만 작성 가능
+  - 최신수, 좋아요 수 등 정렬 가능  
 - 댓글 : 특정 리뷰에 대해 여러 개 작성 가능
+- SSE를 통해 리뷰에 댓글이 달릴 시 알림 전송 
 ### 6️⃣ 좋아요
 - 특정 리뷰에 대해 한 번만 가능
   - 두 번 누를 시 취소
 - 좋아요 순 리뷰 정렬 기능 제공
+- SSE를 통해 리뷰에 좋아요가 눌릴 시 알림 전송 
+
 ### 7️⃣ 토론 (인증 리뷰)
 - 인증 승인을 받은 사용자만 작성할 수 있는 토론 게시판 제공 
 - 인증하기 전에 작성했던 리뷰가 있는 경우
@@ -91,3 +97,13 @@ https://github.com/user-attachments/assets/d3e371d5-d93e-41f9-94f6-cf885f38626e
   - 인증 상태가 변경될 때
 - 본인의 행동에 대해서는 알림이 가지 않음
   - 타인에 의해서만 알림 작동
+
+-----
+## 🌐 배포 주소
+
+- BE: https://deepdiview.site
+- FE: https://deepdiview.vercel.app
+- API 문서화 : [Swagger](https://deepdiview.site/swagger-ui/index.html)
+
+
+
