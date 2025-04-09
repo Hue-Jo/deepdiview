@@ -58,7 +58,10 @@ public enum ErrorCode {
   INVALID_REVIEW_PERIOD("토론 작성 기간이 아닙니다. 다음 주에 새로운 영화로 만나요", HttpStatus.BAD_REQUEST),
 
   // 알림 관련 에러코드
-  NOTIFICATION_NOT_FOUND("존재하지 않는 알람입니다.", HttpStatus.NOT_FOUND);
+  NOTIFICATION_NOT_FOUND("존재하지 않는 알람입니다.", HttpStatus.NOT_FOUND),
+
+  // 형변환 관련 에러코드
+  INVALID_INPUT_VALUE("입력값이 올바르지 않습니다.", HttpStatus.BAD_REQUEST);
 
   private final String description;
   private final HttpStatus httpStatus;
