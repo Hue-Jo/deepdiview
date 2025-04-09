@@ -69,18 +69,27 @@ public class DiscussionService {
 
     if (existingReview != null) {
       log.info("기존에 작성한 리뷰가 있으므로 수정 시도 : reviewId = {}", existingReview.getId());
-      ReviewUpdateDTO updateDTO = new ReviewUpdateDTO(reviewDTO.getTitle(), reviewDTO.getContent(), reviewDTO.getRating());
+      ReviewUpdateDTO updateDTO = new ReviewUpdateDTO(
+          reviewDTO.getTitle(),
+          reviewDTO.getContent(),
+          reviewDTO.getRating());
+
       ReviewResponseDTO updatedReview = reviewService.updateReview(existingReview.getId(), updateDTO);
-      existingReview.updateCertified(true);
+      existingReview.updateCertified(true); // 인증 마크 달기
       reviewRepository.save(existingReview);
       log.info("기존리뷰 수정완료 : reviewId = {}", existingReview.getId());
       return updatedReview;
     }
 
-    // 5. 리뷰 생성 및 저장
-    reviewDTO.setTmdbId(lastWeekTopMovie.getTmdbId());
-    reviewDTO.setCertified(true);
-    return reviewService.createReview(reviewDTO);
+    // 5. 새 리뷰 생성, 저장
+    ReviewDTO newReview = ReviewDTO.builder()
+        .tmdbId(lastWeekTopMovie.getTmdbId()) // 서버에서 자동으로 부여
+        .title(reviewDTO.getTitle())
+        .content(reviewDTO.getContent())
+        .rating(reviewDTO.getRating())
+        .isCertified(true) // 서버에서 자동으로 부여
+        .build();
+    return reviewService.createReview(newReview);
   }
 
 

@@ -3,11 +3,12 @@ package community.ddv.domain.board.dto;
 import community.ddv.domain.board.custom.RatingValid;
 import jakarta.validation.constraints.NotBlank;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
 
 @Getter
-@Setter
+@Builder
 public class ReviewDTO {
 
   private Long tmdbId;
@@ -24,7 +25,6 @@ public class ReviewDTO {
   private boolean isCertified;
 
   @Getter
-  @Setter
   @AllArgsConstructor
   public static class ReviewUpdateDTO {
 

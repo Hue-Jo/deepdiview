@@ -316,9 +316,11 @@ public class UserService {
         ));
 
     Certification certification = certificationRepository.findByUser_Id(user.getId()).orElse(null);
-    CertificationStatus certificationStatus = certification != null ?
+    CertificationStatus certificationStatus =
+        certification != null ?
         certification.getStatus() : null;
-    RejectionReason rejectionReason = certification != null && certification.getStatus() == CertificationStatus.REJECTED ?
+    RejectionReason rejectionReason =
+        certification != null && certification.getStatus() == CertificationStatus.REJECTED ?
         certification.getRejectionReason() : null;
 
 
