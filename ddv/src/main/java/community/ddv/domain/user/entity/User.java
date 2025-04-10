@@ -1,5 +1,6 @@
 package community.ddv.domain.user.entity;
 
+import community.ddv.domain.user.constant.ProfileImageConstant;
 import community.ddv.domain.user.constant.Role;
 import community.ddv.domain.certification.Certification;
 import community.ddv.domain.board.entity.Comment;
@@ -12,10 +13,12 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.EntityListeners;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.OneToMany;
+import jakarta.persistence.PrePersist;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -47,6 +50,14 @@ public class User {
   private Role role;
 
   private String profileImageUrl;
+
+  @PrePersist
+  public void prePersist() {
+    if (profileImageUrl == null || profileImageUrl.isBlank()) {
+      profileImageUrl = ProfileImageConstant.DEFAULT_PROFILE_IMAGE_URL;
+    }
+  }
+
   private String oneLineIntroduction;
 
   @CreatedDate
@@ -55,27 +66,27 @@ public class User {
   private LocalDateTime updatedAt;
 
 
-  @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+  @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
   @Builder.Default
   private List<Review> reviews = new ArrayList<>();
 
-  @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+  @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
   @Builder.Default
   private List<Comment> comments = new ArrayList<>();
 
-  @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+  @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
   @Builder.Default
   private List<Like> likes = new ArrayList<>();
 
-  @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+  @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
   @Builder.Default
   private List<Certification> certifications = new ArrayList<>();
 
-  @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+  @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
   @Builder.Default
   private List<VoteParticipation> voteParticipations = new ArrayList<>();
 
-  @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+  @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
   @Builder.Default
   private List<Notification> notifications = new ArrayList<>();
 
@@ -90,10 +101,6 @@ public class User {
 
   public void updateProfileImageUrl(String newProfileImageUrl) {
     this.profileImageUrl = newProfileImageUrl;
-  }
-
-  public void deleteProfileImageUrl(){
-    this.profileImageUrl = null;
   }
 
   public void updateOneLineIntroduction(String newOneLineIntroduction) {
