@@ -21,6 +21,7 @@ public interface CertificationRepository extends JpaRepository<Certification, Lo
   int resetAllCertifications();
 
   Optional<Certification> findByUser_Id(Long userId);
+  Optional<Certification> findTopByUser_IdOrderByCreatedAtDesc(Long userId);
 
   Page<Certification> findByStatusIsNotNull(Pageable pageable);
 }
