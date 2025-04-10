@@ -315,7 +315,7 @@ public class UserService {
             Collectors.counting()
         ));
 
-    Certification certification = certificationRepository.findByUser_Id(user.getId()).orElse(null);
+    Certification certification = certificationRepository.findTopByUser_IdOrderByCreatedAtDesc(user.getId()).orElse(null);
     CertificationStatus certificationStatus =
         certification != null ?
         certification.getStatus() : null;

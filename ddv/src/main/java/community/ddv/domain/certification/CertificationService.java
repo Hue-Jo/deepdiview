@@ -81,7 +81,7 @@ public class CertificationService {
     User user = userService.getLoginUser();  // 로그인된 사용자 정보 가져오기
 
     // 사용자가 제출한 인증샷 조회
-    Certification certification = certificationRepository.findByUser_Id(user.getId())
+    Certification certification = certificationRepository.findTopByUser_IdOrderByCreatedAtDesc(user.getId())
         .orElseThrow(() -> new DeepdiviewException(ErrorCode.CERTIFICATION_NOT_FOUND));
 
     // PENDING 또는 REJECTED 상태에서만 반환
@@ -110,7 +110,7 @@ public class CertificationService {
     }
 
     // 이미 인증 승인을 받은 경우, 수정 불가
-    Certification certification = certificationRepository.findByUser_Id(user.getId())
+    Certification certification = certificationRepository.findTopByUser_IdOrderByCreatedAtDesc(user.getId())
         .orElseThrow(() -> new DeepdiviewException(ErrorCode.CERTIFICATION_NOT_FOUND));
 
     if (certification.getStatus() == CertificationStatus.APPROVED) {
@@ -152,7 +152,7 @@ public class CertificationService {
     User user = userService.getLoginUser();
 
     // 인증샷 조회
-    Certification certification = certificationRepository.findByUser_Id(user.getId())
+    Certification certification = certificationRepository.findTopByUser_IdOrderByCreatedAtDesc(user.getId())
         .orElseThrow(() -> new DeepdiviewException(ErrorCode.CERTIFICATION_NOT_FOUND));
 
     // 이미 승인 받은 상태면 삭제 불가
