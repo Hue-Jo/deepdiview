@@ -1,5 +1,6 @@
 package community.ddv.domain.user.service;
 
+import community.ddv.domain.user.constant.ProfileImageConstant;
 import community.ddv.domain.user.entity.User;
 import community.ddv.global.fileUpload.FileStorageService;
 import lombok.RequiredArgsConstructor;
@@ -32,8 +33,9 @@ public class ProfileImageService {
 
   /**
    * 프로필 수정
+   *
    * @param profileImage
-   * */
+   */
   @Transactional
   public String updateProfileImage(MultipartFile profileImage) {
     User user = userService.getLoginUser();
@@ -60,11 +62,13 @@ public class ProfileImageService {
     User user = userService.getLoginUser();
     log.info("프로필사진 삭제 요청");
 
-    if (user.getProfileImageUrl() != null && !user.getProfileImageUrl().isEmpty()) {
+    if (user.getProfileImageUrl() != null && !user.getProfileImageUrl().isEmpty()
+        && !user.getProfileImageUrl().equals(ProfileImageConstant.DEFAULT_PROFILE_IMAGE_URL)) {
 
       fileStorageService.deleteFile(user.getProfileImageUrl());
-
-      user.deleteProfileImageUrl();
+      log.info("기존 프로필 사진 삭제");
     }
+    user.updateProfileImageUrl(ProfileImageConstant.DEFAULT_PROFILE_IMAGE_URL);
+    log.info("기본 프로필로 초기화");
   }
 }

@@ -101,8 +101,8 @@ https://github.com/user-attachments/assets/d3e371d5-d93e-41f9-94f6-cf885f38626e
 -----
 ## 🌐 배포 주소
 
-- BE: https://deepdiview.site
-- FE: https://deepdiview.vercel.app
+- BE: 
+- FE: 
 - API 문서화 : [Swagger](https://deepdiview.site/swagger-ui/index.html)
 
 
