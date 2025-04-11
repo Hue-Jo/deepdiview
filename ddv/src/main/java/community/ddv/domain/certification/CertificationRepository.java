@@ -1,6 +1,7 @@
 package community.ddv.domain.certification;
 
 import community.ddv.domain.certification.constant.CertificationStatus;
+import java.time.LocalDateTime;
 import java.util.Optional;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -20,8 +21,8 @@ public interface CertificationRepository extends JpaRepository<Certification, Lo
   @Query(value = "UPDATE certification SET status = NULL, rejection_reason = NULL", nativeQuery = true)
   int resetAllCertifications();
 
-  Optional<Certification> findByUser_Id(Long userId);
   Optional<Certification> findTopByUser_IdOrderByCreatedAtDesc(Long userId);
+  Optional<Certification> findTopByUser_IdAndCreatedAtBetweenOrderByCreatedAtDesc(Long userId, LocalDateTime start, LocalDateTime end);
 
   Page<Certification> findByStatusIsNotNull(Pageable pageable);
 }

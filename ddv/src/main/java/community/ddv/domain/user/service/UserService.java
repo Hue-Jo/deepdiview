@@ -21,6 +21,11 @@ import community.ddv.domain.certification.constant.CertificationStatus;
 import community.ddv.domain.user.constant.Role;
 import community.ddv.global.exception.DeepdiviewException;
 import community.ddv.global.exception.ErrorCode;
+import java.time.DayOfWeek;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
+import java.time.temporal.TemporalAdjusters;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import java.util.regex.Pattern;
@@ -315,13 +320,34 @@ public class UserService {
             Collectors.counting()
         ));
 
-    Certification certification = certificationRepository.findTopByUser_IdOrderByCreatedAtDesc(user.getId()).orElse(null);
+    LocalDate today = LocalDate.now();
+    // 일요일이 되면 다음주 토요일로 계산 되는 것 방지용 (일요일을 토요일처럼 생각)
+    if (today.getDayOfWeek() == DayOfWeek.SUNDAY) {
+      today = today.minusDays(1);
+    }
+    // 이번주 내에 인증한 게 있는지 조회
+    LocalDate startOfWeek = today.with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY));
+    LocalDate endOfWeek = today.with(TemporalAdjusters.nextOrSame(DayOfWeek.SATURDAY));
+
+//    Certification certification = certificationRepository.findTopByUser_IdOrderByCreatedAtDesc(user.getId())
+//        .orElse(null);
+
+    Certification certification = certificationRepository
+         // 이번 주(월~토)에 한 인증 중에서 가장 최신 인증 1개 가져오기
+        .findTopByUser_IdAndCreatedAtBetweenOrderByCreatedAtDesc(
+            user.getId(),
+            startOfWeek.atStartOfDay(),
+            endOfWeek.atTime(LocalTime.MAX)
+        ).orElse(null);
+
     CertificationStatus certificationStatus =
-        certification != null ?
-        certification.getStatus() : null;
+        certification != null
+            ? certification.getStatus()
+            : null;
     RejectionReason rejectionReason =
-        certification != null && certification.getStatus() == CertificationStatus.REJECTED ?
-        certification.getRejectionReason() : null;
+        certification != null && certification.getStatus() == CertificationStatus.REJECTED
+            ? certification.getRejectionReason()
+            : null;
 
 
     return UserInfoDto.builder()
