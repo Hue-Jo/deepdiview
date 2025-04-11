@@ -1,10 +1,10 @@
 package community.ddv.domain.user.service;
 
-import community.ddv.domain.user.constant.ProfileImageConstant;
 import community.ddv.domain.user.entity.User;
 import community.ddv.global.fileUpload.FileStorageService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -13,6 +13,9 @@ import org.springframework.web.multipart.MultipartFile;
 @RequiredArgsConstructor
 @Slf4j
 public class ProfileImageService {
+
+  @Value("${profile.image.default-url}")
+  private String defaultProfileImageUrl;
 
   private final UserService userService;
   private final FileStorageService fileStorageService;
@@ -63,12 +66,12 @@ public class ProfileImageService {
     log.info("프로필사진 삭제 요청");
 
     if (user.getProfileImageUrl() != null && !user.getProfileImageUrl().isEmpty()
-        && !user.getProfileImageUrl().equals(ProfileImageConstant.DEFAULT_PROFILE_IMAGE_URL)) {
+        && !user.getProfileImageUrl().equals(defaultProfileImageUrl)) {
 
       fileStorageService.deleteFile(user.getProfileImageUrl());
       log.info("기존 프로필 사진 삭제");
     }
-    user.updateProfileImageUrl(ProfileImageConstant.DEFAULT_PROFILE_IMAGE_URL);
+    user.updateProfileImageUrl(defaultProfileImageUrl);
     log.info("기본 프로필로 초기화");
   }
 }

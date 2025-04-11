@@ -32,6 +32,7 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -51,6 +52,9 @@ public class UserService {
   private final ReviewRepository reviewRepository;
   private final CommentRepository commentRepository;
   private final CertificationRepository certificationRepository;
+
+  @Value("${profile.image.default-url}")
+  private String defaultProfileImageUrl;
 
   /**
    * 회원가입
@@ -80,6 +84,7 @@ public class UserService {
         .email(signUpDto.getEmail())
         .password(passwordEncoder.encode(signUpDto.getPassword()))
         .nickname(signUpDto.getNickname())
+        .profileImageUrl(defaultProfileImageUrl)
         .role(Role.USER) // 일반 유저를 기본 역할로 설정
         .build();
 
