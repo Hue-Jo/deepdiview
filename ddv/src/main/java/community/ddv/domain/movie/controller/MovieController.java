@@ -6,6 +6,10 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -31,11 +35,12 @@ public class MovieController {
 
   @Operation(summary = "영화 제목으로 상세정보 조회", description = "특정 단어가 포함되어 있는 영화들의 세부정보를 반환합니다. 띄어쓰기를 무시하고도 조회가 됩니다.")
   @GetMapping("/search/list")
-  public ResponseEntity<List<MovieDTO>> getMoviesByTitle(
+  public ResponseEntity<Page<MovieDTO>> getMoviesByTitle(
       @RequestParam("title") String title,
-      @RequestParam(value = "certifiedFilter", required = false, defaultValue = "false") Boolean certifiedFilter
+      @RequestParam(value = "certifiedFilter", required = false, defaultValue = "false") Boolean certifiedFilter,
+      @PageableDefault(size = 10, sort = "popularity", direction = Sort.Direction.DESC) Pageable pageable
       ) {
-    List<MovieDTO> movies = movieService.searchMoviesByTitle(title, certifiedFilter);
+    Page<MovieDTO> movies = movieService.searchMoviesByTitle(title, certifiedFilter, pageable);
     return ResponseEntity.ok(movies);
   }
 

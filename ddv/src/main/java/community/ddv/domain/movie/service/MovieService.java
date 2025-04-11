@@ -71,22 +71,21 @@ public class MovieService {
    * 영화 제목으로 해당 영화의 세부정보 조회 _ 공백 무시 가능 & 특정 글자가 포함되는 조회됨 & 넷플 인기도 순 정렬
    * @param title
    */
-  public List<MovieDTO> searchMoviesByTitle(String title, Boolean certifiedFilter) {
+  public Page<MovieDTO> searchMoviesByTitle(String title, Boolean certifiedFilter, Pageable page) {
 
-    List<Movie> movies = movieRepository.findByTitleFlexible(title);
+    Page<Movie> movies = movieRepository.findByTitleFlexible(title, page);
     if (movies.isEmpty()) {
       log.warn("키워드 '{}'를 포함하는 영화가 존재하지 않습니다.", title);
       throw new DeepdiviewException(ErrorCode.KEYWORD_NOT_FOUND);
     }
 
     //log.info("영화 제목 '{}'으로 영화의 세부정보 조회 성공", title);
-    return movies.stream()
+    return movies
         .map(movie -> {
           Pageable pageable = PageRequest.of(0, 5, Sort.by(Direction.DESC, "createdAt"));
           Page<ReviewResponseDTO> reviews = reviewService.getReviewByMovieId(movie.getTmdbId(), pageable, certifiedFilter);
           return convertToDtoWithReviews(movie, reviews.getContent());
-        })
-        .collect(Collectors.toList());
+        });
   }
 
   /**

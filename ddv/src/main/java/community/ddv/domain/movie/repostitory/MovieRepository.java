@@ -1,7 +1,6 @@
 package community.ddv.domain.movie.repostitory;
 
 import community.ddv.domain.movie.entity.Movie;
-import java.util.List;
 import java.util.Optional;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -18,7 +17,7 @@ public interface MovieRepository extends JpaRepository<Movie, Long> {
 
   // 특정 단어가 포함된 영화 정보 리스트 조회(공백 무시)
   @Query("SELECT m FROM Movie m WHERE REPLACE(m.title, ' ', '') LIKE CONCAT('%', REPLACE(:title, ' ', ''), '%') ORDER BY m.popularity DESC")
-  List<Movie> findByTitleFlexible(@Param("title") String title);
+  Page<Movie> findByTitleFlexible(@Param("title") String title, Pageable pageable);
 
   // TMDB Id로 특정영화 조회
   Optional<Movie> findByTmdbId(Long tmdbId);
