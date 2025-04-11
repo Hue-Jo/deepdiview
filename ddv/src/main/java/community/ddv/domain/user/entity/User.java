@@ -1,6 +1,5 @@
 package community.ddv.domain.user.entity;
 
-import community.ddv.domain.user.constant.ProfileImageConstant;
 import community.ddv.domain.user.constant.Role;
 import community.ddv.domain.certification.Certification;
 import community.ddv.domain.board.entity.Comment;
@@ -18,7 +17,6 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.OneToMany;
-import jakarta.persistence.PrePersist;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -50,13 +48,6 @@ public class User {
   private Role role;
 
   private String profileImageUrl;
-
-  @PrePersist
-  public void prePersist() {
-    if (profileImageUrl == null || profileImageUrl.isBlank()) {
-      profileImageUrl = ProfileImageConstant.DEFAULT_PROFILE_IMAGE_URL;
-    }
-  }
 
   private String oneLineIntroduction;
 
