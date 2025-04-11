@@ -52,7 +52,7 @@ public class UserController {
   @PostMapping("/signup")
   public ResponseEntity<Void> signup(@RequestBody @Valid UserDTO.SignUpDto signUpDto) {
     userService.signUp(signUpDto);
-    return ResponseEntity.ok().build();
+    return ResponseEntity.noContent().build();
   }
 
   // 로그인 API
@@ -99,7 +99,7 @@ public class UserController {
       @RequestBody AccountUpdateDto accountUpdateDto
   ) {
     userService.updateAccount(accountUpdateDto);
-    return ResponseEntity.ok().build();
+    return ResponseEntity.noContent().build();
   }
 
   @Operation(summary = "한줄소개 설정/수정", description = "회원가입 직후에는 새롭게 설정, 설정된 이후에는 수정")
@@ -108,7 +108,7 @@ public class UserController {
       @RequestBody OneLineIntro oneLineIntro
   ) {
     userService.updateOneLineIntro(oneLineIntro);
-    return ResponseEntity.ok().build();
+    return ResponseEntity.noContent().build();
   }
 
   @Operation(summary = "내 정보 확인", description = "닉네임, 이메일, 프로필사진, 한줄소개, 리뷰수, 댓글수, 별점 분포")

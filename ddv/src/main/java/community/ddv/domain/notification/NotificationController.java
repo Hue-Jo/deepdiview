@@ -43,14 +43,14 @@ public class NotificationController {
   public ResponseEntity<Void> markNotificationAsRead(
       @PathVariable Long notificationId) {
     notificationService.markNotificationAsRead(notificationId);
-    return ResponseEntity.ok().build();
+    return ResponseEntity.noContent().build();
   }
 
   @Operation(summary = "전체 알림 읽음처리")
   @PutMapping("/read-all")
   public ResponseEntity<Void> markAllNotificationAsRead() {
     notificationService.markAllNotificationAsRead();
-    return ResponseEntity.ok().build();
+    return ResponseEntity.noContent().build();
   }
 
 }

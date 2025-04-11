@@ -106,6 +106,6 @@ public class ReviewController {
   public ResponseEntity<Void> toggleLike(
       @PathVariable Long reviewId) {
     likeService.toggleLike(reviewId);
-    return ResponseEntity.ok().build();
+    return ResponseEntity.noContent().build();
   }
 }
