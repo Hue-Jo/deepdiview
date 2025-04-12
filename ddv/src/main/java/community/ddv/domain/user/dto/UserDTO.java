@@ -21,8 +21,10 @@ public class UserDTO {
     @Email(message = "이메일 형식에 맞게 작성해주세요")
     private String email;
 
-    @NotBlank(message = "비밀번호를 입력해주세요")
-    @Size(min = 8, message = "비밀번호는 8자 이상이어야 합니다.")
+    @Pattern(
+        regexp = "^(?=.*[a-z])(?=.*\\d)[a-z\\d]{8,}$",
+        message = "영문 소문자와 숫자를 포함하여 8자 이상이어야 합니다."
+    )
     private String password;
 
     @NotBlank(message = "비밀번호를 확인해주세요")
@@ -64,7 +66,8 @@ public class UserDTO {
     @Pattern(
         regexp = "^(?=.*[a-z])(?=.*\\d)[a-z\\d]{8,}$",
         message = "영문 소문자와 숫자를 포함하여 8자 이상이어야 합니다."
-    )    private String newPassword;
+    )
+    private String newPassword;
 
     @NotBlank(message = "비밀번호를 확인해주세요")
     private String newConfirmPassword;
