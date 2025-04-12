@@ -65,9 +65,9 @@ public class CertificationController {
   public ResponseEntity<Page<CertificationResponseDto>> getPendingCertifications(
       @RequestParam(required = false) CertificationStatus status,
       @PageableDefault(size = 10, page = 0, sort = "createdAt", direction = Direction.ASC) Pageable pageable) {
-    Page<CertificationResponseDto> certifications = certificationService.getCertificationsByStatus(
-        status, pageable);
-    return ResponseEntity.status(HttpStatus.OK).body(certifications);
+    Page<CertificationResponseDto> certifications =
+        certificationService.getCertificationsByStatus(status, pageable);
+    return ResponseEntity.ok(certifications);
   }
 
 

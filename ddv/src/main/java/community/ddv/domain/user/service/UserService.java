@@ -13,7 +13,7 @@ import community.ddv.domain.user.dto.UserDTO.LoginDto;
 import community.ddv.domain.user.dto.UserDTO.OneLineIntro;
 import community.ddv.domain.user.dto.UserDTO.SignUpDto;
 import community.ddv.domain.user.dto.UserDTO.TokenDto;
-import community.ddv.domain.user.dto.UserDTO.UserInfoDto;
+import community.ddv.domain.user.dto.UserDTO.UserInfoResponseDto;
 import community.ddv.domain.user.entity.User;
 import community.ddv.domain.user.repository.UserRepository;
 import community.ddv.global.component.JwtProvider;
@@ -23,7 +23,6 @@ import community.ddv.global.exception.DeepdiviewException;
 import community.ddv.global.exception.ErrorCode;
 import java.time.DayOfWeek;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.temporal.TemporalAdjusters;
 import java.util.Map;
@@ -239,7 +238,7 @@ public class UserService {
     String newConfirmPassword = accountUpdateDto.getNewConfirmPassword();
 
     // 닉네임 변경 시도
-    if (!newNickname.isBlank()) {
+    if (newNickname != null && !newNickname.isBlank()) {
       log.info("닉네임 변경시도 {} -> {}", user.getNickname(), newNickname);
 
       // 이미 존재하는 닉네임으로는 변경 불가 (자신이 예전에 쓰던 닉네임 포함)
@@ -247,22 +246,23 @@ public class UserService {
         log.info("이미 존재하는 닉네임이 있어 해당 닉네임으로 변경 불가");
         throw new DeepdiviewException(ErrorCode.ALREADY_EXIST_NICKNAME);
       }
-      // 존재하지 않는 닉네임일 시, 닉네임 변경 성공
       user.updateNickname(newNickname);
     }
 
-    if (!newPassword.isBlank()) {
+    if ((newPassword != null && !newPassword.isBlank()) || (newConfirmPassword != null && !newConfirmPassword.isBlank())) {
       log.info("비밀번호 변경시도");
+      // 둘 중 하나라도 비어있으면 예외
+      if (newPassword == null || newConfirmPassword == null || newPassword.isBlank() || newConfirmPassword.isBlank()) {
+        throw new DeepdiviewException(ErrorCode.EMPTY_PASSWORD);
+      }
       if (!isValidPassword(newPassword)) {
         throw new DeepdiviewException(ErrorCode.NOT_ENOUGH_PASSWORD);
-      } else {
-        if (!newPassword.equals(newConfirmPassword)) {
-          throw new DeepdiviewException(ErrorCode.NOT_VALID_PASSWORD);
-        }
+      }
+      if (!newPassword.equals(newConfirmPassword)) {
+        throw new DeepdiviewException(ErrorCode.NOT_VALID_PASSWORD);
       }
       user.updatePassword(passwordEncoder.encode(newPassword));
     }
-
     log.info("회원정보 수정완료");
 
   }
@@ -309,7 +309,7 @@ public class UserService {
    * 내 정보 조회
    */
   @Transactional(readOnly = true)
-  public UserInfoDto getMyInfo() {
+  public UserInfoResponseDto getMyInfo() {
 
     User user = getLoginUser();
 
@@ -355,7 +355,7 @@ public class UserService {
             : null;
 
 
-    return UserInfoDto.builder()
+    return UserInfoResponseDto.builder()
         .nickname(user.getNickname())
         .email((user.getEmail()))
         .profileImageUrl(user.getProfileImageUrl())
@@ -373,7 +373,7 @@ public class UserService {
    * @param userId
    */
   @Transactional(readOnly = true)
-  public UserInfoDto getOthersInfo(Long userId) {
+  public UserInfoResponseDto getOthersInfo(Long userId) {
 
     getLoginUser();
     User user = userRepository.findById(userId)
@@ -389,7 +389,7 @@ public class UserService {
             Collectors.counting()
         ));
 
-    return UserInfoDto.builder()
+    return UserInfoResponseDto.builder()
         .nickname(user.getNickname())
         .profileImageUrl(user.getProfileImageUrl())
         .oneLineIntro(user.getOneLineIntroduction())
