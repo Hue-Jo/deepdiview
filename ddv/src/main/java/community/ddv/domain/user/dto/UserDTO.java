@@ -4,6 +4,7 @@ import community.ddv.domain.certification.constant.CertificationStatus;
 import community.ddv.domain.certification.constant.RejectionReason;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 import java.util.Map;
 import lombok.AllArgsConstructor;
@@ -51,12 +52,21 @@ public class UserDTO {
   }
 
   @Getter
-  public static class AccountUpdateDto {
-
+  public static class NicknameUpdateDto {
+    @NotBlank(message = "새로운 닉네임을 입력해주세요")
     private String newNickname;
 
-    @Size(min = 8, message = "비밀번호는 8자 이상이어야 합니다.")
-    private String newPassword;
+  }
+
+  @Getter
+  public static class PasswordUpdateDto {
+
+    @Pattern(
+        regexp = "^(?=.*[a-z])(?=.*\\d)[a-z\\d]{8,}$",
+        message = "영문 소문자와 숫자를 포함하여 8자 이상이어야 합니다."
+    )    private String newPassword;
+
+    @NotBlank(message = "비밀번호를 확인해주세요")
     private String newConfirmPassword;
   }
 

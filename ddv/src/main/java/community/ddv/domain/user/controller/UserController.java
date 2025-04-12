@@ -5,7 +5,6 @@ import community.ddv.domain.board.dto.ReviewResponseDTO;
 import community.ddv.domain.user.dto.LoginResponse;
 import community.ddv.domain.user.dto.UserDTO;
 import community.ddv.domain.user.dto.UserDTO.AccountDeleteDto;
-import community.ddv.domain.user.dto.UserDTO.AccountUpdateDto;
 import community.ddv.domain.user.dto.UserDTO.OneLineIntro;
 import community.ddv.domain.user.dto.UserDTO.TokenDto;
 import community.ddv.domain.user.dto.UserDTO.UserInfoResponseDto;
@@ -91,13 +90,23 @@ public class UserController {
     return ResponseEntity.ok(newAccessToken);
   }
 
-  // 회원정보 수정 API
-  @Operation(summary = "회원정보 수정")
-  @PutMapping("/me")
+  // 닉네임 수정 API
+  @Operation(summary = "닉네임 수정")
+  @PutMapping("/me/nickname")
   public ResponseEntity<Void> updateAccount(
-      @RequestBody @Valid AccountUpdateDto accountUpdateDto
+      @RequestBody @Valid UserDTO.NicknameUpdateDto nicknameUpdateDto
   ) {
-    userService.updateAccount(accountUpdateDto);
+    userService.updateNickname(nicknameUpdateDto);
+    return ResponseEntity.noContent().build();
+  }
+
+  // 비밀번호 수정 API
+  @Operation(summary = "비밀번호 수정")
+  @PutMapping("/me/password")
+  public ResponseEntity<Void> updateAccount(
+      @RequestBody @Valid UserDTO.PasswordUpdateDto passwordUpdateDto
+  ) {
+    userService.updatePassword(passwordUpdateDto);
     return ResponseEntity.noContent().build();
   }
 

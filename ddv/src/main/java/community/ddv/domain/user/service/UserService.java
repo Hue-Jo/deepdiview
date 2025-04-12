@@ -8,9 +8,10 @@ import community.ddv.domain.certification.CertificationRepository;
 import community.ddv.domain.certification.constant.RejectionReason;
 import community.ddv.domain.user.dto.LoginResponse;
 import community.ddv.domain.user.dto.UserDTO.AccountDeleteDto;
-import community.ddv.domain.user.dto.UserDTO.AccountUpdateDto;
+import community.ddv.domain.user.dto.UserDTO.NicknameUpdateDto;
 import community.ddv.domain.user.dto.UserDTO.LoginDto;
 import community.ddv.domain.user.dto.UserDTO.OneLineIntro;
+import community.ddv.domain.user.dto.UserDTO.PasswordUpdateDto;
 import community.ddv.domain.user.dto.UserDTO.SignUpDto;
 import community.ddv.domain.user.dto.UserDTO.TokenDto;
 import community.ddv.domain.user.dto.UserDTO.UserInfoResponseDto;
@@ -224,18 +225,15 @@ public class UserService {
   }
 
   /**
-   * 회원정보 수정 (닉네임, 비밀번호)
-   * @param accountUpdateDto
+   * 닉네임 수정
    */
   @Transactional
-  public void updateAccount(AccountUpdateDto accountUpdateDto) {
+  public void updateNickname(NicknameUpdateDto nicknameUpdateDto) {
 
     User user = getLoginUser();
-    log.info("회원정보 수정시도 : {}", user.getEmail());
+    log.info("닉네임 수정시도 : {}", user.getEmail());
 
-    String newNickname = accountUpdateDto.getNewNickname();
-    String newPassword = accountUpdateDto.getNewPassword();
-    String newConfirmPassword = accountUpdateDto.getNewConfirmPassword();
+    String newNickname = nicknameUpdateDto.getNewNickname();
 
     // 닉네임 변경 시도
     if (newNickname != null && !newNickname.isBlank()) {
@@ -248,15 +246,22 @@ public class UserService {
       }
       user.updateNickname(newNickname);
     }
+  }
+
+  @Transactional
+  public void updatePassword(PasswordUpdateDto passwordUpdateDto) {
+
+    User user = getLoginUser();
+    log.info("비밀번호 수정시도 : {}", user.getEmail());
+
+    String newPassword = passwordUpdateDto.getNewPassword();
+    String newConfirmPassword = passwordUpdateDto.getNewConfirmPassword();
 
     if ((newPassword != null && !newPassword.isBlank()) || (newConfirmPassword != null && !newConfirmPassword.isBlank())) {
       log.info("비밀번호 변경시도");
       // 둘 중 하나라도 비어있으면 예외
       if (newPassword == null || newConfirmPassword == null || newPassword.isBlank() || newConfirmPassword.isBlank()) {
         throw new DeepdiviewException(ErrorCode.EMPTY_PASSWORD);
-      }
-      if (!isValidPassword(newPassword)) {
-        throw new DeepdiviewException(ErrorCode.NOT_ENOUGH_PASSWORD);
       }
       if (!newPassword.equals(newConfirmPassword)) {
         throw new DeepdiviewException(ErrorCode.NOT_VALID_PASSWORD);
@@ -267,11 +272,6 @@ public class UserService {
 
   }
 
-  // 비밀번호 8자 이상 작성해야 유효
-  private boolean isValidPassword(String password) {
-    String regex = "\\w{8,}";
-    return Pattern.compile(regex).matcher(password).matches();
-  }
 
   /**
    * 한줄소개 설정/수정/삭제
