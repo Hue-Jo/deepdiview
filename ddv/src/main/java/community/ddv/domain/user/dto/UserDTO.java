@@ -55,6 +55,7 @@ public class UserDTO {
 
     private String newNickname;
 
+    @Size(min = 8, message = "비밀번호는 8자 이상이어야 합니다.")
     private String newPassword;
     private String newConfirmPassword;
   }
@@ -68,7 +69,7 @@ public class UserDTO {
   @AllArgsConstructor
   @NoArgsConstructor
   @Builder
-  public static class UserInfoDto {
+  public static class UserInfoResponseDto {
 
     private String nickname;
     private String email;

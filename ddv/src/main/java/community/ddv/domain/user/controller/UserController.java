@@ -8,7 +8,7 @@ import community.ddv.domain.user.dto.UserDTO.AccountDeleteDto;
 import community.ddv.domain.user.dto.UserDTO.AccountUpdateDto;
 import community.ddv.domain.user.dto.UserDTO.OneLineIntro;
 import community.ddv.domain.user.dto.UserDTO.TokenDto;
-import community.ddv.domain.user.dto.UserDTO.UserInfoDto;
+import community.ddv.domain.user.dto.UserDTO.UserInfoResponseDto;
 import community.ddv.domain.user.service.ProfileImageService;
 import community.ddv.domain.user.service.UserService;
 import community.ddv.domain.board.service.CommentService;
@@ -59,8 +59,7 @@ public class UserController {
   @Operation(summary = "로그인")
   @PostMapping("/login")
   public ResponseEntity<LoginResponse> login(@RequestBody @Valid UserDTO.LoginDto loginDto) {
-    LoginResponse loginResponse = userService.logIn(loginDto);
-    return ResponseEntity.ok(loginResponse);
+    return ResponseEntity.ok(userService.logIn(loginDto));
   }
 
   @Operation(summary = "로그아웃")
@@ -96,7 +95,7 @@ public class UserController {
   @Operation(summary = "회원정보 수정")
   @PutMapping("/me")
   public ResponseEntity<Void> updateAccount(
-      @RequestBody AccountUpdateDto accountUpdateDto
+      @RequestBody @Valid AccountUpdateDto accountUpdateDto
   ) {
     userService.updateAccount(accountUpdateDto);
     return ResponseEntity.noContent().build();
@@ -113,17 +112,15 @@ public class UserController {
 
   @Operation(summary = "내 정보 확인", description = "닉네임, 이메일, 프로필사진, 한줄소개, 리뷰수, 댓글수, 별점 분포")
   @GetMapping("/me")
-  public ResponseEntity<UserInfoDto> getMyInfo() {
-    UserInfoDto userInfoDto = userService.getMyInfo();
-    return ResponseEntity.ok(userInfoDto);
+  public ResponseEntity<UserInfoResponseDto> getMyInfo() {
+    return ResponseEntity.ok(userService.getMyInfo());
   }
 
   @Operation(summary = "다른 유저 정보 확인", description = "닉네임, 프로필사진, 한줄소개, 리뷰수, 댓글수, 별점 분포")
   @GetMapping("/{userId}")
-  public ResponseEntity<UserInfoDto> getOthersInfo(
+  public ResponseEntity<UserInfoResponseDto> getOthersInfo(
       @PathVariable Long userId) {
-    UserInfoDto userInfoDto = userService.getOthersInfo(userId);
-    return ResponseEntity.ok(userInfoDto);
+    return ResponseEntity.ok(userService.getOthersInfo(userId));
   }
 
   @Operation(summary = "특정 사용자가 작성한 댓글 조회")
