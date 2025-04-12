@@ -52,7 +52,7 @@ public class CommentController {
   ) {
     CommentResponseDto commentResponseDto = commentService.updateComment(reviewId, commentId,
         commentRequestDto);
-    return ResponseEntity.status(HttpStatus.OK).body(commentResponseDto);
+    return ResponseEntity.ok(commentResponseDto);
   }
 
   @Operation(summary = "댓글 삭제", description = "리뷰 id와 댓글 id가 정확히 매칭되어야 삭제됩니다. 댓글 작성자만 삭제 가능")
