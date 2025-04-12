@@ -80,8 +80,8 @@ public class ReviewController {
       : Sort.by(Sort.Order.by("createdAt").with(direction));
 
     Pageable sortedPageable = PageRequest.of(pageable.getPageNumber(), pageable.getPageSize(), sort);
-
-    return ResponseEntity.ok(reviewService.getReviewByMovieId(tmdbId, sortedPageable, certifiedFilter));
+    Page<ReviewResponseDTO> reviews = reviewService.getReviewByMovieId(tmdbId, sortedPageable, certifiedFilter);
+    return ResponseEntity.ok(reviews);
   }
 
   @Operation(summary = "특정 리뷰 조회", description = "댓글이 포함되어 있습니다.")

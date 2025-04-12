@@ -12,39 +12,44 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 import org.springframework.web.multipart.MaxUploadSizeExceededException;
+import org.springframework.web.servlet.View;
 
 @RestControllerAdvice
 @AllArgsConstructor
 public class GlobalExceptionHandler {
 
+  private final View error;
+
   @ExceptionHandler(DeepdiviewException.class)
   public ResponseEntity<ErrorResponse> handleDeepdiviewException(DeepdiviewException e) {
 
-    // 에러 코드
     ErrorCode errorCode = e.getErrorCode();
-
-    // 에러 응답
     ErrorResponse errorResponse = new ErrorResponse(
-        errorCode.name(), e.getErrorMessage()
+        errorCode.name(),
+        e.getErrorMessage()
     );
 
-    // HttpStatus
     HttpStatus httpStatus = errorCode.getHttpStatus();
-
     return ResponseEntity.status(httpStatus).body(errorResponse);
   }
 
   // 유효성 검사 예외 메시지 처리
   @ExceptionHandler(MethodArgumentNotValidException.class)
   @ResponseStatus(HttpStatus.BAD_REQUEST)
-  public ResponseEntity<Map<String, String>> handleValidationExceptions(MethodArgumentNotValidException ex) {
-    Map<String, String> errors = new HashMap<>();
-    ex.getBindingResult().getAllErrors().forEach((error) -> {
-      String fieldName = ((FieldError) error).getField();
-      String errorMessage = error.getDefaultMessage();
-      errors.put(fieldName, errorMessage);
-    });
-    return ResponseEntity.badRequest().body(errors);
+  public ResponseEntity<ErrorResponse> handleValidationExceptions(MethodArgumentNotValidException e) {
+    Map<String, String> fieldErrors = new HashMap<>();
+
+    for(FieldError error : e.getBindingResult().getFieldErrors()) {
+      fieldErrors.put(error.getField(), error.getDefaultMessage());
+    }
+
+    ErrorCode errorCode = ErrorCode.VALIDATION_FAILED;
+    ErrorResponse errorResponse = new ErrorResponse(
+        errorCode.name(),
+        errorCode.getDescription(),
+        fieldErrors
+    );
+    return ResponseEntity.status(errorCode.getHttpStatus()).body(errorResponse);
   }
 
   // 타입 유형 예외 처리

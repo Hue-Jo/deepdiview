@@ -62,8 +62,10 @@ public enum ErrorCode {
   NOTIFICATION_NOT_FOUND("존재하지 않는 알람입니다.", HttpStatus.NOT_FOUND),
 
   // 형변환 관련 에러코드
-  INVALID_INPUT_VALUE("입력값이 올바르지 않습니다.", HttpStatus.BAD_REQUEST);
+  INVALID_INPUT_VALUE("입력값이 올바르지 않습니다.", HttpStatus.BAD_REQUEST),
 
+  // 유효성 관련 에러코드
+  VALIDATION_FAILED("입력한 값에 오류가 있습니다.", HttpStatus.BAD_REQUEST);
   private final String description;
   private final HttpStatus httpStatus;
 }
