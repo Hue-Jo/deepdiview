@@ -2,6 +2,7 @@ package community.ddv.domain.movie.controller;
 
 import community.ddv.domain.movie.dto.MovieDTO;
 import community.ddv.domain.movie.service.MovieService;
+import community.ddv.global.response.PageResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import java.util.List;
@@ -35,13 +36,13 @@ public class MovieController {
 
   @Operation(summary = "영화 제목으로 상세정보 조회", description = "특정 단어가 포함되어 있는 영화들의 세부정보를 반환합니다. 띄어쓰기를 무시하고도 조회가 됩니다.")
   @GetMapping("/search/list")
-  public ResponseEntity<Page<MovieDTO>> getMoviesByTitle(
+  public ResponseEntity<PageResponse<MovieDTO>> getMoviesByTitle(
       @RequestParam("title") String title,
       @RequestParam(value = "certifiedFilter", required = false, defaultValue = "false") Boolean certifiedFilter,
       @PageableDefault(size = 10, sort = "popularity", direction = Sort.Direction.DESC) Pageable pageable
       ) {
     Page<MovieDTO> movies = movieService.searchMoviesByTitle(title, certifiedFilter, pageable);
-    return ResponseEntity.ok(movies);
+    return ResponseEntity.ok(new PageResponse<>(movies));
   }
 
   @Operation(summary = "특정 영화 상세정보 조회", description = "tmdb에서 제공하는 id값(tmdbId)을 넣어야 조회됩니다.")

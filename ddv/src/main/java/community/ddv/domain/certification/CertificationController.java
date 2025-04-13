@@ -3,6 +3,7 @@ package community.ddv.domain.certification;
 import community.ddv.domain.certification.CertificationDTO.CertificationRequestDto;
 import community.ddv.domain.certification.CertificationDTO.CertificationResponseDto;
 import community.ddv.domain.certification.constant.CertificationStatus;
+import community.ddv.global.response.PageResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import java.io.IOException;
@@ -62,12 +63,12 @@ public class CertificationController {
 
   @Operation(summary = "인증 목록 조회", description = "관리자 전용 - 보류, 승인, 거절 필터링 가능 | 한 페이지당 10개씩 반환 ㅣ 인증요청을 한 지 오래된 순서대로 정렬됩니다.")
   @GetMapping("/admin")
-  public ResponseEntity<Page<CertificationResponseDto>> getPendingCertifications(
+  public ResponseEntity<PageResponse<CertificationResponseDto>> getPendingCertifications(
       @RequestParam(required = false) CertificationStatus status,
       @PageableDefault(size = 10, page = 0, sort = "createdAt", direction = Direction.ASC) Pageable pageable) {
     Page<CertificationResponseDto> certifications =
         certificationService.getCertificationsByStatus(status, pageable);
-    return ResponseEntity.ok(certifications);
+    return ResponseEntity.ok(new PageResponse<>(certifications));
   }
 
 

@@ -12,6 +12,7 @@ import community.ddv.domain.user.service.ProfileImageService;
 import community.ddv.domain.user.service.UserService;
 import community.ddv.domain.board.service.CommentService;
 import community.ddv.domain.board.service.ReviewService;
+import community.ddv.global.response.PageResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
@@ -22,6 +23,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
+import org.springframework.data.web.PagedModel;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -134,21 +136,21 @@ public class UserController {
 
   @Operation(summary = "특정 사용자가 작성한 댓글 조회")
   @GetMapping("/{userId}/comments")
-  public ResponseEntity<Page<CommentResponseDto>> getCommentsByUserId(
+  public ResponseEntity<PageResponse<CommentResponseDto>> getCommentsByUserId(
       @PathVariable Long userId,
       @PageableDefault(size = 20, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable) {
     Page<CommentResponseDto> comments = commentService.getCommentsByUserId(userId, pageable);
-    return ResponseEntity.ok(comments);
+    return ResponseEntity.ok(new PageResponse<>(comments));
   }
 
   @Operation(summary = "특정 사용자가 작성한 리뷰 조회")
   @GetMapping("{userId}/reviews")
-  public ResponseEntity<Page<ReviewResponseDTO>> getReviewsByUserId(
+  public ResponseEntity<PageResponse<ReviewResponseDTO>> getReviewsByUserId(
       @PathVariable Long userId,
       @RequestParam(value = "certifiedFilter", required = false, defaultValue = "false") Boolean certifiedFilter,
       @PageableDefault(size = 20, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable) {
     Page<ReviewResponseDTO> reviews = reviewService.getReviewsByUserId(userId, pageable, certifiedFilter);
-    return ResponseEntity.ok(reviews);
+    return ResponseEntity.ok(new PageResponse<>(reviews));
   }
 
   @Operation(summary = "프로필사진 등록")

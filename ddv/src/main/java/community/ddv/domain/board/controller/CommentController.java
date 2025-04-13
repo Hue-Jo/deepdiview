@@ -3,6 +3,7 @@ package community.ddv.domain.board.controller;
 import community.ddv.domain.board.dto.CommentDTO.CommentResponseDto;
 import community.ddv.domain.board.service.CommentService;
 import community.ddv.domain.board.dto.CommentDTO;
+import community.ddv.global.response.PageResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
@@ -67,11 +68,11 @@ public class CommentController {
 
   @Operation(summary = "특정 리뷰에 달린 댓글 조회")
   @GetMapping
-  public ResponseEntity<Page<CommentResponseDto>> getCommentsByReviewId(
+  public ResponseEntity<PageResponse<CommentResponseDto>> getCommentsByReviewId(
       @PathVariable Long reviewId,
       @PageableDefault(size = 20, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable) {
 
     Page<CommentResponseDto> comments = commentService.getCommentsByReviewId(reviewId, pageable);
-    return ResponseEntity.ok(comments);
+    return ResponseEntity.ok(new PageResponse<>(comments));
   }
 }
