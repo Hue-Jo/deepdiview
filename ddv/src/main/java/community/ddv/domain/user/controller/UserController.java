@@ -152,17 +152,8 @@ public class UserController {
     return ResponseEntity.ok(new PageResponse<>(reviews));
   }
 
-  @Operation(summary = "프로필사진 등록")
-  @PostMapping("/profile-image")
-  public ResponseEntity<Map<String, String>> uploadProfileImage(
-      @RequestParam("file") MultipartFile file) {
-    String profileImageUrl = profileImageService.uploadProfileImage(file);
-    Map<String, String> profileResponse = new HashMap<>();
-    profileResponse.put("profileImageUrl", profileImageUrl);
-    return ResponseEntity.ok(profileResponse);
-  }
 
-  @Operation(summary = "프로필사진 수정")
+  @Operation(summary = "프로필사진 등록/수정")
   @PutMapping("/profile-image")
   public ResponseEntity<Map<String, String>> updateProfileImage(
       @RequestParam("file") MultipartFile file) {
