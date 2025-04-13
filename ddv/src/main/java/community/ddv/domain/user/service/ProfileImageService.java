@@ -20,58 +20,46 @@ public class ProfileImageService {
   private final UserService userService;
   private final FileStorageService fileStorageService;
 
-  /**
-   * 프로필 등록
-   */
-  @Transactional
-  public String uploadProfileImage(MultipartFile profileImage) {
-    User user = userService.getLoginUser();
-    log.info("프로필 사진 등록 요청");
 
-    String profileImageUrl = fileStorageService.uploadFile(profileImage);
-
-    user.updateProfileImageUrl(profileImageUrl);
-    return profileImageUrl;
-  }
-
-  /**
-   * 프로필 수정
-   *
-   * @param profileImage
-   */
   @Transactional
   public String updateProfileImage(MultipartFile profileImage) {
-    User user = userService.getLoginUser();
-    log.info("프로필사진 수정 요청");
 
-    // 기존 프로필 삭제
-    if (user.getProfileImageUrl() != null) {
-      fileStorageService.deleteFile(user.getProfileImageUrl());
-      log.info("기존 프로필 사진 삭제");
+    User user = userService.getLoginUser();
+    String existingProfileImageUrl = user.getProfileImageUrl();
+
+    // 기존 프사가 존재하는 경우, 삭제 후 새 이미지로 대체 (디폴트 프사가 아닐 때!)
+    if (existingProfileImageUrl != null && !existingProfileImageUrl.isEmpty()
+    && !isDefaultProfileImage(existingProfileImageUrl)) {
+      fileStorageService.deleteFile(existingProfileImageUrl);
     }
 
     String newProfileImageUrl = fileStorageService.uploadFile(profileImage);
     user.updateProfileImageUrl(newProfileImageUrl);
-    log.info("프로필 이미지 수정");
-
+    log.info("프로필 이미지 등록/수정 완료");
     return newProfileImageUrl;
+
+  }
+
+  private boolean isDefaultProfileImage(String imageUrl) {
+    return imageUrl.contains(defaultProfileImageUrl);
   }
 
   /**
    * 프로필 사진 삭제
    */
   @Transactional
-  public void deleteProfileImage() {
+  public String deleteProfileImage() {
     User user = userService.getLoginUser();
     log.info("프로필사진 삭제 요청");
 
-    if (user.getProfileImageUrl() != null && !user.getProfileImageUrl().isEmpty()
-        && !user.getProfileImageUrl().equals(defaultProfileImageUrl)) {
+    String profileImageUrl = user.getProfileImageUrl();
+    if (profileImageUrl != null && !profileImageUrl.isEmpty()
+        && !profileImageUrl.equals(defaultProfileImageUrl)) {
 
       fileStorageService.deleteFile(user.getProfileImageUrl());
-      log.info("기존 프로필 사진 삭제");
     }
     user.updateProfileImageUrl(defaultProfileImageUrl);
     log.info("기본 프로필로 초기화");
+    return defaultProfileImageUrl;
   }
 }

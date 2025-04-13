@@ -4,6 +4,7 @@ import community.ddv.domain.board.dto.ReviewDTO;
 import community.ddv.domain.board.dto.ReviewResponseDTO;
 import community.ddv.domain.board.service.LikeService;
 import community.ddv.domain.board.service.ReviewService;
+import community.ddv.global.response.PageResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
@@ -65,7 +66,7 @@ public class ReviewController {
 
   @Operation(summary = "특정 영화에 대한 리뷰 조회", description = "댓글은 포함되어있지 않습니다. ?sortBy=likeCount로 좋아요 순 정렬을 할 수 있습니다." )
   @GetMapping("/movie/{tmdbId}")
-  public ResponseEntity<Page<ReviewResponseDTO>> getReviewsByMovieId(
+  public ResponseEntity<PageResponse<ReviewResponseDTO>> getReviewsByMovieId(
       @PathVariable Long tmdbId,
       @RequestParam(value = "certifiedFilter", required = false, defaultValue = "false") Boolean certifiedFilter,
       @PageableDefault(size = 20) Pageable pageable,
@@ -81,7 +82,7 @@ public class ReviewController {
 
     Pageable sortedPageable = PageRequest.of(pageable.getPageNumber(), pageable.getPageSize(), sort);
     Page<ReviewResponseDTO> reviews = reviewService.getReviewByMovieId(tmdbId, sortedPageable, certifiedFilter);
-    return ResponseEntity.ok(reviews);
+    return ResponseEntity.ok(new PageResponse<>(reviews));
   }
 
   @Operation(summary = "특정 리뷰 조회", description = "댓글이 포함되어 있습니다.")

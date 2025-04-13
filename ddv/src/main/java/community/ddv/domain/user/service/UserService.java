@@ -8,9 +8,11 @@ import community.ddv.domain.certification.CertificationRepository;
 import community.ddv.domain.certification.constant.RejectionReason;
 import community.ddv.domain.user.dto.LoginResponse;
 import community.ddv.domain.user.dto.UserDTO.AccountDeleteDto;
-import community.ddv.domain.user.dto.UserDTO.NicknameUpdateDto;
+import community.ddv.domain.user.dto.UserDTO.NicknameUpdateRequestDto;
 import community.ddv.domain.user.dto.UserDTO.LoginDto;
-import community.ddv.domain.user.dto.UserDTO.OneLineIntro;
+import community.ddv.domain.user.dto.UserDTO.NicknameUpdateResponseDto;
+import community.ddv.domain.user.dto.UserDTO.OneLineIntroRequestDto;
+import community.ddv.domain.user.dto.UserDTO.OneLineIntroResponseDto;
 import community.ddv.domain.user.dto.UserDTO.PasswordUpdateDto;
 import community.ddv.domain.user.dto.UserDTO.SignUpDto;
 import community.ddv.domain.user.dto.UserDTO.TokenDto;
@@ -28,7 +30,6 @@ import java.time.LocalTime;
 import java.time.temporal.TemporalAdjusters;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
-import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -228,24 +229,23 @@ public class UserService {
    * 닉네임 수정
    */
   @Transactional
-  public void updateNickname(NicknameUpdateDto nicknameUpdateDto) {
+  public NicknameUpdateResponseDto updateNickname(NicknameUpdateRequestDto nicknameUpdateDto) {
 
     User user = getLoginUser();
     log.info("닉네임 수정시도 : {}", user.getEmail());
 
     String newNickname = nicknameUpdateDto.getNewNickname();
 
-    // 닉네임 변경 시도
-    if (newNickname != null && !newNickname.isBlank()) {
-      log.info("닉네임 변경시도 {} -> {}", user.getNickname(), newNickname);
-
-      // 이미 존재하는 닉네임으로는 변경 불가 (자신이 예전에 쓰던 닉네임 포함)
-      if (userRepository.findByNickname(newNickname).isPresent()) {
-        log.info("이미 존재하는 닉네임이 있어 해당 닉네임으로 변경 불가");
-        throw new DeepdiviewException(ErrorCode.ALREADY_EXIST_NICKNAME);
-      }
-      user.updateNickname(newNickname);
+    if (newNickname.equals(user.getNickname())) {
+      return new NicknameUpdateResponseDto(user.getNickname());
     }
+
+    if (userRepository.findByNickname(newNickname).isPresent()) {
+      throw new DeepdiviewException(ErrorCode.ALREADY_EXIST_NICKNAME);
+    }
+
+    user.updateNickname(newNickname);
+    return new NicknameUpdateResponseDto(newNickname);
   }
 
   @Transactional
@@ -278,7 +278,7 @@ public class UserService {
    * @param oneLineIntro
    */
   @Transactional
-  public void updateOneLineIntro(OneLineIntro oneLineIntro) {
+  public OneLineIntroResponseDto updateOneLineIntro(OneLineIntroRequestDto oneLineIntro) {
 
     User user = getLoginUser();
     log.info("한줄소개 수정 시도 : {}", user.getEmail());
@@ -302,6 +302,7 @@ public class UserService {
       }
     }
     userRepository.save(user);
+    return new OneLineIntroResponseDto(newOneLineIntro);
   }
 
 

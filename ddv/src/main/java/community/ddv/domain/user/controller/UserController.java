@@ -5,13 +5,16 @@ import community.ddv.domain.board.dto.ReviewResponseDTO;
 import community.ddv.domain.user.dto.LoginResponse;
 import community.ddv.domain.user.dto.UserDTO;
 import community.ddv.domain.user.dto.UserDTO.AccountDeleteDto;
-import community.ddv.domain.user.dto.UserDTO.OneLineIntro;
+import community.ddv.domain.user.dto.UserDTO.NicknameUpdateResponseDto;
+import community.ddv.domain.user.dto.UserDTO.OneLineIntroRequestDto;
+import community.ddv.domain.user.dto.UserDTO.OneLineIntroResponseDto;
 import community.ddv.domain.user.dto.UserDTO.TokenDto;
 import community.ddv.domain.user.dto.UserDTO.UserInfoResponseDto;
 import community.ddv.domain.user.service.ProfileImageService;
 import community.ddv.domain.user.service.UserService;
 import community.ddv.domain.board.service.CommentService;
 import community.ddv.domain.board.service.ReviewService;
+import community.ddv.global.response.PageResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
@@ -93,11 +96,10 @@ public class UserController {
   // 닉네임 수정 API
   @Operation(summary = "닉네임 수정")
   @PutMapping("/me/nickname")
-  public ResponseEntity<Void> updateAccount(
-      @RequestBody @Valid UserDTO.NicknameUpdateDto nicknameUpdateDto
+  public ResponseEntity<NicknameUpdateResponseDto> updateAccount(
+      @RequestBody @Valid UserDTO.NicknameUpdateRequestDto nicknameUpdateDto
   ) {
-    userService.updateNickname(nicknameUpdateDto);
-    return ResponseEntity.noContent().build();
+    return ResponseEntity.ok(userService.updateNickname(nicknameUpdateDto));
   }
 
   // 비밀번호 수정 API
@@ -112,11 +114,10 @@ public class UserController {
 
   @Operation(summary = "한줄소개 설정/수정", description = "회원가입 직후에는 새롭게 설정, 설정된 이후에는 수정")
   @PutMapping("/me/intro")
-  public ResponseEntity<Void> updateIntro(
-      @RequestBody OneLineIntro oneLineIntro
+  public ResponseEntity<OneLineIntroResponseDto> updateIntro(
+      @RequestBody OneLineIntroRequestDto oneLineIntro
   ) {
-    userService.updateOneLineIntro(oneLineIntro);
-    return ResponseEntity.noContent().build();
+    return ResponseEntity.ok(userService.updateOneLineIntro(oneLineIntro));
   }
 
   @Operation(summary = "내 정보 확인", description = "닉네임, 이메일, 프로필사진, 한줄소개, 리뷰수, 댓글수, 별점 분포")
@@ -134,34 +135,25 @@ public class UserController {
 
   @Operation(summary = "특정 사용자가 작성한 댓글 조회")
   @GetMapping("/{userId}/comments")
-  public ResponseEntity<Page<CommentResponseDto>> getCommentsByUserId(
+  public ResponseEntity<PageResponse<CommentResponseDto>> getCommentsByUserId(
       @PathVariable Long userId,
       @PageableDefault(size = 20, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable) {
     Page<CommentResponseDto> comments = commentService.getCommentsByUserId(userId, pageable);
-    return ResponseEntity.ok(comments);
+    return ResponseEntity.ok(new PageResponse<>(comments));
   }
 
   @Operation(summary = "특정 사용자가 작성한 리뷰 조회")
   @GetMapping("{userId}/reviews")
-  public ResponseEntity<Page<ReviewResponseDTO>> getReviewsByUserId(
+  public ResponseEntity<PageResponse<ReviewResponseDTO>> getReviewsByUserId(
       @PathVariable Long userId,
       @RequestParam(value = "certifiedFilter", required = false, defaultValue = "false") Boolean certifiedFilter,
       @PageableDefault(size = 20, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable) {
     Page<ReviewResponseDTO> reviews = reviewService.getReviewsByUserId(userId, pageable, certifiedFilter);
-    return ResponseEntity.ok(reviews);
+    return ResponseEntity.ok(new PageResponse<>(reviews));
   }
 
-  @Operation(summary = "프로필사진 등록")
-  @PostMapping("/profile-image")
-  public ResponseEntity<Map<String, String>> uploadProfileImage(
-      @RequestParam("file") MultipartFile file) {
-    String profileImageUrl = profileImageService.uploadProfileImage(file);
-    Map<String, String> profileResponse = new HashMap<>();
-    profileResponse.put("profileImageUrl", profileImageUrl);
-    return ResponseEntity.ok(profileResponse);
-  }
 
-  @Operation(summary = "프로필사진 수정")
+  @Operation(summary = "프로필사진 등록/수정")
   @PutMapping("/profile-image")
   public ResponseEntity<Map<String, String>> updateProfileImage(
       @RequestParam("file") MultipartFile file) {
@@ -173,9 +165,10 @@ public class UserController {
 
   @Operation(summary = "프로필사진 삭제")
   @DeleteMapping("/profile-image")
-  public ResponseEntity<Void> deleteProfileImage() {
-    profileImageService.deleteProfileImage();
-    return ResponseEntity.noContent().build();
+  public ResponseEntity<Map<String, String>> deleteProfileImage() {
+    Map<String, String> DefaultProfileResponse = new HashMap<>();
+    DefaultProfileResponse.put("profileImageUrl", profileImageService.deleteProfileImage());
+    return ResponseEntity.ok(DefaultProfileResponse);
   }
 
 }

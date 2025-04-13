@@ -5,7 +5,6 @@ import community.ddv.domain.certification.constant.RejectionReason;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
-import jakarta.validation.constraints.Size;
 import java.util.Map;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -54,10 +53,15 @@ public class UserDTO {
   }
 
   @Getter
-  public static class NicknameUpdateDto {
+  public static class NicknameUpdateRequestDto {
     @NotBlank(message = "새로운 닉네임을 입력해주세요")
     private String newNickname;
+  }
 
+  @Getter
+  @AllArgsConstructor
+  public static class NicknameUpdateResponseDto {
+    private String updatedNickname;
   }
 
   @Getter
@@ -74,8 +78,14 @@ public class UserDTO {
   }
 
   @Getter
-  public static class OneLineIntro {
+  public static class OneLineIntroRequestDto {
     private String oneLineIntro;
+  }
+
+  @Getter
+  @AllArgsConstructor
+  public static class OneLineIntroResponseDto {
+    private String updatedOneLineIntro;
   }
 
   @Getter
