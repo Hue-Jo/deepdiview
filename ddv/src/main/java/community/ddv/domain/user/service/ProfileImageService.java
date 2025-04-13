@@ -61,7 +61,7 @@ public class ProfileImageService {
    * 프로필 사진 삭제
    */
   @Transactional
-  public void deleteProfileImage() {
+  public String deleteProfileImage() {
     User user = userService.getLoginUser();
     log.info("프로필사진 삭제 요청");
 
@@ -73,5 +73,6 @@ public class ProfileImageService {
     }
     user.updateProfileImageUrl(defaultProfileImageUrl);
     log.info("기본 프로필로 초기화");
+    return defaultProfileImageUrl;
   }
 }
