@@ -6,8 +6,8 @@ import community.ddv.domain.board.repository.ReviewRepository;
 import community.ddv.domain.certification.Certification;
 import community.ddv.domain.certification.CertificationRepository;
 import community.ddv.domain.certification.constant.RejectionReason;
-import community.ddv.domain.user.dto.LoginResponse;
 import community.ddv.domain.user.dto.UserDTO.AccountDeleteDto;
+import community.ddv.domain.user.dto.UserDTO.LoginResponseDto;
 import community.ddv.domain.user.dto.UserDTO.NicknameUpdateRequestDto;
 import community.ddv.domain.user.dto.UserDTO.LoginDto;
 import community.ddv.domain.user.dto.UserDTO.NicknameUpdateResponseDto;
@@ -97,7 +97,7 @@ public class UserService {
    * 로그인
    * @param loginDto - 이메일, 비밀번호
    */
-  public LoginResponse logIn(LoginDto loginDto) {
+  public LoginResponseDto logIn(LoginDto loginDto) {
     log.info("로그인 시도 : {} ", loginDto.getEmail());
 
     // 해당 이메일로 가입된 유저가 존재하는지 확인
@@ -121,7 +121,7 @@ public class UserService {
     }
 
     log.info("로그인 성공");
-    return new LoginResponse(
+    return new LoginResponseDto(
         accessToken,
         refreshToken,
         user.getId(),
@@ -257,9 +257,10 @@ public class UserService {
     String newPassword = passwordUpdateDto.getNewPassword();
     String newConfirmPassword = passwordUpdateDto.getNewConfirmPassword();
 
+    // 비밀번호 변경 시도 여부 확인
     if ((newPassword != null && !newPassword.isBlank()) || (newConfirmPassword != null && !newConfirmPassword.isBlank())) {
       log.info("비밀번호 변경시도");
-      // 둘 중 하나라도 비어있으면 예외
+      // 값이 제대로 입력됐는지 (둘 중 하나라도 비어있으면 예외) 확인
       if (newPassword == null || newConfirmPassword == null || newPassword.isBlank() || newConfirmPassword.isBlank()) {
         throw new DeepdiviewException(ErrorCode.EMPTY_PASSWORD);
       }

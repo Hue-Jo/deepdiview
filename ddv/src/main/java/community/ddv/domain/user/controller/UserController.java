@@ -2,9 +2,9 @@ package community.ddv.domain.user.controller;
 
 import community.ddv.domain.board.dto.CommentDTO.CommentResponseDto;
 import community.ddv.domain.board.dto.ReviewResponseDTO;
-import community.ddv.domain.user.dto.LoginResponse;
 import community.ddv.domain.user.dto.UserDTO;
 import community.ddv.domain.user.dto.UserDTO.AccountDeleteDto;
+import community.ddv.domain.user.dto.UserDTO.LoginResponseDto;
 import community.ddv.domain.user.dto.UserDTO.NicknameUpdateResponseDto;
 import community.ddv.domain.user.dto.UserDTO.OneLineIntroRequestDto;
 import community.ddv.domain.user.dto.UserDTO.OneLineIntroResponseDto;
@@ -60,7 +60,7 @@ public class UserController {
   // 로그인 API
   @Operation(summary = "로그인")
   @PostMapping("/login")
-  public ResponseEntity<LoginResponse> login(@RequestBody @Valid UserDTO.LoginDto loginDto) {
+  public ResponseEntity<LoginResponseDto> login(@RequestBody @Valid UserDTO.LoginDto loginDto) {
     return ResponseEntity.ok(userService.logIn(loginDto));
   }
 

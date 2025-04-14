@@ -2,6 +2,7 @@ package community.ddv.domain.user.dto;
 
 import community.ddv.domain.certification.constant.CertificationStatus;
 import community.ddv.domain.certification.constant.RejectionReason;
+import community.ddv.domain.user.constant.Role;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
@@ -44,6 +45,21 @@ public class UserDTO {
     @NotBlank(message = "비밀번호를 입력해주세요")
     private String password;
 
+  }
+
+  @Getter
+  @AllArgsConstructor
+  @Builder
+  public static class LoginResponseDto {
+    private String accessToken;
+    private String refreshToken;
+
+    private Long userId;
+    private String email;
+    private String nickname;
+    private String profileImageUrl;
+
+    private Role role;
   }
 
   @Getter
