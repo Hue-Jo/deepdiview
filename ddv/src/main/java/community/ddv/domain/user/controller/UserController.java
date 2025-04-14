@@ -2,18 +2,19 @@ package community.ddv.domain.user.controller;
 
 import community.ddv.domain.board.dto.CommentDTO.CommentResponseDto;
 import community.ddv.domain.board.dto.ReviewResponseDTO;
-import community.ddv.domain.user.dto.UserDTO;
-import community.ddv.domain.user.dto.UserDTO.AccountDeleteDto;
-import community.ddv.domain.user.dto.UserDTO.LoginResponseDto;
-import community.ddv.domain.user.dto.UserDTO.NicknameUpdateResponseDto;
-import community.ddv.domain.user.dto.UserDTO.OneLineIntroRequestDto;
-import community.ddv.domain.user.dto.UserDTO.OneLineIntroResponseDto;
-import community.ddv.domain.user.dto.UserDTO.TokenDto;
-import community.ddv.domain.user.dto.UserDTO.UserInfoResponseDto;
-import community.ddv.domain.user.service.ProfileImageService;
-import community.ddv.domain.user.service.UserService;
 import community.ddv.domain.board.service.CommentService;
 import community.ddv.domain.board.service.ReviewService;
+import community.ddv.domain.user.dto.SignDto;
+import community.ddv.domain.user.dto.SignDto.AccountDeleteDto;
+import community.ddv.domain.user.dto.SignDto.LoginResponseDto;
+import community.ddv.domain.user.dto.SignDto.TokenDto;
+import community.ddv.domain.user.dto.UserInfoDto;
+import community.ddv.domain.user.dto.UserInfoDto.NicknameUpdateResponseDto;
+import community.ddv.domain.user.dto.UserInfoDto.OneLineIntroRequestDto;
+import community.ddv.domain.user.dto.UserInfoDto.OneLineIntroResponseDto;
+import community.ddv.domain.user.dto.UserInfoDto.UserInfoResponseDto;
+import community.ddv.domain.user.service.ProfileImageService;
+import community.ddv.domain.user.service.UserService;
 import community.ddv.global.response.PageResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -52,7 +53,7 @@ public class UserController {
   // 회원가입 API
   @Operation(summary = "회원가입")
   @PostMapping("/signup")
-  public ResponseEntity<Void> signup(@RequestBody @Valid UserDTO.SignUpDto signUpDto) {
+  public ResponseEntity<Void> signup(@RequestBody @Valid SignDto.SignUpDto signUpDto) {
     userService.signUp(signUpDto);
     return ResponseEntity.noContent().build();
   }
@@ -60,7 +61,7 @@ public class UserController {
   // 로그인 API
   @Operation(summary = "로그인")
   @PostMapping("/login")
-  public ResponseEntity<LoginResponseDto> login(@RequestBody @Valid UserDTO.LoginDto loginDto) {
+  public ResponseEntity<LoginResponseDto> login(@RequestBody @Valid SignDto.LoginDto loginDto) {
     return ResponseEntity.ok(userService.logIn(loginDto));
   }
 
@@ -97,7 +98,7 @@ public class UserController {
   @Operation(summary = "닉네임 수정")
   @PutMapping("/me/nickname")
   public ResponseEntity<NicknameUpdateResponseDto> updateAccount(
-      @RequestBody @Valid UserDTO.NicknameUpdateRequestDto nicknameUpdateDto
+      @RequestBody @Valid UserInfoDto.NicknameUpdateRequestDto nicknameUpdateDto
   ) {
     return ResponseEntity.ok(userService.updateNickname(nicknameUpdateDto));
   }
@@ -106,7 +107,7 @@ public class UserController {
   @Operation(summary = "비밀번호 수정")
   @PutMapping("/me/password")
   public ResponseEntity<Void> updateAccount(
-      @RequestBody @Valid UserDTO.PasswordUpdateDto passwordUpdateDto
+      @RequestBody @Valid UserInfoDto.PasswordUpdateDto passwordUpdateDto
   ) {
     userService.updatePassword(passwordUpdateDto);
     return ResponseEntity.noContent().build();
