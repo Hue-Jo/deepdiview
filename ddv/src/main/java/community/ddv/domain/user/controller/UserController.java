@@ -17,6 +17,8 @@ import community.ddv.domain.user.service.ProfileImageService;
 import community.ddv.domain.user.service.UserService;
 import community.ddv.global.response.PageResponse;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import java.util.HashMap;
@@ -26,6 +28,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -36,6 +39,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -116,7 +120,7 @@ public class UserController {
   @Operation(summary = "한줄소개 설정/수정", description = "회원가입 직후에는 새롭게 설정, 설정된 이후에는 수정")
   @PutMapping("/me/intro")
   public ResponseEntity<OneLineIntroResponseDto> updateIntro(
-      @RequestBody OneLineIntroRequestDto oneLineIntro
+      @RequestBody @Valid OneLineIntroRequestDto oneLineIntro
   ) {
     return ResponseEntity.ok(userService.updateOneLineIntro(oneLineIntro));
   }
@@ -155,9 +159,10 @@ public class UserController {
 
 
   @Operation(summary = "프로필사진 등록/수정")
-  @PutMapping("/profile-image")
+  @PutMapping(value = "/profile-image", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
   public ResponseEntity<Map<String, String>> updateProfileImage(
-      @RequestParam("file") MultipartFile file) {
+      @Parameter(description = "프로필 사진 파일")
+      @RequestPart("file") MultipartFile file) {
     String profileImageUrl = profileImageService.updateProfileImage(file);
     Map<String, String> profileResponse = new HashMap<>();
     profileResponse.put("profileImageUrl", profileImageUrl);

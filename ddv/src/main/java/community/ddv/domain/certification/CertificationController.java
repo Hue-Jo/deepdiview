@@ -5,14 +5,14 @@ import community.ddv.domain.certification.CertificationDTO.CertificationResponse
 import community.ddv.domain.certification.constant.CertificationStatus;
 import community.ddv.global.response.PageResponse;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import java.io.IOException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort.Direction;
 import org.springframework.data.web.PageableDefault;
-import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -34,8 +34,9 @@ public class CertificationController {
   private final CertificationService certificationService;
 
   @Operation(summary = "인증샷 제출", description = "파일 업로드")
-  @PostMapping
+  @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
   public ResponseEntity<CertificationResponseDto> submitCertification(
+      @Parameter(description = "인증샷 파일")
       @RequestParam("file") MultipartFile file) {
     return ResponseEntity.ok(certificationService.submitCertification(file));
   }
@@ -48,15 +49,16 @@ public class CertificationController {
   }
 
   @Operation(summary = "인증샷 수정", description = "파일 재업로드, PENDING/REJECTED 상태의 유저만 사용 가능")
-  @PutMapping
+  @PutMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
   public ResponseEntity<CertificationResponseDto> updateCertification(
-      @RequestParam("file") MultipartFile file) throws Exception {
+      @Parameter(description = "인증샷 파일")
+      @RequestParam("file") MultipartFile file) {
     return ResponseEntity.ok(certificationService.updateCertification(file));
   }
 
   @Operation(summary = "인증샷 삭제", description = "PENDING/REJECTED 상태의 유저만 사용 가능")
   @DeleteMapping
-  public ResponseEntity<Void> deleteCertification() throws IOException {
+  public ResponseEntity<Void> deleteCertification() {
     certificationService.deleteCertification();
     return ResponseEntity.noContent().build();
   }
