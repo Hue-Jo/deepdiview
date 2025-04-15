@@ -4,6 +4,7 @@ import community.ddv.domain.certification.constant.CertificationStatus;
 import community.ddv.domain.certification.constant.RejectionReason;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
+import jakarta.validation.constraints.Size;
 import java.util.Map;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -41,8 +42,13 @@ public class UserInfoDto {
 
 
   @Getter
+  @NoArgsConstructor
   public static class OneLineIntroRequestDto {
+
+    @Size(max = 50, message = "최대 50자까지만 작성 가능합니다.")
     private String oneLineIntro;
+
+
   }
 
   @Getter

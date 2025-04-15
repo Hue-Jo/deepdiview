@@ -285,25 +285,26 @@ public class UserService {
     log.info("한줄소개 수정 시도 : {}", user.getEmail());
 
     String newOneLineIntro = oneLineIntro.getOneLineIntro();
+    String newONeLineIntroResponse = (newOneLineIntro == null || newOneLineIntro.isEmpty()) ? null : newOneLineIntro;
 
     // 기존의 한줄소개가 없었던 경우
     if (user.getOneLineIntroduction() == null) {
-      if (!newOneLineIntro.isEmpty()) {
-        user.updateOneLineIntroduction(newOneLineIntro);
+      if (newONeLineIntroResponse != null) {
+        user.updateOneLineIntroduction(newONeLineIntroResponse);
         log.info("한줄소개 설정 완료");
       }
     } else {
       // 기존의 한줄 소개가 존재하는 경우
-      if (newOneLineIntro.isEmpty()) {
+      if (newONeLineIntroResponse == null) {
         user.updateOneLineIntroduction(null);
         log.info("한줄소개 삭제 완료");
       } else {
-        user.updateOneLineIntroduction(newOneLineIntro);
+        user.updateOneLineIntroduction(newONeLineIntroResponse);
         log.info("한줄소개 수정 완료");
       }
     }
     userRepository.save(user);
-    return new OneLineIntroResponseDto(newOneLineIntro);
+    return new OneLineIntroResponseDto(newONeLineIntroResponse);
   }
 
 
