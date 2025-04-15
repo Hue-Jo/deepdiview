@@ -131,7 +131,7 @@ public class CertificationService {
     certification.setCreatedAt(LocalDateTime.now());
 
     Certification updatedCertification = certificationRepository.save(certification);
-    log.info("인증샷 수정 완료");
+    log.info("인증샷 수정 완료 : certificationId = {}", updatedCertification.getId());
 
     return CertificationResponseDto.builder()
         .id(updatedCertification.getId())

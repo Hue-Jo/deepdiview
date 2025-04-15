@@ -5,23 +5,23 @@ import community.ddv.domain.board.repository.CommentRepository;
 import community.ddv.domain.board.repository.ReviewRepository;
 import community.ddv.domain.certification.Certification;
 import community.ddv.domain.certification.CertificationRepository;
+import community.ddv.domain.certification.constant.CertificationStatus;
 import community.ddv.domain.certification.constant.RejectionReason;
-import community.ddv.domain.user.dto.LoginResponse;
-import community.ddv.domain.user.dto.UserDTO.AccountDeleteDto;
-import community.ddv.domain.user.dto.UserDTO.NicknameUpdateRequestDto;
-import community.ddv.domain.user.dto.UserDTO.LoginDto;
-import community.ddv.domain.user.dto.UserDTO.NicknameUpdateResponseDto;
-import community.ddv.domain.user.dto.UserDTO.OneLineIntroRequestDto;
-import community.ddv.domain.user.dto.UserDTO.OneLineIntroResponseDto;
-import community.ddv.domain.user.dto.UserDTO.PasswordUpdateDto;
-import community.ddv.domain.user.dto.UserDTO.SignUpDto;
-import community.ddv.domain.user.dto.UserDTO.TokenDto;
-import community.ddv.domain.user.dto.UserDTO.UserInfoResponseDto;
+import community.ddv.domain.user.constant.Role;
+import community.ddv.domain.user.dto.SignDto.AccountDeleteDto;
+import community.ddv.domain.user.dto.SignDto.LoginDto;
+import community.ddv.domain.user.dto.SignDto.LoginResponseDto;
+import community.ddv.domain.user.dto.SignDto.SignUpDto;
+import community.ddv.domain.user.dto.SignDto.TokenDto;
+import community.ddv.domain.user.dto.UserInfoDto.NicknameUpdateRequestDto;
+import community.ddv.domain.user.dto.UserInfoDto.NicknameUpdateResponseDto;
+import community.ddv.domain.user.dto.UserInfoDto.OneLineIntroRequestDto;
+import community.ddv.domain.user.dto.UserInfoDto.OneLineIntroResponseDto;
+import community.ddv.domain.user.dto.UserInfoDto.PasswordUpdateDto;
+import community.ddv.domain.user.dto.UserInfoDto.UserInfoResponseDto;
 import community.ddv.domain.user.entity.User;
 import community.ddv.domain.user.repository.UserRepository;
 import community.ddv.global.component.JwtProvider;
-import community.ddv.domain.certification.constant.CertificationStatus;
-import community.ddv.domain.user.constant.Role;
 import community.ddv.global.exception.DeepdiviewException;
 import community.ddv.global.exception.ErrorCode;
 import java.time.DayOfWeek;
@@ -97,7 +97,7 @@ public class UserService {
    * 로그인
    * @param loginDto - 이메일, 비밀번호
    */
-  public LoginResponse logIn(LoginDto loginDto) {
+  public LoginResponseDto logIn(LoginDto loginDto) {
     log.info("로그인 시도 : {} ", loginDto.getEmail());
 
     // 해당 이메일로 가입된 유저가 존재하는지 확인
@@ -121,7 +121,7 @@ public class UserService {
     }
 
     log.info("로그인 성공");
-    return new LoginResponse(
+    return new LoginResponseDto(
         accessToken,
         refreshToken,
         user.getId(),
@@ -257,9 +257,10 @@ public class UserService {
     String newPassword = passwordUpdateDto.getNewPassword();
     String newConfirmPassword = passwordUpdateDto.getNewConfirmPassword();
 
+    // 비밀번호 변경 시도 여부 확인
     if ((newPassword != null && !newPassword.isBlank()) || (newConfirmPassword != null && !newConfirmPassword.isBlank())) {
       log.info("비밀번호 변경시도");
-      // 둘 중 하나라도 비어있으면 예외
+      // 값이 제대로 입력됐는지 (둘 중 하나라도 비어있으면 예외) 확인
       if (newPassword == null || newConfirmPassword == null || newPassword.isBlank() || newConfirmPassword.isBlank()) {
         throw new DeepdiviewException(ErrorCode.EMPTY_PASSWORD);
       }
@@ -284,25 +285,26 @@ public class UserService {
     log.info("한줄소개 수정 시도 : {}", user.getEmail());
 
     String newOneLineIntro = oneLineIntro.getOneLineIntro();
+    String newONeLineIntroResponse = (newOneLineIntro == null || newOneLineIntro.isEmpty()) ? null : newOneLineIntro;
 
     // 기존의 한줄소개가 없었던 경우
     if (user.getOneLineIntroduction() == null) {
-      if (!newOneLineIntro.isEmpty()) {
-        user.updateOneLineIntroduction(newOneLineIntro);
+      if (newONeLineIntroResponse != null) {
+        user.updateOneLineIntroduction(newONeLineIntroResponse);
         log.info("한줄소개 설정 완료");
       }
     } else {
       // 기존의 한줄 소개가 존재하는 경우
-      if (newOneLineIntro.isEmpty()) {
+      if (newONeLineIntroResponse == null) {
         user.updateOneLineIntroduction(null);
         log.info("한줄소개 삭제 완료");
       } else {
-        user.updateOneLineIntroduction(newOneLineIntro);
+        user.updateOneLineIntroduction(newONeLineIntroResponse);
         log.info("한줄소개 수정 완료");
       }
     }
     userRepository.save(user);
-    return new OneLineIntroResponseDto(newOneLineIntro);
+    return new OneLineIntroResponseDto(newONeLineIntroResponse);
   }
 
 
