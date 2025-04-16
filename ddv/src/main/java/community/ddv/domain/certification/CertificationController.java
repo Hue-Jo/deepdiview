@@ -76,11 +76,11 @@ public class CertificationController {
 
   @Operation(summary = "인증 승인/거절", description = "관리자 전용 - 승인 : true / 거절 : false | 거절시 rejectionReason: OTHER_MOVIE_IMAGE, WRONG_IMAGE, UNIDENTIFIABLE_IMAGE")
   @PostMapping("/admin/proceeding/{certificationId}")
-  public ResponseEntity<Void> proceedCertification(
+  public ResponseEntity<CertificationResponseDto> proceedCertification(
       @PathVariable Long certificationId,
       @RequestBody CertificationRequestDto requestDto) {
-    certificationService.proceedCertification(certificationId, requestDto.isApprove(), requestDto.getRejectionReason());
-    return ResponseEntity.noContent().build();
+    CertificationResponseDto responseDto = certificationService.proceedCertification(certificationId, requestDto.isApprove(), requestDto.getRejectionReason());
+    return ResponseEntity.ok(responseDto);
   }
 }
 

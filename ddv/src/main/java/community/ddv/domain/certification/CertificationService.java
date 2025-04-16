@@ -205,7 +205,7 @@ public class CertificationService {
    * @param approve
    * @param rejectionReason
    */
-  public void proceedCertification(Long certificationId, boolean approve, RejectionReason rejectionReason) {
+  public CertificationResponseDto proceedCertification(Long certificationId, boolean approve, RejectionReason rejectionReason) {
     log.info("인증 처리 시작 : certificationId = {}", certificationId);
     User admin = userService.getLoginUser();
     if (!admin.getRole().equals(Role.ADMIN)) {
@@ -229,6 +229,8 @@ public class CertificationService {
     certificationRepository.save(certification);
 
     notificationService.certificateResult(certification.getId(), certification.getStatus());
+
+    return convertToCertificationDto(certification);
   }
 
   // 사용자가 특정 영화에 대해 인증된 상태인지 확인
