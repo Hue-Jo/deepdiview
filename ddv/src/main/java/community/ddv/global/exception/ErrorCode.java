@@ -34,7 +34,7 @@ public enum ErrorCode {
   ADMIN_CANNOT_BE_DELETED("관리자 계정은 삭제할 수 없습니다.", HttpStatus.BAD_REQUEST),
 
   // 투표 관련 에러코드
-  INVALID_VOTE_CREAT_DATE("투표 생성은 일요일에만 가능합니다.", HttpStatus.BAD_REQUEST),
+  INVALID_VOTE_CREATE_DATE("투표 생성은 일요일에만 가능합니다.", HttpStatus.BAD_REQUEST),
   VOTE_NOT_FOUND("존재하지 않는 투표입니다.", HttpStatus.NOT_FOUND),
   AlREADY_VOTED("이미 참여한 투표입니다. 다음주에 다시 투표해주세요", HttpStatus.BAD_REQUEST),
   INVALID_VOTE_PERIOD("투표 기간이 아닙니다.", HttpStatus.BAD_REQUEST),
@@ -66,6 +66,7 @@ public enum ErrorCode {
 
   // 유효성 관련 에러코드
   VALIDATION_FAILED("입력한 값에 오류가 있습니다.", HttpStatus.BAD_REQUEST);
+
   private final String description;
   private final HttpStatus httpStatus;
 }

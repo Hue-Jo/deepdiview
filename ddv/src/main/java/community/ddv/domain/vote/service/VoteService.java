@@ -66,7 +66,7 @@ public class VoteService {
 
     if (now.getDayOfWeek() != DayOfWeek.SUNDAY) {
       log.error("투표 생성은 일요일만 가능합니다 : 현재요일 = {}", now.getDayOfWeek());
-      throw new DeepdiviewException(ErrorCode.INVALID_VOTE_CREAT_DATE);
+      throw new DeepdiviewException(ErrorCode.INVALID_VOTE_CREATE_DATE);
     }
 
     // 다음주에 진행할 투표가 이미 생성되어 있는지 확인
