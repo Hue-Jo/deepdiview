@@ -57,7 +57,8 @@ public class UserController {
   // 회원가입 API
   @Operation(summary = "회원가입")
   @PostMapping("/signup")
-  public ResponseEntity<Void> signup(@RequestBody @Valid SignDto.SignUpDto signUpDto) {
+  public ResponseEntity<Void> signup(
+      @RequestBody @Valid SignDto.SignUpDto signUpDto) {
     userService.signUp(signUpDto);
     return ResponseEntity.noContent().build();
   }
@@ -65,7 +66,8 @@ public class UserController {
   // 로그인 API
   @Operation(summary = "로그인")
   @PostMapping("/login")
-  public ResponseEntity<LoginResponseDto> login(@RequestBody @Valid SignDto.LoginDto loginDto) {
+  public ResponseEntity<LoginResponseDto> login(
+      @RequestBody @Valid SignDto.LoginDto loginDto) {
     return ResponseEntity.ok(userService.logIn(loginDto));
   }
 
@@ -80,7 +82,7 @@ public class UserController {
   @Operation(summary = "회원탈퇴")
   @PostMapping("/me")
   public ResponseEntity<Void> deleteAccount(
-      @RequestBody AccountDeleteDto accountDeleteDto
+      @RequestBody @Valid AccountDeleteDto accountDeleteDto
   ) {
     userService.deleteAccount(accountDeleteDto);
     return ResponseEntity.noContent().build();
