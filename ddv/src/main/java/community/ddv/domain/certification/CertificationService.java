@@ -82,7 +82,18 @@ public class CertificationService {
 
     // 사용자가 제출한 인증샷 조회
     Certification certification = certificationRepository.findTopByUser_IdOrderByCreatedAtDesc(user.getId())
-        .orElseThrow(() -> new DeepdiviewException(ErrorCode.CERTIFICATION_NOT_FOUND));
+        .orElse(null);
+
+    if (certification == null) {
+      return CertificationResponseDto.builder()
+          .id(null)
+          .userId(null)
+          .certificationUrl(null)
+          .status(CertificationStatus.NONE)
+          .createdAt(null)
+          .rejectionReason(null)
+          .build();
+    }
 
     // PENDING 또는 REJECTED 상태에서만 반환
     CertificationStatus status = certification.getStatus();
