@@ -4,6 +4,7 @@ public enum CertificationStatus {
 
   PENDING, // 보류
   APPROVED, // 승인
-  REJECTED // 거절
+  REJECTED, // 거절
+  NONE // 미제출
 
 }

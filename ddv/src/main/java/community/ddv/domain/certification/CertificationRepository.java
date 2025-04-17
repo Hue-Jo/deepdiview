@@ -14,7 +14,9 @@ import org.springframework.stereotype.Repository;
 public interface CertificationRepository extends JpaRepository<Certification, Long> {
 
   boolean existsByUser_IdAndStatus(Long userId, CertificationStatus status);
+
   Page<Certification> findByStatus(CertificationStatus status, Pageable pageable);
+  Page<Certification> findByStatusIsNotNull(Pageable pageable);
 
   // ENUM 타입을 NULL로 초기화 하기 위해 네이티브쿼리 사용
   @Modifying(clearAutomatically = true, flushAutomatically = true)
@@ -24,5 +26,4 @@ public interface CertificationRepository extends JpaRepository<Certification, Lo
   Optional<Certification> findTopByUser_IdOrderByCreatedAtDesc(Long userId);
   Optional<Certification> findTopByUser_IdAndCreatedAtBetweenOrderByCreatedAtDesc(Long userId, LocalDateTime start, LocalDateTime end);
 
-  Page<Certification> findByStatusIsNotNull(Pageable pageable);
 }
