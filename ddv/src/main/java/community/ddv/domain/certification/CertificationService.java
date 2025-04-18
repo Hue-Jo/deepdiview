@@ -11,7 +11,10 @@ import community.ddv.global.exception.DeepdiviewException;
 import community.ddv.global.exception.ErrorCode;
 import community.ddv.global.fileUpload.FileStorageService;
 import java.time.DayOfWeek;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
+import java.time.temporal.TemporalAdjusters;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -80,8 +83,14 @@ public class CertificationService {
   public CertificationResponseDto getMyCertification() {
     User user = userService.getLoginUser();  // 로그인된 사용자 정보 가져오기
 
+    LocalDate startOfWeek = LocalDate.now().with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY));
+    LocalDate endOfWeek = LocalDate.now().with(TemporalAdjusters.nextOrSame(DayOfWeek.SATURDAY));
+
     // 사용자가 제출한 인증샷 조회
-    Certification certification = certificationRepository.findTopByUser_IdOrderByCreatedAtDesc(user.getId())
+    Certification certification = certificationRepository.findTopByUser_IdAndCreatedAtBetweenOrderByCreatedAtDesc(
+            user.getId(),
+            startOfWeek.atStartOfDay(), // 월요일 0시 0분 0초
+            endOfWeek.atTime(LocalTime.MAX)) // 토요일 11시 59분 59초
         .orElse(null);
 
     if (certification == null) {
@@ -185,7 +194,7 @@ public class CertificationService {
 
   /**
    * 관리자 _ 인증 목록 조회 (인증 상태에 따른 필터링 가능)
-   * @param status (인증상태 PENDING, APPROVED, REJECTED)
+   * @param status   (인증상태 PENDING, APPROVED, REJECTED)
    * @param pageable
    */
   public Page<CertificationResponseDto> getCertificationsByStatus(CertificationStatus status, Pageable pageable) {
@@ -277,7 +286,7 @@ public class CertificationService {
     }
 
     // S3에서 파일 삭제
-    for(Certification certification : certifications) {
+    for (Certification certification : certifications) {
       try {
         fileStorageService.deleteFile(certification.getCertificationUrl());
       } catch (RuntimeException e) {
