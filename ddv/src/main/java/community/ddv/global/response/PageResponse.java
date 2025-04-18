@@ -1,6 +1,5 @@
 package community.ddv.global.response;
 
-import community.ddv.domain.board.dto.ReviewResponseDTO;
 import java.util.List;
 import lombok.AllArgsConstructor;
 import lombok.Getter;

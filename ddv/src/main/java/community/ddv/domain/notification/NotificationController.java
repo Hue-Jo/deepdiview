@@ -1,10 +1,14 @@
 package community.ddv.domain.notification;
 
 import community.ddv.domain.notification.dto.NotificationResponseDTO;
+import community.ddv.global.response.PageResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -33,8 +37,9 @@ public class NotificationController {
 
   @Operation(summary = "알림 목록 조회")
   @GetMapping
-  public ResponseEntity<List<NotificationResponseDTO>> getNotifications() {
-    List<NotificationResponseDTO> notifications = notificationService.getNotifications();
+  public ResponseEntity<PageResponse<NotificationResponseDTO>> getNotifications(
+      @PageableDefault(size = 10, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable) {
+    PageResponse<NotificationResponseDTO> notifications = notificationService.getNotifications(pageable);
     return ResponseEntity.ok(notifications);
   }
 

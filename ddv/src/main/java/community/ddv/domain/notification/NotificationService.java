@@ -11,6 +11,7 @@ import community.ddv.global.exception.DeepdiviewException;
 import community.ddv.domain.certification.CertificationRepository;
 import community.ddv.domain.board.repository.ReviewRepository;
 import community.ddv.domain.user.service.UserService;
+import community.ddv.global.response.PageResponse;
 import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -19,6 +20,8 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
@@ -251,14 +254,13 @@ public class NotificationService {
   }
 
   // 알림 목록 조회
-  public List<NotificationResponseDTO> getNotifications() {
+  public PageResponse<NotificationResponseDTO> getNotifications(Pageable pageable) {
     log.info("알림 목록 조회 요청");
     User user = userService.getLoginUser();
     log.info("요청자 : userId = {}", user.getId());
-    List<Notification> notifications = notificationRepository.findByUser_IdOrderByCreatedAtDesc(user.getId());
-    return notifications.stream()
-        .map(this::convertToNotificationResponseDTO)
-        .collect(Collectors.toList());
+    Page<Notification> notifications = notificationRepository.findByUser_IdOrderByCreatedAtDesc(user.getId(), pageable);
+    Page<NotificationResponseDTO> notificationResponseDTOS = notifications.map(this::convertToNotificationResponseDTO);
+    return new PageResponse<>(notificationResponseDTOS);
   }
 
   private NotificationResponseDTO convertToNotificationResponseDTO(Notification notification) {
