@@ -4,21 +4,23 @@ import community.ddv.domain.certification.CertificationDTO.CertificationResponse
 import community.ddv.domain.certification.constant.CertificationStatus;
 import community.ddv.domain.certification.constant.RejectionReason;
 import community.ddv.domain.notification.NotificationService;
+import community.ddv.domain.user.constant.Role;
 import community.ddv.domain.user.entity.User;
 import community.ddv.domain.user.service.UserService;
-import community.ddv.domain.user.constant.Role;
 import community.ddv.global.exception.DeepdiviewException;
 import community.ddv.global.exception.ErrorCode;
 import community.ddv.global.fileUpload.FileStorageService;
+import community.ddv.global.response.CursorPageResponse;
 import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.temporal.TemporalAdjusters;
 import java.util.List;
+import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
@@ -195,26 +197,56 @@ public class CertificationService {
   /**
    * 관리자 _ 인증 목록 조회 (인증 상태에 따른 필터링 가능)
    * @param status   (인증상태 PENDING, APPROVED, REJECTED)
-   * @param pageable
    */
-  public Page<CertificationResponseDto> getCertificationsByStatus(CertificationStatus status, Pageable pageable) {
+  public CursorPageResponse<CertificationResponseDto> getCertificationsByStatus(
+      CertificationStatus status, LocalDateTime cursorCreatedAt, Long cursorId, int size) {
+
     log.info("관리자의 인증 목록 조회 시작");
     User admin = userService.getLoginUser();
     if (!admin.getRole().equals(Role.ADMIN)) {
       log.error("관리자만 처리 가능합니다.");
       throw new DeepdiviewException(ErrorCode.ONLY_ADMIN_CAN);
     }
+
+    // 처음 목록 요청시, 커서정보가 없기 때문에 가장 오래된 시간, 0L로 기본값으로 주기
+    if (cursorCreatedAt == null) {
+      cursorCreatedAt = LocalDateTime.MIN;
+    }
+    if (cursorId == null) {
+      cursorId = 0L;
+    }
+
+    // cursor 에서는 페이지 개념이 없으나 몇 개를 가져올지는 정해야 함
+    Pageable pageable = PageRequest.of(0, size);
+
+    List<Certification> certifications;
     if (status == null) {
       // 전체 조회
       log.info("인증 전체 조회");
-      return certificationRepository.findByStatusIsNotNull(pageable)
-          .map(this::convertToCertificationDto);
+      certifications = certificationRepository.findAllWithCursor(cursorCreatedAt, cursorId, pageable);
     } else {
       // 인증 상태에 따른 조회
-      log.info("인증 상태에 따른 조회 : staus = {}", status);
-      return certificationRepository.findByStatus(status, pageable)
-          .map(this::convertToCertificationDto);
+      log.info("인증 상태에 따른 조회 : status = {}", status);
+      certifications = certificationRepository.findByStatusWithCursor(status,cursorCreatedAt, cursorId, pageable);
     }
+
+    // 다음 커서 계산
+    boolean hasNext = certifications.size() == size;
+    LocalDateTime nextCreatedAt = null;
+    Long nextCertificationId = null;
+
+    if (hasNext && !certifications.isEmpty()) {
+      // 리스트의 맨 마지막 데이터를 기억해서 다음 요청에 이용하기
+      Certification lastCertification = certifications.get(certifications.size() - 1);
+      nextCreatedAt = lastCertification.getCreatedAt();
+      nextCertificationId = lastCertification.getId();
+    }
+
+    List<CertificationResponseDto> certificationResponses = certifications.stream()
+        .map(this::convertToCertificationDto)
+        .collect(Collectors.toList());
+
+    return new CursorPageResponse<>(certificationResponses, nextCreatedAt, nextCertificationId, hasNext);
 
   }
 
