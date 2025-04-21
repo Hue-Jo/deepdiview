@@ -40,24 +40,15 @@ public class NotificationService {
 
   /**
    * SSE 구독 메서드
+   *
    * @param userId
    */
   public SseEmitter subscribe(Long userId) {
 
     log.info("SSE 구독 시작 : userId = {}", userId);
 
-    // 이미 구독 중인 연결이 있으면 종료 후 제거
-    SseEmitter existingEmitter = emitters.get(userId);
-    if (existingEmitter != null) {
-      existingEmitter.complete();
-      emitters.remove(userId);
-      log.info("기존의 SSE 연결 종료");
-    }
-
     // 새로운 SSE 연결
     SseEmitter emitter = new SseEmitter(30 * 60 * 1000L); // 30 * 60 초 (타임아웃 30분)
-    emitters.put(userId, emitter);
-    log.info("새로운 SSE 연결 추가 : userId = {}", userId);
 
     emitter.onCompletion(() -> {
       log.info("SSE 연결 종료 : userId = {}", userId);
@@ -73,6 +64,14 @@ public class NotificationService {
       log.error("SSE 연결 에러 발생 : userId = {}, error = {}", userId, e.getMessage());
       emitters.remove(userId);
     });
+
+    // 기존 emitter가 있으면 종료
+    // 기존의 것을 반환하고, 새로 들어온 emitter로 값 교체
+    SseEmitter previous = emitters.put(userId, emitter);
+    if (previous != null) {
+      log.info("기존 SSE 연결 종료 및 제거: userId = {}", userId);
+      previous.complete();
+    }
 
     // 초기 메시지 전송
     sendFirstMessage(userId, emitter);
