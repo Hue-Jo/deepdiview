@@ -17,6 +17,7 @@ public enum ErrorCode {
   USER_NOT_FOUND("존재하지 않는 사용자입니다.", HttpStatus.NOT_FOUND),
   INVALID_REFRESH_TOKEN("유효하지 않은 토큰입니다.", HttpStatus.BAD_REQUEST),
   UNAUTHORIZED("로그인되어 있지 않은 사용자입니다.", HttpStatus.UNAUTHORIZED),
+  ACCESS_DENIED("접근 불가", HttpStatus.FORBIDDEN),
 
   // 영화 관련 에러코드
   MOVIE_NOT_FOUND("존재하지 않는 영화입니다.", HttpStatus.NOT_FOUND),
