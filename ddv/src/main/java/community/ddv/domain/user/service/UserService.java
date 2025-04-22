@@ -403,7 +403,6 @@ public class UserService {
   }
 
   // 로그인 여부 확인 메서드
-  @Transactional(readOnly = true)
   public User getLoginUser() {
 
     Authentication authentication = SecurityContextHolder.getContext().getAuthentication();

@@ -23,6 +23,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.scheduling.annotation.Scheduled;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
@@ -43,11 +45,6 @@ public class NotificationService {
    * @param userId
    */
   public SseEmitter subscribe(Long userId) {
-
-    Long loginUserId = userService.getLoginUser().getId(); // 현재 로그인한 사용자
-    if (!loginUserId.equals(userId)) {
-      throw new DeepdiviewException(ErrorCode.ACCESS_DENIED);
-    }
 
     log.info("SSE 구독 시작 : userId = {}", userId);
 
