@@ -40,7 +40,6 @@ public class NotificationService {
 
   /**
    * SSE 구독 메서드
-   *
    * @param userId
    */
   public SseEmitter subscribe(Long userId) {
