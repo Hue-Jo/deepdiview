@@ -45,6 +45,11 @@ public class NotificationService {
    */
   public SseEmitter subscribe(Long userId) {
 
+    Long loginUserId = userService.getLoginUser().getId(); // 현재 로그인한 사용자
+    if (!loginUserId.equals(userId)) {
+      throw new DeepdiviewException(ErrorCode.ACCESS_DENIED);
+    }
+
     log.info("SSE 구독 시작 : userId = {}", userId);
 
     // 새로운 SSE 연결
