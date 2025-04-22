@@ -1,30 +1,27 @@
 package community.ddv.domain.notification;
 
+import community.ddv.domain.board.entity.Review;
+import community.ddv.domain.board.repository.ReviewRepository;
+import community.ddv.domain.certification.Certification;
+import community.ddv.domain.certification.CertificationRepository;
+import community.ddv.domain.certification.constant.CertificationStatus;
 import community.ddv.domain.notification.dto.NotificationDTO;
 import community.ddv.domain.notification.dto.NotificationResponseDTO;
-import community.ddv.domain.certification.constant.CertificationStatus;
-import community.ddv.global.exception.ErrorCode;
-import community.ddv.domain.certification.Certification;
-import community.ddv.domain.board.entity.Review;
 import community.ddv.domain.user.entity.User;
-import community.ddv.global.exception.DeepdiviewException;
-import community.ddv.domain.certification.CertificationRepository;
-import community.ddv.domain.board.repository.ReviewRepository;
 import community.ddv.domain.user.service.UserService;
+import community.ddv.global.exception.DeepdiviewException;
+import community.ddv.global.exception.ErrorCode;
 import community.ddv.global.response.PageResponse;
 import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.scheduling.annotation.Scheduled;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
