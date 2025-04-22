@@ -46,35 +46,34 @@ public class NotificationService {
     log.info("SSE 구독 시작 : userId = {}", userId);
 
     // 새로운 SSE 연결
-    SseEmitter emitter = new SseEmitter(30 * 60 * 1000L); // 30 * 60 초 (타임아웃 30분)
+    SseEmitter newEmitter = new SseEmitter(30 * 60 * 1000L); // 30 * 60 초 (타임아웃 30분)
 
-    emitter.onCompletion(() -> {
+    // 기존 emitter가 있으면 종료
+    SseEmitter previousEmitter = emitters.put(userId, newEmitter);
+    if (previousEmitter != null) {
+      log.info("기존 SSE 연결 종료 및 제거: userId = {}", userId);
+      previousEmitter.complete();
+    }
+
+    // 초기 메시지 전송
+    sendFirstMessage(userId, newEmitter);
+
+    newEmitter.onCompletion(() -> {
       log.info("SSE 연결 종료 : userId = {}", userId);
       emitters.remove(userId);
     });
 
-    emitter.onTimeout(() -> {
+    newEmitter.onTimeout(() -> {
       log.warn("SSE 연결 타임아웃 : userId = {}", userId);
       emitters.remove(userId);
     });
 
-    emitter.onError((e) -> {
+    newEmitter.onError((e) -> {
       log.error("SSE 연결 에러 발생 : userId = {}, error = {}", userId, e.getMessage());
       emitters.remove(userId);
     });
 
-    // 기존 emitter가 있으면 종료
-    // 기존의 것을 반환하고, 새로 들어온 emitter로 값 교체
-    SseEmitter previous = emitters.put(userId, emitter);
-    if (previous != null) {
-      log.info("기존 SSE 연결 종료 및 제거: userId = {}", userId);
-      previous.complete();
-    }
-
-    // 초기 메시지 전송
-    sendFirstMessage(userId, emitter);
-
-    return emitter;
+    return newEmitter;
   }
 
   //  SSE 초기 메시지 전송 메서드
