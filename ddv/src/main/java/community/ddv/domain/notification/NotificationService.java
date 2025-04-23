@@ -46,12 +46,10 @@ public class NotificationService {
     log.info("SSE 구독 시작 : userId = {}", userId);
 
     // 1. 기존 emitter 끊기
-    SseEmitter previousEmitter = emitters.get(userId);
+    SseEmitter previousEmitter = emitters.remove(userId);
+
     if (previousEmitter != null) {
-      log.info("기존 emitter 존재: userId = {}", userId);
-      previousEmitter.complete();
-      emitters.remove(userId);
-      log.info("기존 emitter 제거 완료: userId = {}", userId);
+      log.info("기존 emitter 존재 -> 제거 완료 userId = {}", userId);
     }
 
     // 2. 새 emitter 저장
