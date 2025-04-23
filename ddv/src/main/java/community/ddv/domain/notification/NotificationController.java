@@ -1,6 +1,7 @@
 package community.ddv.domain.notification;
 
 import community.ddv.domain.notification.dto.NotificationResponseDTO;
+import community.ddv.domain.user.service.UserService;
 import community.ddv.global.response.PageResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -25,12 +26,13 @@ import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 public class NotificationController {
 
   private final NotificationService notificationService;
+  private final UserService userService;
 
   // 클라이언트가 SSE 연결 구독
   @Operation(summary = "SSE 연결 구독")
   @GetMapping(value = "/subscribe", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
-  public SseEmitter subscribe(@RequestParam Long userId) {
-
+  public SseEmitter subscribe() {
+    Long userId = userService.getLoginUser().getId();
     return notificationService.subscribe(userId);
   }
 

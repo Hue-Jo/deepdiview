@@ -45,15 +45,18 @@ public class NotificationService {
 
     log.info("SSE 구독 시작 : userId = {}", userId);
 
-    // 새로운 SSE 연결
-    SseEmitter newEmitter = new SseEmitter(30 * 60 * 1000L); // 30 * 60 초 (타임아웃 30분)
-
-    // 기존 emitter가 있으면 종료
-    SseEmitter previousEmitter = emitters.put(userId, newEmitter);
+    // 1. 기존 emitter 끊기
+    SseEmitter previousEmitter = emitters.get(userId);
     if (previousEmitter != null) {
-      log.info("기존 SSE 연결 종료 및 제거: userId = {}", userId);
+      log.info("기존 emitter 존재: userId = {}", userId);
       previousEmitter.complete();
+      emitters.remove(userId);
+      log.info("기존 emitter 제거 완료: userId = {}", userId);
     }
+
+    // 2. 새 emitter 저장
+    SseEmitter newEmitter = new SseEmitter(30 * 60 * 1000L); // 30 * 60 초 (타임아웃 30분)
+    emitters.put(userId, newEmitter);
 
     // 초기 메시지 전송
     sendFirstMessage(userId, newEmitter);
@@ -100,17 +103,16 @@ public class NotificationService {
     }
 
     emitters.forEach((userId, emitter) -> {
-      if (emitter != null) {
-        try {
-          emitter.send(SseEmitter.event()
-              .name("ping")
-              .data("keep-alive"));
-        } catch (IOException | IllegalStateException e) {
-          log.warn("Ping 전송 실패 : userId = {}, error = {}", userId, e.getMessage());
-          emitter.completeWithError(e); // 오류 발생 시 연결 종료 처리
-          emitters.remove(userId); // 연결 종료
-        }
+      try {
+        emitter.send(SseEmitter.event()
+            .name("ping")
+            .data("keep-alive"));
+      } catch (Exception e) {
+        log.warn("Ping 전송 실패 : userId = {}, error = {}", userId, e.getMessage());
+        emitter.complete(); // 오류 발생 시 연결 종료
+        emitters.remove(userId); // 연결 종료
       }
+
     });
   }
 
@@ -166,9 +168,7 @@ public class NotificationService {
 
     notificationRepository.save(notification);
 
-    NotificationDTO notificationDTO = new NotificationDTO(
-        notification.getId(),"comment", NotificationType.COMMENT_ADDED.getMessage(), reviewId
-    );
+    NotificationDTO notificationDTO = new NotificationDTO(notification.getId(), "comment", NotificationType.COMMENT_ADDED.getMessage(), reviewId);
 
     log.info("댓글이 달렸다는 알림 전송 완료 ");
     sendNotification(reviewer.getId(), notificationDTO);
@@ -243,8 +243,7 @@ public class NotificationService {
     notificationRepository.save(notification);
     log.info("인증 결과 알림 전송");
 
-    NotificationDTO notificationDTO = new NotificationDTO(
-       notification.getId(), "certification", message, certificationId);
+    NotificationDTO notificationDTO = new NotificationDTO(notification.getId(), "certification", message, certificationId);
 
     sendNotification(user.getId(), notificationDTO);
   }
@@ -268,14 +267,14 @@ public class NotificationService {
         .build();
   }
 
-   /**
+  /**
    * 특정 알림 읽음 처리
    * @param notificationId
    */
   public void markNotificationAsRead(Long notificationId) {
     User user = userService.getLoginUser();
     log.info("알림 읽음 시도 : userId = {}", user.getId());
-    Notification notification = notificationRepository.findByIdAndUser_Id(notificationId, user.getId())
+    Notification notification = notificationRepository.findByIdAndUser_Id(notificationId,user.getId())
         .orElseThrow(() -> new DeepdiviewException(ErrorCode.NOTIFICATION_NOT_FOUND));
 
     if (!notification.isRead()) {
@@ -299,9 +298,9 @@ public class NotificationService {
       return;
     }
 
-      notifications.forEach(Notification::markAsRead);
-      notificationRepository.saveAll(notifications);
-      log.info("전체 알림 읽음 처리 완료");
+    notifications.forEach(Notification::markAsRead);
+    notificationRepository.saveAll(notifications);
+    log.info("전체 알림 읽음 처리 완료");
   }
 
 }

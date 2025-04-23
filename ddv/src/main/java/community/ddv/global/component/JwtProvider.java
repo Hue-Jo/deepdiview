@@ -7,11 +7,16 @@ import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
 import jakarta.annotation.PostConstruct;
 import java.util.Date;
+import java.util.List;
 import javax.crypto.SecretKey;
 import javax.crypto.spec.SecretKeySpec;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -83,7 +88,15 @@ public class JwtProvider {
     return extractClaims(token).getSubject();
   }
 
-  // 토큰 유효성 검사
+  // 토큰 파싱해서 Authentication 객체 반환
+  public Authentication getAuthentication(String token) {
+    String email = extractEmail(token);
+    Role role = getRoleFromToken(token);
+    List<GrantedAuthority> authorities = List.of(new SimpleGrantedAuthority(role.name()));
+    return new UsernamePasswordAuthenticationToken(email, token, authorities);
+  }
+
+  // 토큰 유효성 검사 (1)
   public void validateToken(String token, String email) {
 
     try {
@@ -101,6 +114,16 @@ public class JwtProvider {
     } catch (JwtException e) {
       log.warn("JWT 토큰 검증 실패" + e.getMessage());
       throw e;
+    }
+  }
+
+  // 토큰 유효성 검사 (2)
+  public boolean validateToken(String token) {
+    try {
+      return !isTokenExpired(token);
+    } catch (JwtException e) {
+      log.warn("JWT 토큰 검증 실패: " + e.getMessage());
+      return false;
     }
   }
 
