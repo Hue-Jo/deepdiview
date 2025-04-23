@@ -2,6 +2,7 @@ package community.ddv.global.config;
 
 import community.ddv.global.component.JwtAuthenticationEntryPoint;
 import community.ddv.global.component.JwtFilter;
+import community.ddv.global.component.SseAuthenticationFilter;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
@@ -48,7 +49,11 @@ public class SecurityConfig {
   };
 
   @Bean
-  public SecurityFilterChain securityFilterChain(HttpSecurity httpSecurity, JwtFilter jwtFilter, JwtAuthenticationEntryPoint jwtAuthenticationEntryPoint)
+  public SecurityFilterChain securityFilterChain(
+      HttpSecurity httpSecurity,
+      JwtFilter jwtFilter,
+      JwtAuthenticationEntryPoint jwtAuthenticationEntryPoint,
+      SseAuthenticationFilter sseAuthenticationFilter)
       throws Exception {
 
     return httpSecurity
@@ -67,6 +72,7 @@ public class SecurityConfig {
         .exceptionHandling(exception ->
             exception.authenticationEntryPoint(jwtAuthenticationEntryPoint)) // 401 처리
         .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class)
+        .addFilterAfter(sseAuthenticationFilter, JwtFilter.class) // SSE 인증 필터
         .build();
   }
 
