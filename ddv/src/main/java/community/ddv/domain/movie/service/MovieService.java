@@ -71,6 +71,7 @@ public class MovieService {
    * 영화 제목으로 해당 영화의 세부정보 조회 _ 공백 무시 가능 & 특정 글자가 포함되는 조회됨 & 넷플 인기도 순 정렬
    * @param title
    */
+  @Transactional(readOnly = true)
   public Page<MovieDTO> searchMoviesByTitle(String title, Boolean certifiedFilter, Pageable page) {
 
     Page<Movie> movies = movieRepository.findByTitleFlexible(title, page);
@@ -92,6 +93,7 @@ public class MovieService {
    * 특정 영화 id로 해당 영화의 세부정보 조회
    * @param tmdbId
    */
+  @Transactional(readOnly = true)
   public MovieDTO getMovieDetailsById(Long tmdbId, Boolean certifiedFilter) {
 
     Movie movie = movieRepository.findByTmdbId(tmdbId)

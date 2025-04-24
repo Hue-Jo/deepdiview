@@ -198,6 +198,7 @@ public class CertificationService {
    * 관리자 _ 인증 목록 조회 (인증 상태에 따른 필터링 가능)
    * @param status   (인증상태 PENDING, APPROVED, REJECTED)
    */
+  @Transactional(readOnly = true)
   public CursorPageResponse<CertificationResponseDto> getCertificationsByStatus(
       CertificationStatus status, LocalDateTime cursorCreatedAt, Long cursorId, int size) {
 
@@ -257,6 +258,7 @@ public class CertificationService {
    * @param approve
    * @param rejectionReason
    */
+  @Transactional
   public CertificationResponseDto proceedCertification(Long certificationId, boolean approve, RejectionReason rejectionReason) {
     log.info("인증 처리 시작 : certificationId = {}", certificationId);
     User admin = userService.getLoginUser();
@@ -284,6 +286,7 @@ public class CertificationService {
 
     return convertToCertificationDto(certification);
   }
+
 
   // 사용자가 특정 영화에 대해 인증된 상태인지 확인
   public boolean isUserCertified(Long userId) {

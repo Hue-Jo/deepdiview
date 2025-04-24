@@ -403,7 +403,7 @@ public class UserService {
   }
 
   // 로그인 여부 확인 메서드
-  @Transactional(readOnly = true)
+//  @Transactional(readOnly = true)
   public User getLoginUser() {
 
     Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
@@ -418,7 +418,7 @@ public class UserService {
         .orElseThrow(() -> new DeepdiviewException(ErrorCode.USER_NOT_FOUND));
   }
 
-  @Transactional(readOnly = true)
+//  @Transactional(readOnly = true)
   public User getLoginOrNull() {
     try {
       return getLoginUser();

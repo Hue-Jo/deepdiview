@@ -41,7 +41,6 @@ public class CommentController {
         commentRequestDto);
     return ResponseEntity.status(HttpStatus.CREATED).body(comment);
 
-
   }
 
   @Operation(summary = "댓글 수정", description = "리뷰 id와 댓글 id가 정확히 매칭되어야 수정됩니다. 댓글 작성자만 수정 가능")
