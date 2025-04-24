@@ -23,6 +23,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
 @Service
@@ -105,7 +106,7 @@ public class NotificationService {
         emitter.send(SseEmitter.event()
             .name("ping")
             .data("keep-alive"));
-      } catch (Exception e) {
+      } catch (IOException e) {
         log.warn("Ping 전송 실패 : userId = {}, error = {}", userId, e.getMessage());
         emitter.complete(); // 오류 발생 시 연결 종료
         emitters.remove(userId); // 연결 종료
@@ -247,6 +248,7 @@ public class NotificationService {
   }
 
   // 알림 목록 조회
+  @Transactional(readOnly = true)
   public PageResponse<NotificationResponseDTO> getNotifications(Pageable pageable) {
     log.info("알림 목록 조회 요청");
     User user = userService.getLoginUser();
