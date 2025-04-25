@@ -13,5 +13,6 @@ public interface NotificationRepository extends JpaRepository<Notification, Long
   Optional<Notification> findByIdAndUser_Id(Long notificationId, Long userId);
   Page<Notification> findByUser_IdOrderByCreatedAtDesc(Long userId, Pageable pageable);
   List<Notification> findByUser_IdAndIsReadFalseOrderByCreatedAtDesc(Long userId);
+  boolean existsByUser_IdAndIsReadFalse(Long userId);
 
 }

@@ -59,4 +59,11 @@ public class NotificationController {
     return ResponseEntity.noContent().build();
   }
 
+  @Operation(summary = "안 읽은 알림 여부 확인용")
+  @GetMapping("/unread-exists")
+  public ResponseEntity<Boolean> hasUnreadNotifications() {
+    boolean result = notificationService.isNotReadNotification();
+    return ResponseEntity.ok(result);
+  }
+
 }
