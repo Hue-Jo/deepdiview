@@ -75,6 +75,7 @@ public class NotificationService {
       emitters.remove(userId);
     });
 
+    log.info("SSE emitter 등록 완료 : userId = {}, 현재 emitter 수 = {}", userId, emitters.size());
     return newEmitter;
   }
 
@@ -97,6 +98,7 @@ public class NotificationService {
   // 30초마다 ping 보내기
   @Scheduled(fixedRate = 30000)
   public void sendPingToClients() {
+
     if (emitters.isEmpty()) {
       return; // ping 보낼 구독자가 없으면 return
     }
@@ -301,6 +303,16 @@ public class NotificationService {
     notifications.forEach(Notification::markAsRead);
     notificationRepository.saveAll(notifications);
     log.info("전체 알림 읽음 처리 완료");
+  }
+
+  /**
+   * 읽지 않은 알림이 있는지 여부 반환
+   * @return
+   */
+  @Transactional(readOnly = true)
+  public boolean isNotReadNotification() {
+    User user = userService.getLoginUser();
+    return notificationRepository.existsByUser_IdAndIsReadFalse(user.getId());
   }
 
 }
