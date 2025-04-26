@@ -43,35 +43,27 @@ public class JwtProvider {
   }
 
 
-  // 엑세스 토큰 생성
-  public String generateAccessToken(String email, Role role) {
-
+  // 토큰 생성 메서드
+  public String generateToken(String email, Role role, long expirationTime) {
     return Jwts.builder()
         .subject(email)
         .claim("role", role.name())
         .issuedAt(new Date()) // 토큰 발행시간
-        .expiration(new Date(System.currentTimeMillis() + ACCESS_TOKEN_EXPIRED_TIME)) // 만료시간
+        .expiration(new Date(System.currentTimeMillis() + expirationTime)) // 만료시간
         .signWith(key)
         .compact();
   }
 
-  public Role getRoleFromToken(String token) {
+  // 엑세스 토큰 생성
+  public String generateAccessToken(String email, Role role) {
 
-    Claims claims = extractClaims(token);
-    return Role.valueOf(claims.get("role", String.class));
+    return generateToken(email, role, ACCESS_TOKEN_EXPIRED_TIME);
   }
-
 
   // 리프레시 토큰 생성
   public String generateRefreshToken(String email, Role role) {
 
-    return Jwts.builder()
-        .subject(email)
-        .claim("role", role.name())
-        .issuedAt(new Date()) // 토큰 발행시간
-        .expiration(new Date(System.currentTimeMillis() + REFRESH_TOKEN_EXPIRED_TIME)) // 만료시간
-        .signWith(key)
-        .compact();
+    return generateToken(email, role, REFRESH_TOKEN_EXPIRED_TIME);
   }
 
 
@@ -86,6 +78,13 @@ public class JwtProvider {
   // 토큰에서 이메일 추출
   public String extractEmail(String token) {
     return extractClaims(token).getSubject();
+  }
+
+  // 토큰에서 역할 추출
+  public Role getRoleFromToken(String token) {
+
+    Claims claims = extractClaims(token);
+    return Role.valueOf(claims.get("role", String.class));
   }
 
   // 토큰 파싱해서 Authentication 객체 반환
