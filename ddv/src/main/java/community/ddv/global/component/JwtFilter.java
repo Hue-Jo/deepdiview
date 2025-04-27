@@ -38,17 +38,17 @@ public class JwtFilter extends OncePerRequestFilter {
 
     String token = extractToken(request);
     try {
-      if (token != null) {
+      if (token != null && jwtProvider.validateToken(token)) {
         String email = jwtProvider.extractEmail(token);
-        jwtProvider.validateToken(token, email);
         Role role = jwtProvider.getRoleFromToken(token);
+
         UserDetails userDetails = userDetailsService.loadUserByUsername(email);
-        Authentication authentication = new UsernamePasswordAuthenticationToken(userDetails, null,
-            Collections.singletonList(new SimpleGrantedAuthority(role.name())));
+        Authentication authentication = new UsernamePasswordAuthenticationToken(
+            userDetails, null, Collections.singletonList(new SimpleGrantedAuthority(role.name())));
         SecurityContextHolder.getContext().setAuthentication(authentication);
       }
-
       filterChain.doFilter(request, response);
+
     } catch (ExpiredJwtException e) {
       log.warn("만료된 JWT 토큰: {}", e.getMessage());
       setErrorResponse(response, HttpServletResponse.SC_UNAUTHORIZED, "토큰이 만료되었습니다.");

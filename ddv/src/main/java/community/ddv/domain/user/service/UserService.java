@@ -114,7 +114,7 @@ public class UserService {
 
     String refreshToken = redisRefreshTokenTemplate.opsForValue().get(user.getEmail());
     // 리프레시 토큰 생성 (없거나 만료되었으면 새로 생성)
-    if (refreshToken == null || jwtProvider.isTokenExpired(refreshToken)) {
+    if (refreshToken == null || !jwtProvider.isTokenValid(refreshToken)) {
       refreshToken = generateAndStoreRefreshToken(user);
     } else {
       log.info("유효한 리프레시 토큰 사용");
@@ -173,7 +173,7 @@ public class UserService {
     log.info("리프레시 토큰으로 엑세스 토큰 재발급 요청");
 
     // 리프레시 토큰이 유효한지 확인
-    if (jwtProvider.isTokenExpired(refreshToken)) {
+    if (!jwtProvider.isTokenValid(refreshToken)) {
       throw new DeepdiviewException(ErrorCode.INVALID_REFRESH_TOKEN);
     }
 
