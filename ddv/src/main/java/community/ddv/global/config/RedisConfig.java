@@ -34,7 +34,7 @@ public class RedisConfig {
 
   // 리프레시 토큰 용 RedisTemplate
   @Bean
-  RedisTemplate<String, String> redisRefreshTokenTemplate() {
+  RedisTemplate<String, String> redisTokenTemplate() {
     RedisTemplate<String, String> template = new RedisTemplate<>();
     template.setConnectionFactory(redisConnectionFactory());
     template.setKeySerializer(new StringRedisSerializer());
@@ -52,7 +52,7 @@ public class RedisConfig {
   }
 
   @Bean
-  public CacheManager rediscacheManager(RedisConnectionFactory factory) {
+  public CacheManager redisCacheManager(RedisConnectionFactory factory) {
 
     // ObjectMapper 설정
     ObjectMapper objectMapper = new ObjectMapper();
