@@ -82,9 +82,9 @@ public class UserController {
   @Operation(summary = "회원탈퇴")
   @PostMapping("/me")
   public ResponseEntity<Void> deleteAccount(
-      @RequestBody @Valid AccountDeleteDto accountDeleteDto
+      @RequestBody @Valid AccountDeleteDto accountDeleteDto, HttpServletRequest request
   ) {
-    userService.deleteAccount(accountDeleteDto);
+    userService.deleteAccount(accountDeleteDto, request);
     return ResponseEntity.noContent().build();
   }
 

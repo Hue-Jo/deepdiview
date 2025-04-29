@@ -176,12 +176,11 @@ public class UserService {
       } else {
         log.info("만료된 엑세스 토큰");
       }
-    } else {
-      log.warn("엑세스토큰이 존재하지 않음");
     }
 
     // SecurityContext 초기화
     SecurityContextHolder.clearContext();
+    log.info("SecurityContext 초기화");
     log.info("로그아웃 성공");
   }
 
@@ -220,7 +219,7 @@ public class UserService {
    * @param accountDeleteDto - 로그인 된 상태에서 비밀번호 입력
    */
   @Transactional
-  public void deleteAccount(AccountDeleteDto accountDeleteDto) {
+  public void deleteAccount(AccountDeleteDto accountDeleteDto, HttpServletRequest request) {
 
     User user = getLoginUser();
     log.info("회원탈퇴 요청 : {}", user.getEmail());
@@ -232,6 +231,22 @@ public class UserService {
     // 비밀번호 확인
     if (!passwordEncoder.matches(accountDeleteDto.getPassword(), user.getPassword())) {
       throw new DeepdiviewException(ErrorCode.NOT_VALID_PASSWORD);
+    }
+
+//    // 기존의 엑세스토큰은 블랙리스트로 등록
+    String accessToken = jwtProvider.extractToken(request);
+
+    if (accessToken != null) {
+      // 남은 시간 = 만료시간 - 현재시간
+      long remainTime =
+          jwtProvider.getExpirationTimeFromToken(accessToken) - System.currentTimeMillis();
+
+      if (remainTime > 0) {
+        // 남은 시간동안 블랙리스트로 등록
+        redisTokenTemplate.opsForValue()
+            .set(accessToken, "logout", remainTime, TimeUnit.MILLISECONDS);
+        log.info("엑세스 토큰 블랙리스트로 등록 완료");
+      }
     }
 
     redisTokenTemplate.delete(user.getEmail());
