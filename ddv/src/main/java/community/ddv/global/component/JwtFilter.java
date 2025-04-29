@@ -11,6 +11,7 @@ import java.io.IOException;
 import java.util.Collections;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -27,25 +28,34 @@ public class JwtFilter extends OncePerRequestFilter {
 
   private final JwtProvider jwtProvider;
   private final UserDetailsService userDetailsService;
-
-  public static final String TOKEN_HEADER = "Authorization";
-  public static final String TOKEN_PREFIX = "Bearer ";
+  private final RedisTemplate<String, String> redisTokenTemplate;
 
   @Override
   protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response,
       FilterChain filterChain)
       throws ServletException, IOException {
 
-    String token = extractToken(request);
+    String token = jwtProvider.extractToken(request);
     try {
-      if (token != null && jwtProvider.validateToken(token)) {
-        String email = jwtProvider.extractEmail(token);
-        Role role = jwtProvider.getRoleFromToken(token);
+      if (token != null) {
+        String isBlacked = redisTokenTemplate.opsForValue().get(token);
+        if ("logout".equals(isBlacked)) {
+          log.warn("블랙리스트로 등록된 토큰. 접근 거부");
+          setErrorResponse(response, HttpServletResponse.SC_UNAUTHORIZED, "로그아웃된 토큰입니다.");
+          return;
+        }
 
-        UserDetails userDetails = userDetailsService.loadUserByUsername(email);
-        Authentication authentication = new UsernamePasswordAuthenticationToken(
-            userDetails, null, Collections.singletonList(new SimpleGrantedAuthority(role.name())));
-        SecurityContextHolder.getContext().setAuthentication(authentication);
+        if (jwtProvider.validateToken(token)) {
+          String email = jwtProvider.extractEmail(token);
+          Role role = jwtProvider.getRoleFromToken(token);
+
+          UserDetails userDetails = userDetailsService.loadUserByUsername(email);
+          Authentication authentication = new UsernamePasswordAuthenticationToken(
+              userDetails,
+              null,
+              Collections.singletonList(new SimpleGrantedAuthority(role.name())));
+          SecurityContextHolder.getContext().setAuthentication(authentication);
+        }
       }
       filterChain.doFilter(request, response);
 
@@ -58,17 +68,9 @@ public class JwtFilter extends OncePerRequestFilter {
     }
   }
 
-  private String extractToken(HttpServletRequest request) {
-    String bearerToken = request.getHeader(TOKEN_HEADER);
-    if (bearerToken != null && bearerToken.startsWith(TOKEN_PREFIX)) {
-      // "Bearer " 부분을 제외하고 토큰만 반환
-      return bearerToken.substring(TOKEN_PREFIX.length());
-    }
-    // 토큰이 존재하지 않거나, "Bearer "로 시작하지 않는 경우 null 반환
-    return null;
-  }
 
-  private void setErrorResponse(HttpServletResponse response, int status, String message) throws IOException {
+  private void setErrorResponse(HttpServletResponse response, int status, String message)
+      throws IOException {
     response.setStatus(status);
     response.setContentType("application/json; charset=UTF-8"); // JSON + UTF-8 인코딩 설정
     response.getWriter().write("{\"error\": \"" + message + "\"}");

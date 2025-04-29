@@ -18,8 +18,8 @@ import community.ddv.domain.user.service.UserService;
 import community.ddv.global.response.PageResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
-import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import java.util.HashMap;
 import java.util.Map;
@@ -73,8 +73,8 @@ public class UserController {
 
   @Operation(summary = "로그아웃")
   @DeleteMapping("/logout")
-  public ResponseEntity<Void> logout() {
-    userService.logout();
+  public ResponseEntity<Void> logout(HttpServletRequest request) {
+    userService.logout(request);
     return ResponseEntity.noContent().build();
   }
 
@@ -82,9 +82,9 @@ public class UserController {
   @Operation(summary = "회원탈퇴")
   @PostMapping("/me")
   public ResponseEntity<Void> deleteAccount(
-      @RequestBody @Valid AccountDeleteDto accountDeleteDto
+      @RequestBody @Valid AccountDeleteDto accountDeleteDto, HttpServletRequest request
   ) {
-    userService.deleteAccount(accountDeleteDto);
+    userService.deleteAccount(accountDeleteDto, request);
     return ResponseEntity.noContent().build();
   }
 
