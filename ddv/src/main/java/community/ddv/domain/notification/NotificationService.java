@@ -48,7 +48,6 @@ public class NotificationService {
 
     // 1. 기존 emitter 끊기
     SseEmitter previousEmitter = emitters.remove(userId);
-
     if (previousEmitter != null) {
       log.info("기존 emitter 존재 -> 제거 완료 userId = {}", userId);
     }
@@ -61,13 +60,19 @@ public class NotificationService {
     sendFirstMessage(userId, newEmitter);
 
     newEmitter.onCompletion(() -> {
-      log.info("SSE 연결 종료 : userId = {}", userId);
-      emitters.remove(userId);
+      SseEmitter current = emitters.get(userId);
+      if (current == newEmitter) {
+        emitters.remove(userId);
+        log.debug("SSE 연결 종료 : userId = {}", userId);
+      }
     });
 
     newEmitter.onTimeout(() -> {
-      log.warn("SSE 연결 타임아웃 : userId = {}", userId);
-      emitters.remove(userId);
+      SseEmitter current = emitters.get(userId);
+      if (current == newEmitter) {
+        emitters.remove(userId);
+        log.debug("SSE 연결 타임아웃 : userId = {}", userId);
+      }
     });
 
     newEmitter.onError((e) -> {
@@ -110,7 +115,7 @@ public class NotificationService {
             .data("keep-alive"));
       } catch (IOException e) {
         log.warn("Ping 전송 실패 : userId = {}, error = {}", userId, e.getMessage());
-        emitter.complete(); // 오류 발생 시 연결 종료
+        emitter.completeWithError(e); // 오류 발생 시 연결 종료
         emitters.remove(userId); // 연결 종료
       }
 
@@ -169,7 +174,12 @@ public class NotificationService {
 
     notificationRepository.save(notification);
 
-    NotificationDTO notificationDTO = new NotificationDTO(notification.getId(), "comment", NotificationType.COMMENT_ADDED.getMessage(), reviewId);
+    NotificationDTO notificationDTO = new NotificationDTO(
+        notification.getId(),
+        "comment",
+        NotificationType.COMMENT_ADDED.getMessage(),
+        reviewId
+    );
 
     log.info("댓글이 달렸다는 알림 전송 완료 ");
     sendNotification(reviewer.getId(), notificationDTO);
@@ -204,7 +214,10 @@ public class NotificationService {
     notificationRepository.save(notification);
 
     NotificationDTO notificationDTO = new NotificationDTO(
-        notification.getId(), "like", NotificationType.LIKE_ADDED.getMessage(), reviewId
+        notification.getId(),
+        "like",
+        NotificationType.LIKE_ADDED.getMessage(),
+        reviewId
     );
 
     log.info("좋아요가 달렸다는 알림 전송 완료");
@@ -244,7 +257,12 @@ public class NotificationService {
     notificationRepository.save(notification);
     log.info("인증 결과 알림 전송");
 
-    NotificationDTO notificationDTO = new NotificationDTO(notification.getId(), "certification", message, certificationId);
+    NotificationDTO notificationDTO = new NotificationDTO(
+        notification.getId(),
+        "certification",
+        message,
+        certificationId
+    );
 
     sendNotification(user.getId(), notificationDTO);
   }
@@ -256,7 +274,8 @@ public class NotificationService {
     User user = userService.getLoginUser();
     log.info("요청자 : userId = {}", user.getId());
     Page<Notification> notifications = notificationRepository.findByUser_IdOrderByCreatedAtDesc(user.getId(), pageable);
-    Page<NotificationResponseDTO> notificationResponseDTOS = notifications.map(this::convertToNotificationResponseDTO);
+    Page<NotificationResponseDTO> notificationResponseDTOS =
+        notifications.map(this::convertToNotificationResponseDTO);
     return new PageResponse<>(notificationResponseDTOS);
   }
 
