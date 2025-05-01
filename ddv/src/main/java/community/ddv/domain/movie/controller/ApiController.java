@@ -27,7 +27,7 @@ public class ApiController {
     return "API로부터 장르 정보 받아오기 성공";
   }
 
-  // 장르 정보 저장
+  // 영화 정보 저장
   @Operation(summary = "DB 초기화했을 때 후순위 저장", description = "평소에는 사용하지 않으셔도 됩니다.")
   @GetMapping("/movies")
   public String fetchAndSaveMovies() {
