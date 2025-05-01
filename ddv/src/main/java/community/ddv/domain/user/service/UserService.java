@@ -122,15 +122,15 @@ public class UserService {
     }
 
     log.info("로그인 성공");
-    return new LoginResponseDto(
-        accessToken,
-        refreshToken,
-        user.getId(),
-        user.getEmail(),
-        user.getNickname(),
-        user.getProfileImageUrl(),
-        user.getRole()
-    );
+    return LoginResponseDto.builder()
+        .accessToken(accessToken)
+        .refreshToken(refreshToken)
+        .userId(user.getId())
+        .email(user.getEmail())
+        .nickname(user.getNickname())
+        .profileImageUrl(user.getProfileImageUrl())
+        .role(user.getRole())
+        .build();
   }
 
   private String generateAndStoreRefreshToken(User user) {

@@ -27,4 +27,6 @@ public class MovieDTO {
   private ReviewResponseDTO myReview;
   private Double ratingAverage;
 
+  private boolean isAvailable;
+
 }

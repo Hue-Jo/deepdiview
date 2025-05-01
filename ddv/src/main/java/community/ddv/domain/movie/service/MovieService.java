@@ -43,7 +43,7 @@ public class MovieService {
    */
   public List<MovieDTO> getTopMovies(int size) {
     Pageable pageable = PageRequest.of(0, size);
-    Page<Movie> topMovies = movieRepository.findAllByOrderByPopularityDesc(pageable);
+    Page<Movie> topMovies = movieRepository.findAllByAvailableIsTrueOrderByPopularityDesc(pageable);
     log.info("인기도 탑{} 영화 조회 성공", size);
     return topMovies.stream()
         .filter(movie -> isKoreanOrEnglishTitle(movie.getTitle()))
@@ -177,6 +177,7 @@ public class MovieService {
         .reviews(reviews != null ? reviews : Collections.emptyList())
         .myReview(myReview)
         .ratingAverage(ratingAverage)
+        .isAvailable(movie.isAvailable())
         .build();
   }
 }
