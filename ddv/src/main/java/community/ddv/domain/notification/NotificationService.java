@@ -50,6 +50,7 @@ public class NotificationService {
     SseEmitter previousEmitter = emitters.remove(userId);
     if (previousEmitter != null) {
       log.info("기존 emitter 존재 -> 제거 완료 userId = {}", userId);
+      previousEmitter.complete();
     }
 
     // 2. 새 emitter 저장
