@@ -42,22 +42,11 @@ public class MovieService {
    * @param size
    */
   public List<MovieDTO> getTopMovies(int size) {
-    Pageable pageable = PageRequest.of(0, size);
-    Page<Movie> topMovies = movieRepository.findAllByAvailableIsTrueOrderByPopularityDesc(pageable);
+    List<Movie> topMovies = movieRepository.findAllByAvailableIsTrueOrderByPopularityDesc(size);
     log.info("인기도 탑{} 영화 조회 성공", size);
     return topMovies.stream()
-        .filter(movie -> isKoreanOrEnglishTitle(movie.getTitle()))
         .map(this::convertToDtoWithoutReviews)
         .collect(Collectors.toList());
-  }
-
-  private boolean isKoreanOrEnglishTitle(String title) {
-    if (title == null) return false;
-
-    boolean containsKorean = title.matches(".*[ㄱ-ㅎㅏ-ㅣ가-힣]+.*");
-    boolean isEnglishOnly = title.matches("^[a-zA-Z0-9\\s.,!?\"'\\-:()]+$");
-
-    return containsKorean || isEnglishOnly;
   }
 
   /**
