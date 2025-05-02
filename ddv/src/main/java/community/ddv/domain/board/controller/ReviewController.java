@@ -94,13 +94,14 @@ public class ReviewController {
 
   @Operation(summary = "최신 리뷰 조회", description = "디폴트 사이즈는 9입니다.")
   @GetMapping("/latest")
-  public ResponseEntity<Page<ReviewResponseDTO>> getLatestReviews(
+  public ResponseEntity<PageResponse<ReviewResponseDTO>> getLatestReviews(
       @RequestParam(defaultValue = "0") int page,
       @RequestParam(defaultValue = "9") int size
   ) {
     Sort sortOrder = Sort.by(Sort.Order.desc("createdAt"));
     Pageable pageable = PageRequest.of(page, size, sortOrder);
-    return ResponseEntity.ok(reviewService.getLatestReviews(pageable));
+    PageResponse<ReviewResponseDTO> response = reviewService.getLatestReviews(pageable);
+    return ResponseEntity.ok(response);
   }
 
   @Operation(summary = "좋아요", description = "토글형식입니다. 두 번 누를 시 좋아요 취소")

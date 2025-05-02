@@ -13,6 +13,7 @@ import community.ddv.domain.user.entity.User;
 import community.ddv.domain.user.service.UserService;
 import community.ddv.global.exception.DeepdiviewException;
 import community.ddv.global.exception.ErrorCode;
+import community.ddv.global.response.PageResponse;
 import java.util.List;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
@@ -179,11 +180,12 @@ public class ReviewService {
 
   }
 
-  // 최신 리뷰 3개 조회
+  // 최신 리뷰 조회
   @Transactional(readOnly = true)
-  public Page<ReviewResponseDTO> getLatestReviews(Pageable pageable) {
+  public PageResponse<ReviewResponseDTO> getLatestReviews(Pageable pageable) {
     Page<Review> reviews = reviewRepository.findAllByOrderByCreatedAtDesc(pageable);
-    return reviews.map(this::convertToReviewResponseDto);
+    Page<ReviewResponseDTO> reviewResponseDTOS = reviews.map(this::convertToReviewResponseDto);
+    return new PageResponse<>(reviewResponseDTOS);
   }
 
 
