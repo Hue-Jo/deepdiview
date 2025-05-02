@@ -181,11 +181,9 @@ public class ReviewService {
 
   // 최신 리뷰 3개 조회
   @Transactional(readOnly = true)
-  public List<ReviewResponseDTO> getLatestReviews() {
-    List<Review> reviews = reviewRepository.findTop3ByOrderByCreatedAtDesc();
-    return reviews.stream()
-        .map(this::convertToReviewResponseDto)
-        .collect(Collectors.toList());
+  public Page<ReviewResponseDTO> getLatestReviews(Pageable pageable) {
+    Page<Review> reviews = reviewRepository.findAllByOrderByCreatedAtDesc(pageable);
+    return reviews.map(this::convertToReviewResponseDto);
   }
 
 
