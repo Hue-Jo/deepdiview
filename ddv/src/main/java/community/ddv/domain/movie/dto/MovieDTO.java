@@ -1,5 +1,6 @@
 package community.ddv.domain.movie.dto;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import community.ddv.domain.board.dto.ReviewResponseDTO;
 import java.time.LocalDate;
 import java.util.List;
@@ -16,6 +17,7 @@ public class MovieDTO {
   private String title;           // 제목
   private String original_title;  // 원어 제목
   private String overview;        // 즐거리
+  @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
   private LocalDate release_date; // 개봉일
   private Double popularity;      // 인기도
   private String poster_path;     // 포스터 url
