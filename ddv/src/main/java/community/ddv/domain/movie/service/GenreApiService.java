@@ -1,9 +1,9 @@
 package community.ddv.domain.movie.service;
 
 import community.ddv.domain.movie.dto.GenreDTO;
+import community.ddv.domain.movie.dto.GenreResponse;
 import community.ddv.domain.movie.entity.Genre;
 import community.ddv.domain.movie.repostitory.GenreRepository;
-import community.ddv.domain.movie.dto.GenreResponse;
 import java.util.List;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;

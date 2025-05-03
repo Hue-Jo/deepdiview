@@ -68,14 +68,7 @@ public class JwtProvider {
     return generateToken(email, role, REFRESH_TOKEN_EXPIRED_TIME);
   }
 
-  public Claims extractClaims(String token) {
-    return Jwts.parser()
-        .verifyWith(key)
-        .build()
-        .parseSignedClaims(token)
-        .getPayload();
-  }
-
+  // HttpServletRequest(HTTP 요청 정보를 담고 있는 객체)에서 Authorization 헤더 중 Bearer 로 시작하는 JWT 토큰 추출
   public String extractToken(HttpServletRequest request) {
     String bearerToken = request.getHeader(TOKEN_HEADER);
     if (bearerToken != null && bearerToken.startsWith(TOKEN_PREFIX)) {
@@ -84,6 +77,15 @@ public class JwtProvider {
     }
     // 토큰이 존재하지 않거나, "Bearer "로 시작하지 않는 경우 null 반환
     return null;
+  }
+
+  // 토큰에서 payload(내용) 꺼내기
+  public Claims extractClaims(String token) {
+    return Jwts.parser()
+        .verifyWith(key)
+        .build()
+        .parseSignedClaims(token)
+        .getPayload();
   }
 
   // 토큰에서 이메일 추출
@@ -101,12 +103,12 @@ public class JwtProvider {
     return extractClaims(token).getExpiration().getTime();
   }
 
-  // 토큰 파싱해서 Authentication 객체 반환
+  // 토큰에서 사용자 정보를 꺼내어 SpringSecurity가 이해할 수 있는 인증객체(Authentication) 반환
   public Authentication getAuthentication(String token) {
     String email = extractEmail(token);
     Role role = getRoleFromToken(token);
     List<GrantedAuthority> authorities = List.of(new SimpleGrantedAuthority(role.name()));
-    return new UsernamePasswordAuthenticationToken(email, null, authorities);
+    return new UsernamePasswordAuthenticationToken(email, null, authorities); // // 고유식별자(이메일), 인증정보(jwt에서는 null), authorities(권한)
   }
 
   // 토큰이 유효한지 검증하는 메서드
@@ -115,7 +117,6 @@ public class JwtProvider {
       extractClaims(token);
       return true;
     } catch (ExpiredJwtException e) {
-      log.warn("만료된 JWT 토큰");
       throw e;
     } catch (JwtException e) {
       log.warn("잘못된 JWT 토큰");

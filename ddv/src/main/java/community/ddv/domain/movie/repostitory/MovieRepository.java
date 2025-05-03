@@ -15,8 +15,9 @@ public interface MovieRepository extends JpaRepository<Movie, Long> {
 
   // 넷플릭스 내 인기도 상위 n개의 영화정보 조회
   @Query(
-      value = "SELECT * FROM movie WHERE is_available = true AND + "
-          + "(title REGEXP '[ㄱ-ㅎㅏ-ㅣ가-힣]' OR title REGEXP '^[a-zA-Z0-9\\s.,!?\"''\\-:()]+') " +
+      value =
+          "SELECT * FROM movie WHERE is_available = true AND" +
+          "(title REGEXP '[ㄱ-ㅎㅏ-ㅣ가-힣]' OR title REGEXP '^[a-zA-Z0-9\\s.,!?~&=\\\"'':()\\-\\+\\#\\*\\%\\/]+')" +
           "ORDER BY popularity DESC " +
           "LIMIT :limit",
       nativeQuery = true)

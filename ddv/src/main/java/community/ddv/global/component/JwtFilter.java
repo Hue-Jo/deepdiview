@@ -60,7 +60,7 @@ public class JwtFilter extends OncePerRequestFilter {
       filterChain.doFilter(request, response);
 
     } catch (ExpiredJwtException e) {
-      log.warn("만료된 JWT 토큰: {}", e.getMessage());
+      log.info("만료된 JWT 토큰: {}", e.getMessage());
       setErrorResponse(response, HttpServletResponse.SC_UNAUTHORIZED, "토큰이 만료되었습니다.");
     } catch (JwtException e) {
       log.warn("잘못된 JWT 토큰: {}", e.getMessage());

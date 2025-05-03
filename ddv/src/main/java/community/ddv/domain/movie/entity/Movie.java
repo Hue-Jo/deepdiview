@@ -9,6 +9,7 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.OneToMany;
+import jakarta.persistence.OrderBy;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -46,11 +47,13 @@ public class Movie {
   private String backdropPath;   // 백드롭이미지 url
 
   @OneToMany(mappedBy = "movie", cascade = CascadeType.ALL)
-  private final Set<MovieGenre> movieGenres = new HashSet<>();
+  private final List<MovieGenre> movieGenres = new ArrayList<>();
 
   public void addGenre(Genre genre) {
-    MovieGenre movieGenre = new MovieGenre(this, genre);
-    movieGenres.add(movieGenre);
+    boolean exists = movieGenres.stream().anyMatch(movieGenre -> movieGenre.getGenre().equals(genre));
+    if (!exists) {
+      movieGenres.add(new MovieGenre(this, genre));
+    }
   }
 
   @Setter
