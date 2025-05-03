@@ -4,7 +4,10 @@ import jakarta.persistence.CascadeType;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import jakarta.persistence.OneToMany;
+import jakarta.persistence.OrderBy;
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -21,7 +24,7 @@ public class Genre {
   private String name;
 
   @OneToMany(mappedBy = "genre", cascade = CascadeType.ALL)
-  private Set<MovieGenre> movieGenres = new HashSet<>();
+  private List<MovieGenre> movieGenres = new ArrayList<>();
 
   public Genre(Long id, String name) {
     this.id = id;
