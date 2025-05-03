@@ -12,7 +12,9 @@ import community.ddv.domain.user.service.UserService;
 import community.ddv.global.exception.DeepdiviewException;
 import community.ddv.global.exception.ErrorCode;
 import java.util.Collections;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -135,17 +137,31 @@ public class MovieService {
 
   public MovieDTO convertToDto(Movie movie, List<ReviewResponseDTO> reviews, ReviewResponseDTO myReview) {
 
-    double ratingAverage;
+    double ratingAverage; // 평균 별점
+    Map<Double, Integer> ratingDistribution; // 별점 분포도
 
     if (reviews == null || reviews.isEmpty()) {
         ratingAverage = 0.0;
+        ratingDistribution = initializeRatingDistribution(); // 0개로 초기화
     } else {
+      // 평균 별점
       ratingAverage = reviews.stream()
           .map(ReviewResponseDTO::getRating)
           .filter(Objects::nonNull)
           .mapToDouble(Double::doubleValue)
           .average()
           .orElse(0.0);
+
+      // 별점 분포
+      // 각 별점들을 0개로 초기화
+      ratingDistribution = initializeRatingDistribution();
+      // 리뷰를 순회하며 별점 카운트 증가
+      reviews.stream()
+          .map(ReviewResponseDTO::getRating)
+          .filter(Objects::nonNull)
+          .forEach(ratings -> {
+            ratingDistribution.put(ratings, ratingDistribution.get(ratings) + 1);
+          });
     }
 
     return MovieDTO.builder()
@@ -166,7 +182,18 @@ public class MovieService {
         .reviews(reviews != null ? reviews : Collections.emptyList())
         .myReview(myReview)
         .ratingAverage(ratingAverage)
+        .ratingDistribution(ratingDistribution)
         .isAvailable(movie.isAvailable())
         .build();
+  }
+
+  // 별점 분포 초기화 메서드
+  private Map<Double, Integer> initializeRatingDistribution() {
+    // 0.5 - 5.0 순서대로 출력하기 위해 LinkedHashMap 사용 ("0.5": 0 이렇게 매핑)
+    Map<Double, Integer> ratingDistribution = new LinkedHashMap<>();
+    for (double i = 0.5; i <= 5.0; i += 0.5) {
+      ratingDistribution.put(i, 0);
+    }
+    return ratingDistribution;
   }
 }
