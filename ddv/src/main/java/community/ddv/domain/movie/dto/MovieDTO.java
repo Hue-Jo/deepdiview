@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonFormat;
 import community.ddv.domain.board.dto.ReviewResponseDTO;
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Map;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -29,6 +30,8 @@ public class MovieDTO {
   private ReviewResponseDTO myReview;
   private Double ratingAverage;
 
-  private boolean isAvailable;
+  private boolean isAvailable; // 현재 제공 중인지 여부
+
+  private Map<Double, Integer> ratingDistribution; // 별점 분포
 
 }
