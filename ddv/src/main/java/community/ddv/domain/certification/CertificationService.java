@@ -306,10 +306,7 @@ public class CertificationService {
 
   // 인증상태 초기화 (새로운 주가 시작되기 전, 인증 상태를 null로 초기화)
   @Transactional
-  @Scheduled(cron = "0 0 0 * * SUN")
-  // 테스트를 위해 매일 0시 정각에 초기화
-  //@Scheduled(cron = "0 0 0 * * *")
-  protected void resetCertificationStatus() {
+  public void resetCertificationStatus() {
 
     log.info("새로운 주가 됨에 따라 인증상태 초기화");
 

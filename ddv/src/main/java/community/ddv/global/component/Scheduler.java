@@ -1,5 +1,6 @@
 package community.ddv.global.component;
 
+import community.ddv.domain.certification.CertificationService;
 import community.ddv.domain.movie.service.MovieApiService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -15,9 +16,10 @@ public class Scheduler {
 
   private final MovieApiService movieApiService;
   private final CacheManager cacheManager;
+  private final CertificationService certificationService;
 
-  // 매주 월요일 0시 0분 15초에 영화 데이터 업데이트하면서 인기 영화 목록 캐시 초기화
-  @Scheduled(cron = "15 0 0 * * MON")
+  // 매주 월요일 0시 0분 10초에 영화 데이터 업데이트하면서 인기 영화 목록 캐시 초기화
+  @Scheduled(cron = "10 0 0 * * MON")
   public void updateMovieApi() {
     log.info("영화정보 업데이트를 시작합니다.");
     movieApiService.fetchAndSaveMovies();
@@ -26,23 +28,30 @@ public class Scheduler {
     clearTopMoviesCache();
   }
 
-  private void clearTopMoviesCache() {
+  public void clearTopMoviesCache() {
     Cache top20Cache = cacheManager.getCache("top20Movies");
-
     if (top20Cache != null) {
       top20Cache.clear();
     }
     log.info("인기영화 캐시 초기화 완료");
   }
 
-  @Scheduled(cron = "0 0 0 * * SUN")
-  private void clearTopRankMovieCache() {
+  // 지난 주 1위 영화 캐시 초기화
+  @Scheduled(cron = "0 0 0 * * MON")
+  public void clearTopRankMovieCache() {
     Cache topVotedCache = cacheManager.getCache("topRankMovie");
 
     if (topVotedCache != null) {
       topVotedCache.clear();
     }
     log.info("지난 주 1위 영화 캐시 초기화 완료");
+  }
+
+  // 매주 일요일 0시, 인증상태 초기화 스케줄링
+  @Scheduled(cron = "0 0 0 * * SUN")
+  public void resetCertificationStatus() {
+    log.info("");
+    certificationService.resetCertificationStatus();
   }
 
 }
