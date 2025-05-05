@@ -37,7 +37,7 @@ public class Scheduler {
   }
 
   // 지난 주 1위 영화 캐시 초기화
-  @Scheduled(cron = "0 0 0 * * MON")
+  @Scheduled(cron = "0 0 0 * * SUN")
   public void clearTopRankMovieCache() {
     Cache topVotedCache = cacheManager.getCache("topRankMovie");
 
