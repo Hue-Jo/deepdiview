@@ -22,7 +22,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -79,7 +78,7 @@ public class CertificationService {
   }
 
   /**
-   * PENDING/REJECT 상태의 사용자 _ 자신이 올린 사진 URL, 상태 반환
+   * 자신이 올린 사진 URL, 상태 반환
    */
   @Transactional(readOnly = true)
   public CertificationResponseDto getMyCertification() {
@@ -106,15 +105,14 @@ public class CertificationService {
           .build();
     }
 
-    // PENDING 또는 REJECTED 상태에서만 반환
     CertificationStatus status = certification.getStatus();
+
     if (status == null) {
       throw new DeepdiviewException(ErrorCode.CERTIFICATION_NOT_FOUND);
     }
-    if (status.equals(CertificationStatus.APPROVED)) {
-      throw new DeepdiviewException(ErrorCode.ALREADY_APPROVED);
-    }
-
+//    if (status.equals(CertificationStatus.APPROVED)) {
+//      throw new DeepdiviewException(ErrorCode.ALREADY_APPROVED);
+//    }
     return convertToCertificationDto(certification);
   }
 
