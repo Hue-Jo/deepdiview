@@ -21,6 +21,7 @@ import community.ddv.domain.vote.repository.VoteParticipationRepository;
 import community.ddv.domain.vote.repository.VoteRepository;
 import community.ddv.domain.user.service.UserService;
 import java.time.DayOfWeek;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.temporal.TemporalAdjusters;
@@ -291,18 +292,15 @@ public class VoteService {
 
     LocalDateTime now = LocalDateTime.now();
     // 본래 코드
-    LocalDateTime lastWeekStart = now.minusWeeks(1).with(DayOfWeek.MONDAY).with(LocalTime.MIN);
-    LocalDateTime lastWeekEnd = now.minusWeeks(1).with(DayOfWeek.SATURDAY).with(LocalTime.MAX);
-    Vote lastWeekVote = voteRepository.findByStartDateBetween(lastWeekStart, lastWeekEnd)
-        .orElseThrow(() -> new DeepdiviewException(ErrorCode.VOTE_NOT_FOUND));
-    VoteResultDTO voteResults = getVoteResult(lastWeekVote.getId());
+    // 지난주 일요일에 생성된 투표 찾기
+    LocalDate lastSunday = now.toLocalDate().minusWeeks(1).with(DayOfWeek.SUNDAY);
+    LocalDateTime voteStarted = lastSunday.atStartOfDay(); // 지난주 일요일 0시 0분 0초
+    LocalDateTime voteEnded = lastSunday.atTime(LocalTime.MAX);  // 지난주 일요일 23시 59분 59초
 
-    // 테스트용코드
-//    LocalDateTime lastStart = now.minusHours(1);
-//    Vote lastWeekVote = voteRepository.findByStartDateBetween(lastStart, now)
-//        .orElseThrow(() -> new DeepdiviewException(ErrorCode.VOTE_NOT_FOUND));
-//
-//    VoteResultDTO voteResults = getVoteResult(lastWeekVote.getId());
+    Vote lastWeekVote = voteRepository.findByStartDateBetween(voteStarted, voteEnded)
+        .orElseThrow(() -> new DeepdiviewException(ErrorCode.VOTE_NOT_FOUND));
+
+    VoteResultDTO voteResults = getVoteResult(lastWeekVote.getId());
 
     if (voteResults.getResults().isEmpty()) {
       throw new DeepdiviewException(ErrorCode.VOTE_RESULT_NOT_FOUND);
