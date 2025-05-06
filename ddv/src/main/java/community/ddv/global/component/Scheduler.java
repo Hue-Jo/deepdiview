@@ -24,8 +24,15 @@ public class Scheduler {
     log.info("영화정보 업데이트를 시작합니다.");
     movieApiService.fetchAndSaveMovies();
     log.info("영화정보 업데이트를 완료했습니다.");
-
     clearTopMoviesCache();
+  }
+
+  // 매주 월요일 0시 2분에 런타임 데이터 업데이트
+  @Scheduled(cron = "0 2 0 * * MON")
+  public void updateMovieRuntimeApi() {
+    log.info("런타임정보 업데이트를 시작합니다.");
+    movieApiService.fetchMovieRunTime();
+    log.info("런타임정보 업데이트를 완료했습니다.");
   }
 
   public void clearTopMoviesCache() {
@@ -50,7 +57,6 @@ public class Scheduler {
   // 매주 일요일 0시, 인증상태 초기화 스케줄링
   @Scheduled(cron = "0 0 0 * * SUN")
   public void resetCertificationStatus() {
-    log.info("");
     certificationService.resetCertificationStatus();
   }
 
