@@ -15,6 +15,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 
@@ -111,9 +112,8 @@ public class MovieApiService {
       if (movie.getRuntime() != null) {
         continue;
       }
-      try {
-        Thread.sleep(200); // 루프 돌 떄마다 API 호출을 하게 되므로 200ms 딜레이를 주도록 함
 
+      try {
         String runtimeUrl = TMDB_MOVIE_RUNTIME_API_URL + movie.getTmdbId() + "?api_key=" + tmdbKey;
         ResponseEntity<MovieDTO> response = restTemplate.getForEntity(runtimeUrl, MovieDTO.class);
 
@@ -129,11 +129,12 @@ public class MovieApiService {
           log.warn("런타임 응답 실패 - " + movie.getTmdbId());
         }
 
-      } catch (InterruptedException ie) {
-        Thread.currentThread().interrupt();
-        log.error("스케줄러 쓰레드 인터럽트 발생", ie);
+      } catch (HttpClientErrorException e) {
+        log.warn("런타임 정보를 찾을 수 없음: TMDB ID {}", movie.getTmdbId());
+      } catch (RestClientException e) {
+        log.error("런타임 정보 요청 실패: TMDB ID {}", movie.getTmdbId(), e);
       } catch (Exception e) {
-        log.error("런타임 업데이트 실패 - TMDB ID: " + movie.getTmdbId(), e);
+        log.error("예기치 못한 예외 발생: TMDB ID {}", movie.getTmdbId(), e);
       }
     }
     log.info("런타임 정보 업데이트 완료");
