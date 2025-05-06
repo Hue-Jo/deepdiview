@@ -41,6 +41,14 @@ public class Movie {
   private String overview;       // 즐거리
 
   private LocalDate releaseDate; // 개봉일
+
+  private Integer runtime; // 런타임
+  public void updateRuntime(Integer runtime) {
+    if (this.runtime == null) {
+      this.runtime = runtime;
+    }
+  }
+
   @Setter
   private Double popularity;     // 인기도
   private String posterPath;     // 포스터 url

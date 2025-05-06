@@ -20,6 +20,7 @@ public class MovieDTO {
   private String overview;        // 즐거리
   @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
   private LocalDate release_date; // 개봉일
+  private Integer runtime;        // 런타임
   private Double popularity;      // 인기도
   private String poster_path;     // 포스터 url
   private String backdrop_path;   // 백드롭이미지 url

@@ -170,6 +170,7 @@ public class MovieService {
         .original_title(movie.getOriginalTitle())
         .overview(movie.getOverview())
         .release_date(movie.getReleaseDate())
+        .runtime(movie.getRuntime())
         .popularity(movie.getPopularity())
         .poster_path(movie.getPosterPath())
         .backdrop_path(movie.getBackdropPath())

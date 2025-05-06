@@ -40,6 +40,7 @@ public class SecurityConfig {
       "/api/users/login",
       "/api/fetch/genres",
       "/api/fetch/movies",
+      "/api/fetch/runtimes",
       "/api/movies/**",
       "/api/discussions/is-sunday",
       "/api/discussions/this-week-movie",
