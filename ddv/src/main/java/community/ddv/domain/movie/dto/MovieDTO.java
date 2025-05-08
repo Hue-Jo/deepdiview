@@ -1,10 +1,10 @@
 package community.ddv.domain.movie.dto;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
+import community.ddv.domain.board.dto.ReviewRatingDTO;
 import community.ddv.domain.board.dto.ReviewResponseDTO;
 import java.time.LocalDate;
 import java.util.List;
-import java.util.Map;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -29,10 +29,9 @@ public class MovieDTO {
 
   private List<ReviewResponseDTO> reviews;
   private ReviewResponseDTO myReview;
-  private Double ratingAverage;
+  private ReviewRatingDTO ratingStats; // 별점 정보 (평균, 분포)
 
   private boolean isAvailable; // 현재 제공 중인지 여부
 
-  private Map<Double, Integer> ratingDistribution; // 별점 분포
 
 }

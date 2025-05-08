@@ -1,5 +1,6 @@
 package community.ddv.domain.movie.service;
 
+import community.ddv.domain.board.dto.ReviewRatingDTO;
 import community.ddv.domain.board.dto.ReviewResponseDTO;
 import community.ddv.domain.board.entity.Review;
 import community.ddv.domain.board.repository.ReviewRepository;
@@ -12,10 +13,9 @@ import community.ddv.domain.user.service.UserService;
 import community.ddv.global.exception.DeepdiviewException;
 import community.ddv.global.exception.ErrorCode;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Map;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
@@ -102,6 +102,8 @@ public class MovieService {
           log.warn("영화 Id '{}'에 해당하는 영화가 없습니다.", tmdbId);
           return new DeepdiviewException(ErrorCode.MOVIE_NOT_FOUND);
         });
+
+    // 최신 리뷰 5개만 보여주기
     Pageable pageable = PageRequest.of(0, 5, Sort.by(Direction.DESC, "createdAt"));
     Page<ReviewResponseDTO> reviews = reviewService.getReviewByMovieId(tmdbId, pageable, certifiedFilter);
 
@@ -114,6 +116,8 @@ public class MovieService {
       }
     }
 
+    ReviewRatingDTO ratingStats = reviewService.getRatingsByMovie(movie);
+
   //  log.info("영화 tmdbId = '{}'로 영화의 세부정보 조회 성공", tmdbId);
     return convertToDtoWithReviewsAndMyReview(movie, reviews.getContent(), myReview);
   }
@@ -121,48 +125,27 @@ public class MovieService {
 
   // 리뷰 포함
   public MovieDTO convertToDtoWithReviews(Movie movie, List<ReviewResponseDTO> reviews) {
-    return convertToDto(movie, reviews, null);
+    ReviewRatingDTO ratingStats = reviewService.getRatingsByMovie(movie);
+    return convertToDto(movie, reviews, null, ratingStats);
   }
 
   // 리뷰 포함 X
   public MovieDTO convertToDtoWithoutReviews(Movie movie) {
-    return convertToDto(movie, null, null);
+    ReviewRatingDTO ratingStats = reviewService.getRatingsByMovie(movie);
+    return convertToDto(movie, null, null, ratingStats);
   }
 
   // 리뷰 & 내 리뷰 포함
-  public MovieDTO convertToDtoWithReviewsAndMyReview(Movie movie, List<ReviewResponseDTO> reviews, ReviewResponseDTO myReview) {
-    return convertToDto(movie, reviews, myReview);
+  public MovieDTO convertToDtoWithReviewsAndMyReview(
+      Movie movie,
+      List<ReviewResponseDTO> reviews,
+      ReviewResponseDTO myReview) {
+    ReviewRatingDTO ratingStats = reviewService.getRatingsByMovie(movie);
+    return convertToDto(movie, reviews, myReview, ratingStats);
   }
 
 
-  public MovieDTO convertToDto(Movie movie, List<ReviewResponseDTO> reviews, ReviewResponseDTO myReview) {
-
-    double ratingAverage; // 평균 별점
-    Map<Double, Integer> ratingDistribution; // 별점 분포도
-
-    if (reviews == null || reviews.isEmpty()) {
-        ratingAverage = 0.0;
-        ratingDistribution = initializeRatingDistribution(); // 0개로 초기화
-    } else {
-      // 평균 별점
-      ratingAverage = reviews.stream()
-          .map(ReviewResponseDTO::getRating)
-          .filter(Objects::nonNull)
-          .mapToDouble(Double::doubleValue)
-          .average()
-          .orElse(0.0);
-
-      // 별점 분포
-      // 각 별점들을 0개로 초기화
-      ratingDistribution = initializeRatingDistribution();
-      // 리뷰를 순회하며 별점 카운트 증가
-      reviews.stream()
-          .map(ReviewResponseDTO::getRating)
-          .filter(Objects::nonNull)
-          .forEach(ratings -> {
-            ratingDistribution.put(ratings, ratingDistribution.get(ratings) + 1);
-          });
-    }
+  public MovieDTO convertToDto(Movie movie, List<ReviewResponseDTO> reviews, ReviewResponseDTO myReview, ReviewRatingDTO ratingStats) {
 
     return MovieDTO.builder()
         .id(movie.getTmdbId())
@@ -182,19 +165,9 @@ public class MovieService {
             .collect(Collectors.toList()))
         .reviews(reviews != null ? reviews : Collections.emptyList())
         .myReview(myReview)
-        .ratingAverage(ratingAverage)
-        .ratingDistribution(ratingDistribution)
+        .ratingStats(ratingStats != null ? ratingStats : new ReviewRatingDTO(0.0, new LinkedHashMap<>()))
         .isAvailable(movie.isAvailable())
         .build();
   }
 
-  // 별점 분포 초기화 메서드
-  private Map<Double, Integer> initializeRatingDistribution() {
-    // 0.5 - 5.0 순서대로 출력하기 위해 LinkedHashMap 사용 ("0.5": 0 이렇게 매핑)
-    Map<Double, Integer> ratingDistribution = new LinkedHashMap<>();
-    for (double i = 0.5; i <= 5.0; i += 0.5) {
-      ratingDistribution.put(i, 0);
-    }
-    return ratingDistribution;
-  }
 }
