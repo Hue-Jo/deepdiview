@@ -3,6 +3,7 @@ package community.ddv.domain.board.service;
 import community.ddv.domain.board.dto.CommentDTO.CommentResponseDto;
 import community.ddv.domain.board.dto.ReviewDTO;
 import community.ddv.domain.board.dto.ReviewDTO.ReviewUpdateDTO;
+import community.ddv.domain.board.dto.ReviewRatingDTO;
 import community.ddv.domain.board.dto.ReviewResponseDTO;
 import community.ddv.domain.board.entity.Comment;
 import community.ddv.domain.board.entity.Review;
@@ -14,7 +15,10 @@ import community.ddv.domain.user.service.UserService;
 import community.ddv.global.exception.DeepdiviewException;
 import community.ddv.global.exception.ErrorCode;
 import community.ddv.global.response.PageResponse;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -186,6 +190,43 @@ public class ReviewService {
     Page<Review> reviews = reviewRepository.findAllByOrderByCreatedAtDesc(pageable);
     Page<ReviewResponseDTO> reviewResponseDTOS = reviews.map(this::convertToReviewResponseDto);
     return new PageResponse<>(reviewResponseDTOS);
+  }
+
+
+  // 특정 영화의 평균별점, 별점 분포 조회
+  public ReviewRatingDTO getRatingsByMovie(Movie movie) {
+
+    List<Review> reviews = reviewRepository.findByMovie(movie);
+    if (reviews.isEmpty()) {
+      return new ReviewRatingDTO(0.0, initializeRatingDistribution());
+    }
+
+    // 평균 별점
+    double ratingAverage = reviews.stream()
+        .map(Review::getRating)
+        .filter(Objects::nonNull)
+        .mapToDouble(Double::doubleValue)
+        .average()
+        .orElse(0.0);
+
+    // 별점 분포
+    Map<Double, Integer> ratingDistribution = initializeRatingDistribution(); // 별점 분포도
+    reviews.stream()
+        .map(Review::getRating)
+        .filter(Objects::nonNull)
+        .forEach(rating -> ratingDistribution.put(rating, ratingDistribution.get(rating) + 1));
+
+    return new ReviewRatingDTO(ratingAverage, ratingDistribution);
+  }
+
+  // 별점 분포 초기화 메서드
+  private Map<Double, Integer> initializeRatingDistribution() {
+    // 0.5 - 5.0 순서대로 출력하기 위해 LinkedHashMap 사용 ("0.5": 0 이렇게 매핑)
+    Map<Double, Integer> ratingDistribution = new LinkedHashMap<>();
+    for (double i = 0.5; i <= 5.0; i += 0.5) {
+      ratingDistribution.put(i, 0);
+    }
+    return ratingDistribution;
   }
 
 
