@@ -8,6 +8,7 @@ import java.util.Optional;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
 
 public interface ReviewRepository extends JpaRepository<Review, Long> {
 
@@ -19,6 +20,17 @@ public interface ReviewRepository extends JpaRepository<Review, Long> {
   Page<Review> findByUser_IdAndCertifiedTrue(Long userId, Pageable pageable);
   Page<Review> findByMovieAndCertifiedTrue(Movie movie, Pageable pageable);
   List<Review> findAllByUser_Id(Long userId);
-  Page<Review> findAllByOrderByCreatedAtDesc(Pageable pageable);
+  //Page<Review> findAllByOrderByCreatedAtDesc(Pageable pageable);
+  @Query(
+      value = """
+    select distinct r from Review r
+    join fetch r.user u
+    join fetch r.movie m
+    left join fetch r.comments c
+    left join fetch c.user
+  """,
+      countQuery = "select count(r) from Review r"
+  )
+  Page<Review> findLatestReviews(Pageable pageable);
   Optional<Review> findByUserAndMovie(User user, Movie movie);
 }

@@ -184,16 +184,19 @@ public class ReviewService {
 
   }
 
-  // 최신 리뷰 조회
+
+  /**
+   * 최신순 리뷰 n개 조회
+   */
   @Transactional(readOnly = true)
   public PageResponse<ReviewResponseDTO> getLatestReviews(Pageable pageable) {
-    Page<Review> reviews = reviewRepository.findAllByOrderByCreatedAtDesc(pageable);
+    Page<Review> reviews = reviewRepository.findLatestReviews(pageable);
     Page<ReviewResponseDTO> reviewResponseDTOS = reviews.map(this::convertToReviewResponseDto);
     return new PageResponse<>(reviewResponseDTOS);
   }
 
 
-  // 특정 영화의 평균별점, 별점 분포 조회
+  // 특정 영화의 평균별점, 별점 분포 조회 메서드
   public ReviewRatingDTO getRatingsByMovie(Movie movie) {
 
     List<Review> reviews = reviewRepository.findByMovie(movie);
