@@ -13,7 +13,6 @@ import community.ddv.domain.user.service.UserService;
 import community.ddv.global.exception.DeepdiviewException;
 import community.ddv.global.exception.ErrorCode;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Optional;
@@ -47,7 +46,7 @@ public class MovieService {
     List<Movie> topMovies = movieRepository.findAllByAvailableIsTrueOrderByPopularityDesc(size);
     log.info("인기도 탑{} 영화 조회 성공", size);
     return topMovies.stream()
-        .map(this::convertToDtoWithoutReviews)
+        .map(movie -> convertToDto(movie, null, null, reviewService.getRatingsByMovie(movie)))
         .collect(Collectors.toList());
   }
 
@@ -84,9 +83,8 @@ public class MovieService {
     //log.info("영화 제목 '{}'으로 영화의 세부정보 조회 성공", title);
     return movies
         .map(movie -> {
-          Pageable pageable = PageRequest.of(0, 5, Sort.by(Direction.DESC, "createdAt"));
-          Page<ReviewResponseDTO> reviews = reviewService.getReviewByMovieId(movie.getTmdbId(), pageable, certifiedFilter);
-          return convertToDtoWithReviews(movie, reviews.getContent());
+          ReviewRatingDTO ratingStats = reviewService.getRatingsByMovie(movie);
+          return convertToDto(movie, null, null, ratingStats);
         });
   }
 
@@ -119,33 +117,14 @@ public class MovieService {
     ReviewRatingDTO ratingStats = reviewService.getRatingsByMovie(movie);
 
   //  log.info("영화 tmdbId = '{}'로 영화의 세부정보 조회 성공", tmdbId);
-    return convertToDtoWithReviewsAndMyReview(movie, reviews.getContent(), myReview);
+    return convertToDto(movie, reviews.getContent(), myReview, ratingStats);
   }
 
-
-  // 리뷰 포함
-  public MovieDTO convertToDtoWithReviews(Movie movie, List<ReviewResponseDTO> reviews) {
-    ReviewRatingDTO ratingStats = reviewService.getRatingsByMovie(movie);
-    return convertToDto(movie, reviews, null, ratingStats);
-  }
-
-  // 리뷰 포함 X
-  public MovieDTO convertToDtoWithoutReviews(Movie movie) {
-    ReviewRatingDTO ratingStats = reviewService.getRatingsByMovie(movie);
-    return convertToDto(movie, null, null, ratingStats);
-  }
-
-  // 리뷰 & 내 리뷰 포함
-  public MovieDTO convertToDtoWithReviewsAndMyReview(
+  public MovieDTO convertToDto(
       Movie movie,
       List<ReviewResponseDTO> reviews,
-      ReviewResponseDTO myReview) {
-    ReviewRatingDTO ratingStats = reviewService.getRatingsByMovie(movie);
-    return convertToDto(movie, reviews, myReview, ratingStats);
-  }
-
-
-  public MovieDTO convertToDto(Movie movie, List<ReviewResponseDTO> reviews, ReviewResponseDTO myReview, ReviewRatingDTO ratingStats) {
+      ReviewResponseDTO myReview,
+      ReviewRatingDTO ratingStats) {
 
     return MovieDTO.builder()
         .id(movie.getTmdbId())
