@@ -209,9 +209,7 @@ public class ReviewService {
 
     // 평균 별점
     Double ratingAverage = reviewRepository.findAverageRatingByMovie(movie);
-    if (ratingAverage == null) {
-      ratingAverage = 0.0;
-    }
+    double roundedRatingAverage = ratingAverage == null ? 0.0 : Math.round(ratingAverage * 100) / 100.0;
 
     List<Review> reviews = reviewRepository.findByMovie(movie);
 
@@ -222,7 +220,7 @@ public class ReviewService {
         .filter(Objects::nonNull)
         .forEach(rating -> ratingDistribution.put(rating, ratingDistribution.get(rating) + 1));
 
-    return new ReviewRatingDTO(ratingAverage, ratingDistribution);
+    return new ReviewRatingDTO(roundedRatingAverage, ratingDistribution);
   }
 
   // 별점 분포 초기화 메서드
