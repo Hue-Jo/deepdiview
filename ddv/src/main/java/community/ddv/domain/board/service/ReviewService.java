@@ -196,18 +196,24 @@ public class ReviewService {
   // 특정 영화의 평균별점, 별점 분포 조회 메서드
   public ReviewRatingDTO getRatingsByMovie(Movie movie) {
 
-    List<Review> reviews = reviewRepository.findByMovie(movie);
-    if (reviews.isEmpty()) {
-      return new ReviewRatingDTO(0.0, initializeRatingDistribution());
-    }
+//    if (reviews.isEmpty()) {
+//      return new ReviewRatingDTO(0.0, initializeRatingDistribution());
+//    }
+//
+//    double ratingAverage = reviews.stream()
+//        .map(Review::getRating)
+//        .filter(Objects::nonNull)
+//        .mapToDouble(Double::doubleValue)
+//        .average()
+//        .orElse(0.0);
 
     // 평균 별점
-    double ratingAverage = reviews.stream()
-        .map(Review::getRating)
-        .filter(Objects::nonNull)
-        .mapToDouble(Double::doubleValue)
-        .average()
-        .orElse(0.0);
+    Double ratingAverage = reviewRepository.findAverageRatingByMovie(movie);
+    if (ratingAverage == null) {
+      ratingAverage = 0.0;
+    }
+
+    List<Review> reviews = reviewRepository.findByMovie(movie);
 
     // 별점 분포
     Map<Double, Integer> ratingDistribution = initializeRatingDistribution(); // 별점 분포도
