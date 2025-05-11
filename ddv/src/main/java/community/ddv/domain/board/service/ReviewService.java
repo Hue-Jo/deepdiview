@@ -64,8 +64,8 @@ public class ReviewService {
         .certified(reviewDTO.isCertified())
         .build();
 
-    Review savedReview = reviewRepository.save(review);
-    return convertToReviewResponseDto(savedReview);
+    reviewRepository.save(review);
+    return convertToReviewResponseWithoutCommentsDto(review);
   }
 
   /**
@@ -113,7 +113,7 @@ public class ReviewService {
         reviewUpdateDTO.getRating()
     );
 
-    return convertToReviewResponseDto(review);
+    return convertToReviewResponseWithoutCommentsDto(review);
 
   }
 
@@ -122,8 +122,7 @@ public class ReviewService {
    * @param tmdbId
    */
   @Transactional(readOnly = true)
-  public Page<ReviewResponseDTO> getReviewByMovieId(Long tmdbId, Pageable pageable,
-      Boolean certifiedFilter) {
+  public Page<ReviewResponseDTO> getReviewByMovieId(Long tmdbId, Pageable pageable, Boolean certifiedFilter) {
 
     Movie movie = movieRepository.findByTmdbId(tmdbId)
         .orElseThrow(() -> {
@@ -140,7 +139,7 @@ public class ReviewService {
       reviews = reviewRepository.findByMovie(movie, pageable);
     }
 
-    return reviews.map(this::convertToReviewResponseDto);
+    return reviews.map(this::convertToReviewResponseWithoutCommentsDto);
   }
 
   /**
@@ -166,9 +165,7 @@ public class ReviewService {
    * @return
    */
   @Transactional(readOnly = true)
-  public Page<ReviewResponseDTO> getReviewsByUserId(Long userId, Pageable pageable,
-      Boolean certifiedFilter) {
-    userService.getLoginUser();
+  public Page<ReviewResponseDTO> getReviewsByUserId(Long userId, Pageable pageable, Boolean certifiedFilter) {
 
     Page<Review> reviews;
 
@@ -180,34 +177,43 @@ public class ReviewService {
       reviews = reviewRepository.findByUser_Id(userId, pageable);
     }
 
-    return reviews.map(this::convertToReviewResponseDto);
+    return reviews.map(this::convertToReviewResponseWithoutCommentsDto);
 
   }
 
-  // 최신 리뷰 조회
+
+  /**
+   * 최신순 리뷰 n개 조회
+   */
   @Transactional(readOnly = true)
   public PageResponse<ReviewResponseDTO> getLatestReviews(Pageable pageable) {
-    Page<Review> reviews = reviewRepository.findAllByOrderByCreatedAtDesc(pageable);
-    Page<ReviewResponseDTO> reviewResponseDTOS = reviews.map(this::convertToReviewResponseDto);
+    Page<Review> reviews = reviewRepository.findLatestReviews(pageable);
+    Page<ReviewResponseDTO> reviewResponseDTOS = reviews.map(this::convertToReviewResponseWithoutCommentsDto);
     return new PageResponse<>(reviewResponseDTOS);
   }
 
 
-  // 특정 영화의 평균별점, 별점 분포 조회
+  // 특정 영화의 평균별점, 별점 분포 조회 메서드
   public ReviewRatingDTO getRatingsByMovie(Movie movie) {
 
-    List<Review> reviews = reviewRepository.findByMovie(movie);
-    if (reviews.isEmpty()) {
-      return new ReviewRatingDTO(0.0, initializeRatingDistribution());
-    }
+//    if (reviews.isEmpty()) {
+//      return new ReviewRatingDTO(0.0, initializeRatingDistribution());
+//    }
+//
+//    double ratingAverage = reviews.stream()
+//        .map(Review::getRating)
+//        .filter(Objects::nonNull)
+//        .mapToDouble(Double::doubleValue)
+//        .average()
+//        .orElse(0.0);
 
     // 평균 별점
-    double ratingAverage = reviews.stream()
-        .map(Review::getRating)
-        .filter(Objects::nonNull)
-        .mapToDouble(Double::doubleValue)
-        .average()
-        .orElse(0.0);
+    Double ratingAverage = reviewRepository.findAverageRatingByMovie(movie);
+    if (ratingAverage == null) {
+      ratingAverage = 0.0;
+    }
+
+    List<Review> reviews = reviewRepository.findByMovie(movie);
 
     // 별점 분포
     Map<Double, Integer> ratingDistribution = initializeRatingDistribution(); // 별점 분포도
@@ -231,7 +237,7 @@ public class ReviewService {
 
 
   // 댓글 포함  X
-  public ReviewResponseDTO convertToReviewResponseDto(Review review) {
+  public ReviewResponseDTO convertToReviewResponseWithoutCommentsDto(Review review) {
     return convertToReviewResponseDtoBase(review, false);
   }
 

@@ -38,10 +38,9 @@ public class MovieController {
   @GetMapping("/search/list")
   public ResponseEntity<PageResponse<MovieDTO>> getMoviesByTitle(
       @RequestParam("title") String title,
-      @RequestParam(value = "certifiedFilter", required = false, defaultValue = "false") Boolean certifiedFilter,
       @PageableDefault(size = 10, sort = "popularity", direction = Sort.Direction.DESC) Pageable pageable
       ) {
-    Page<MovieDTO> movies = movieService.searchMoviesByTitle(title, certifiedFilter, pageable);
+    Page<MovieDTO> movies = movieService.searchMoviesByTitle(title, pageable);
     return ResponseEntity.ok(new PageResponse<>(movies));
   }
 

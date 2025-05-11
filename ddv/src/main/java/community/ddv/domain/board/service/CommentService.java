@@ -109,9 +109,8 @@ public class CommentService {
     Review review = reviewRepository.findById(reviewId)
         .orElseThrow(() -> new DeepdiviewException(ErrorCode.REVIEW_NOT_FOUND));
 
-    Page<Comment> comments = commentRepository.findByReview(review, pageable);
-
-    return comments.map(this::convertToCommentResponse);
+    return commentRepository.findByReview(review, pageable)
+        .map(this::convertToCommentResponse);
   }
 
   @Transactional(readOnly = true)
@@ -119,9 +118,8 @@ public class CommentService {
     log.info("특정 이용자 {}가 작성한 댓글 조회 요청", userId);
     userService.getLoginUser();
 
-    Page<Comment> comments = commentRepository.findByUser_Id(userId, pageable);
-
-    return comments.map(this::convertToCommentResponse);
+    return commentRepository.findByUser_Id(userId, pageable)
+        .map(this::convertToCommentResponse);
   }
 
 
