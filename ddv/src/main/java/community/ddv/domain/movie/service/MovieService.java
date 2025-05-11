@@ -72,7 +72,7 @@ public class MovieService {
    * @param title
    */
   @Transactional(readOnly = true)
-  public Page<MovieDTO> searchMoviesByTitle(String title, Boolean certifiedFilter, Pageable page) {
+  public Page<MovieDTO> searchMoviesByTitle(String title, Pageable page) {
 
     Page<Movie> movies = movieRepository.findByTitleFlexible(title, page);
     if (movies.isEmpty()) {
@@ -80,7 +80,7 @@ public class MovieService {
       throw new DeepdiviewException(ErrorCode.KEYWORD_NOT_FOUND);
     }
 
-    //log.info("영화 제목 '{}'으로 영화의 세부정보 조회 성공", title);
+    log.info("영화 제목 '{}'으로 영화의 세부정보 조회 성공", title);
     return movies
         .map(movie -> {
           ReviewRatingDTO ratingStats = reviewService.getRatingsByMovie(movie);
