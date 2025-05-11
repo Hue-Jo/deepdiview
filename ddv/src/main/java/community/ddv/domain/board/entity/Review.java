@@ -93,7 +93,7 @@ public class Review {
   }
 
 
-  @OneToMany(mappedBy = "review", cascade = CascadeType.ALL, orphanRemoval = true)
+  @OneToMany(mappedBy = "review", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
   @Builder.Default
   private List<Comment> comments = new ArrayList<>();
 

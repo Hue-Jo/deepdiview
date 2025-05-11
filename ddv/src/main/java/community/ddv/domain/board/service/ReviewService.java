@@ -7,6 +7,7 @@ import community.ddv.domain.board.dto.ReviewRatingDTO;
 import community.ddv.domain.board.dto.ReviewResponseDTO;
 import community.ddv.domain.board.entity.Comment;
 import community.ddv.domain.board.entity.Review;
+import community.ddv.domain.board.repository.CommentRepository;
 import community.ddv.domain.board.repository.ReviewRepository;
 import community.ddv.domain.movie.entity.Movie;
 import community.ddv.domain.movie.repostitory.MovieRepository;
@@ -35,6 +36,7 @@ public class ReviewService {
   private final ReviewRepository reviewRepository;
   private final MovieRepository movieRepository;
   private final UserService userService;
+  private final CommentRepository commentRepository;
 
   /**
    * 영화 리뷰 작성 _ 유저는 특정 영화에 대해 한 번만 리뷰 작성 가능
@@ -196,17 +198,6 @@ public class ReviewService {
   // 특정 영화의 평균별점, 별점 분포 조회 메서드
   public ReviewRatingDTO getRatingsByMovie(Movie movie) {
 
-//    if (reviews.isEmpty()) {
-//      return new ReviewRatingDTO(0.0, initializeRatingDistribution());
-//    }
-//
-//    double ratingAverage = reviews.stream()
-//        .map(Review::getRating)
-//        .filter(Objects::nonNull)
-//        .mapToDouble(Double::doubleValue)
-//        .average()
-//        .orElse(0.0);
-
     // 평균 별점
     Double ratingAverage = reviewRepository.findAverageRatingByMovie(movie);
     double roundedRatingAverage = ratingAverage == null ? 0.0 : Math.round(ratingAverage * 100) / 100.0;
@@ -251,7 +242,8 @@ public class ReviewService {
         ? review.getLikes().stream().anyMatch(like -> like.getUser().equals(loginUser))
         : null;
 
-    int commentCount = review.getComments().size();
+    //int commentCount = review.getComments().size();
+    int commentCount = commentRepository.countByReview(review);
 
     Movie movie = review.getMovie();
     ReviewResponseDTO.ReviewResponseDTOBuilder builder = ReviewResponseDTO.builder()
