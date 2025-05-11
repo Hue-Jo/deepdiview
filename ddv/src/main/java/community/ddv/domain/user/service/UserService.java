@@ -199,7 +199,7 @@ public class UserService {
     // 리프레시 토큰에서 이메일 추출 후, Redis에 저장된 토큰과 일치 여부 확인
     String email = jwtProvider.extractEmail(refreshToken);
     String storedRefreshToken = redisTokenTemplate.opsForValue().get(email);
-    if(!refreshToken.equals(storedRefreshToken)) {
+    if (!refreshToken.equals(storedRefreshToken)) {
       throw new DeepdiviewException(ErrorCode.INVALID_REFRESH_TOKEN);
     }
 
@@ -372,11 +372,8 @@ public class UserService {
     LocalDate startOfWeek = today.with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY));
     LocalDate endOfWeek = today.with(TemporalAdjusters.nextOrSame(DayOfWeek.SATURDAY));
 
-//    Certification certification = certificationRepository.findTopByUser_IdOrderByCreatedAtDesc(user.getId())
-//        .orElse(null);
-
     Certification certification = certificationRepository
-         // 이번 주(월~토)에 한 인증 중에서 가장 최신 인증 1개 가져오기
+        // 이번 주(월~토)에 한 인증 중에서 가장 최신 인증 1개 가져오기
         .findTopByUser_IdAndCreatedAtBetweenOrderByCreatedAtDesc(
             user.getId(),
             startOfWeek.atStartOfDay(),
@@ -385,13 +382,11 @@ public class UserService {
 
     CertificationStatus certificationStatus =
         certification != null
-            ? certification.getStatus()
-            : null;
+            ? certification.getStatus() : null;
+
     RejectionReason rejectionReason =
         certification != null && certification.getStatus() == CertificationStatus.REJECTED
-            ? certification.getRejectionReason()
-            : null;
-
+            ? certification.getRejectionReason() : null;
 
     return UserInfoResponseDto.builder()
         .nickname(user.getNickname())
@@ -403,7 +398,7 @@ public class UserService {
         .ratingDistribution(ratingDistribution)
         .certificationStatus(certificationStatus)
         .rejectionReason(rejectionReason)
-    .build();
+        .build();
   }
 
   /**
@@ -438,7 +433,6 @@ public class UserService {
   }
 
   // 로그인 여부 확인 메서드
-//  @Transactional(readOnly = true)
   public User getLoginUser() {
 
     Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
@@ -453,7 +447,6 @@ public class UserService {
         .orElseThrow(() -> new DeepdiviewException(ErrorCode.USER_NOT_FOUND));
   }
 
-//  @Transactional(readOnly = true)
   public User getLoginOrNull() {
     try {
       return getLoginUser();

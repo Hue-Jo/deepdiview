@@ -64,8 +64,8 @@ public class ReviewService {
         .certified(reviewDTO.isCertified())
         .build();
 
-    Review savedReview = reviewRepository.save(review);
-    return convertToReviewResponseDto(savedReview);
+    reviewRepository.save(review);
+    return convertToReviewResponseWithoutCommentsDto(review);
   }
 
   /**
@@ -113,7 +113,7 @@ public class ReviewService {
         reviewUpdateDTO.getRating()
     );
 
-    return convertToReviewResponseDto(review);
+    return convertToReviewResponseWithoutCommentsDto(review);
 
   }
 
@@ -122,8 +122,7 @@ public class ReviewService {
    * @param tmdbId
    */
   @Transactional(readOnly = true)
-  public Page<ReviewResponseDTO> getReviewByMovieId(Long tmdbId, Pageable pageable,
-      Boolean certifiedFilter) {
+  public Page<ReviewResponseDTO> getReviewByMovieId(Long tmdbId, Pageable pageable, Boolean certifiedFilter) {
 
     Movie movie = movieRepository.findByTmdbId(tmdbId)
         .orElseThrow(() -> {
@@ -140,7 +139,7 @@ public class ReviewService {
       reviews = reviewRepository.findByMovie(movie, pageable);
     }
 
-    return reviews.map(this::convertToReviewResponseDto);
+    return reviews.map(this::convertToReviewResponseWithoutCommentsDto);
   }
 
   /**
@@ -166,9 +165,7 @@ public class ReviewService {
    * @return
    */
   @Transactional(readOnly = true)
-  public Page<ReviewResponseDTO> getReviewsByUserId(Long userId, Pageable pageable,
-      Boolean certifiedFilter) {
-    userService.getLoginUser();
+  public Page<ReviewResponseDTO> getReviewsByUserId(Long userId, Pageable pageable, Boolean certifiedFilter) {
 
     Page<Review> reviews;
 
@@ -180,7 +177,7 @@ public class ReviewService {
       reviews = reviewRepository.findByUser_Id(userId, pageable);
     }
 
-    return reviews.map(this::convertToReviewResponseDto);
+    return reviews.map(this::convertToReviewResponseWithoutCommentsDto);
 
   }
 
@@ -191,7 +188,7 @@ public class ReviewService {
   @Transactional(readOnly = true)
   public PageResponse<ReviewResponseDTO> getLatestReviews(Pageable pageable) {
     Page<Review> reviews = reviewRepository.findLatestReviews(pageable);
-    Page<ReviewResponseDTO> reviewResponseDTOS = reviews.map(this::convertToReviewResponseDto);
+    Page<ReviewResponseDTO> reviewResponseDTOS = reviews.map(this::convertToReviewResponseWithoutCommentsDto);
     return new PageResponse<>(reviewResponseDTOS);
   }
 
@@ -234,7 +231,7 @@ public class ReviewService {
 
 
   // 댓글 포함  X
-  public ReviewResponseDTO convertToReviewResponseDto(Review review) {
+  public ReviewResponseDTO convertToReviewResponseWithoutCommentsDto(Review review) {
     return convertToReviewResponseDtoBase(review, false);
   }
 

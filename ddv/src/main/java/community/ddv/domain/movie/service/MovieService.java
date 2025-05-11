@@ -110,7 +110,7 @@ public class MovieService {
     if (loginUser != null) {
       Optional<Review> optionalReview = reviewRepository.findByUserAndMovie(loginUser, movie);
       if (optionalReview.isPresent()) {
-        myReview = reviewService.convertToReviewResponseDto(optionalReview.get());
+        myReview = reviewService.convertToReviewResponseWithoutCommentsDto(optionalReview.get());
       }
     }
 
