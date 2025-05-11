@@ -26,8 +26,6 @@ public interface ReviewRepository extends JpaRepository<Review, Long> {
     select distinct r from Review r
     join fetch r.user u
     join fetch r.movie m
-    left join fetch r.comments c
-    left join fetch c.user
   """,
       countQuery = "select count(r) from Review r"
   )
