@@ -32,7 +32,8 @@ public interface ReviewRepository extends JpaRepository<Review, Long> {
   //Page<Review> findAllByOrderByCreatedAtDesc(Pageable pageable);
   @Query(
       value = """
-            select distinct r from Review r
+            select r
+            from Review r
             join fetch r.user u
             join fetch r.movie m
           """,

@@ -2,7 +2,6 @@ package community.ddv.domain.board.repository;
 
 import community.ddv.domain.board.entity.Comment;
 import community.ddv.domain.board.entity.Review;
-import community.ddv.domain.movie.entity.Movie;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
