@@ -152,11 +152,7 @@ public class ReviewService {
   public ReviewResponseDTO getReviewById(Long reviewId) {
 
     Review review = reviewRepository.findById(reviewId)
-        .orElseThrow(() -> {
-          log.warn("리뷰 조회 실패 - 리뷰 ID : {}", reviewId);
-          return new DeepdiviewException(ErrorCode.REVIEW_NOT_FOUND);
-        });
-
+        .orElseThrow(() -> new DeepdiviewException(ErrorCode.REVIEW_NOT_FOUND));
     return convertToReviewResponseWithCommentsDto(review);
   }
 
@@ -195,32 +191,36 @@ public class ReviewService {
   }
 
 
-  // 특정 영화의 평균별점, 별점 분포 조회 메서드
+  /**
+   * 특정 영화의 평균별점, 별점 분포 조회 메서드
+   */
   public ReviewRatingDTO getRatingsByMovie(Movie movie) {
 
     // 평균 별점
     Double ratingAverage = reviewRepository.findAverageRatingByMovie(movie);
     double roundedRatingAverage = ratingAverage == null ? 0.0 : Math.round(ratingAverage * 100) / 100.0;
 
-    List<Review> reviews = reviewRepository.findByMovie(movie);
-
     // 별점 분포
-    Map<Double, Integer> ratingDistribution = initializeRatingDistribution(); // 별점 분포도
-    reviews.stream()
-        .map(Review::getRating)
-        .filter(Objects::nonNull)
-        .forEach(rating -> ratingDistribution.put(rating, ratingDistribution.get(rating) + 1));
+    List<Review> reviews = reviewRepository.findByMovie(movie);
+    Map<Double, Integer> ratingDistribution = initializeRatingDistribution(reviews);
 
     return new ReviewRatingDTO(roundedRatingAverage, ratingDistribution);
   }
 
   // 별점 분포 초기화 메서드
-  private Map<Double, Integer> initializeRatingDistribution() {
+  private Map<Double, Integer> initializeRatingDistribution(List<Review> reviews) {
+
     // 0.5 - 5.0 순서대로 출력하기 위해 LinkedHashMap 사용 ("0.5": 0 이렇게 매핑)
     Map<Double, Integer> ratingDistribution = new LinkedHashMap<>();
     for (double i = 0.5; i <= 5.0; i += 0.5) {
       ratingDistribution.put(i, 0);
     }
+
+    reviews.stream()
+        .map(Review::getRating)
+        .filter(Objects::nonNull)
+        .forEach(rating -> ratingDistribution.computeIfPresent(rating, (key, value) -> value + 1));
+
     return ratingDistribution;
   }
 
@@ -242,15 +242,17 @@ public class ReviewService {
         ? review.getLikes().stream().anyMatch(like -> like.getUser().equals(loginUser))
         : null;
 
-    //int commentCount = review.getComments().size();
+    // 댓글 개수
     int commentCount = commentRepository.countByReview(review);
 
     Movie movie = review.getMovie();
+    User user = review.getUser();
+
     ReviewResponseDTO.ReviewResponseDTOBuilder builder = ReviewResponseDTO.builder()
         .reviewId(review.getId())
-        .userId(review.getUser().getId())
-        .nickname(review.getUser().getNickname())
-        .profileImageUrl(review.getUser().getProfileImageUrl())
+        .userId(user.getId())
+        .nickname(user.getNickname())
+        .profileImageUrl(user.getProfileImageUrl())
         .reviewTitle(review.getTitle())
         .reviewContent(review.getContent())
         .rating(review.getRating())
