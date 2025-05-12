@@ -18,7 +18,7 @@ public class Scheduler {
   private final CacheManager cacheManager;
   private final CertificationService certificationService;
 
-  // 매주 월요일 0시 0분 10초에 영화 데이터 업데이트하면서 인기 영화 목록 캐시 초기화
+  // 매주 월요일 0시 0분 0초에 영화 데이터 업데이트하면서 인기 영화 목록 캐시 초기화
   @Scheduled(cron = "0 0 0 * * MON")
   public void updateMovieApi() {
     log.info("영화정보 업데이트를 시작합니다.");
@@ -27,7 +27,7 @@ public class Scheduler {
     clearTopMoviesCache();
   }
 
-  // 매주 월요일 0시 2분에 런타임 데이터 업데이트
+  // 매주 월요일 0시 5분에 런타임 데이터 업데이트
   @Scheduled(cron = "0 5 0 * * MON")
   public void updateMovieRuntimeApi() {
     log.info("런타임정보 업데이트를 시작합니다.");
