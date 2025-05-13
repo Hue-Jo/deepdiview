@@ -8,6 +8,7 @@ import community.ddv.domain.board.dto.ReviewResponseDTO;
 import community.ddv.domain.board.entity.Comment;
 import community.ddv.domain.board.entity.Review;
 import community.ddv.domain.board.repository.CommentRepository;
+import community.ddv.domain.board.repository.LikeRepository;
 import community.ddv.domain.board.repository.ReviewRepository;
 import community.ddv.domain.movie.entity.Movie;
 import community.ddv.domain.movie.repostitory.MovieRepository;
@@ -37,6 +38,7 @@ public class ReviewService {
   private final MovieRepository movieRepository;
   private final UserService userService;
   private final CommentRepository commentRepository;
+  private final LikeRepository likeRepository;
 
   /**
    * 영화 리뷰 작성 _ 유저는 특정 영화에 대해 한 번만 리뷰 작성 가능
@@ -151,7 +153,8 @@ public class ReviewService {
   @Transactional(readOnly = true)
   public ReviewResponseDTO getReviewById(Long reviewId) {
 
-    Review review = reviewRepository.findById(reviewId)
+    //Review review = reviewRepository.findById(reviewId)
+    Review review = reviewRepository.findWithCommentsById(reviewId)
         .orElseThrow(() -> new DeepdiviewException(ErrorCode.REVIEW_NOT_FOUND));
     return convertToReviewResponseWithCommentsDto(review);
   }
@@ -239,20 +242,17 @@ public class ReviewService {
 
     User loginUser = userService.getLoginOrNull();
     Boolean likedByUser = (loginUser != null)
-        ? review.getLikes().stream().anyMatch(like -> like.getUser().equals(loginUser))
+        ? likeRepository.existsByReviewAndUser(review, loginUser)
         : null;
 
     // 댓글 개수
     int commentCount = commentRepository.countByReview(review);
 
-    Movie movie = review.getMovie();
-    User user = review.getUser();
-
     ReviewResponseDTO.ReviewResponseDTOBuilder builder = ReviewResponseDTO.builder()
         .reviewId(review.getId())
-        .userId(user.getId())
-        .nickname(user.getNickname())
-        .profileImageUrl(user.getProfileImageUrl())
+        .userId(review.getUser().getId())
+        .nickname(review.getUser().getNickname())
+        .profileImageUrl(review.getUser().getProfileImageUrl())
         .reviewTitle(review.getTitle())
         .reviewContent(review.getContent())
         .rating(review.getRating())
@@ -261,9 +261,9 @@ public class ReviewService {
         .commentCount(commentCount)
         .likeCount(review.getLikeCount())
         .likedByUser(likedByUser)
-        .tmdbId(movie.getTmdbId())
-        .movieTitle(movie.getTitle())
-        .posterPath(movie.getPosterPath())
+        .tmdbId(review.getMovie().getTmdbId())
+        .movieTitle(review.getMovie().getTitle())
+        .posterPath(review.getMovie().getPosterPath())
         .certified(review.isCertified());
 
     if (includeComments) {
