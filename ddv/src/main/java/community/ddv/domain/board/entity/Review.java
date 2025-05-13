@@ -70,7 +70,7 @@ public class Review {
     likeCount = (likeCount == null || likeCount <= 0) ? 0 : likeCount - 1;
   }
 
-  @OneToMany(mappedBy = "review", cascade = CascadeType.ALL, orphanRemoval = true)
+  @OneToMany(mappedBy = "review", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
   @Builder.Default
   private List<Like> likes = new ArrayList<>();
 

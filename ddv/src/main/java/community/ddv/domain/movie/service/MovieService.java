@@ -12,8 +12,6 @@ import community.ddv.domain.user.entity.User;
 import community.ddv.domain.user.service.UserService;
 import community.ddv.global.exception.DeepdiviewException;
 import community.ddv.global.exception.ErrorCode;
-import java.util.Collections;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -77,7 +75,7 @@ public class MovieService {
     Page<Movie> movies = movieRepository.findByTitleFlexible(title, page);
     if (movies.isEmpty()) {
       log.warn("키워드 '{}'를 포함하는 영화가 존재하지 않습니다.", title);
-      throw new DeepdiviewException(ErrorCode.KEYWORD_NOT_FOUND);
+      return Page.empty(page);
     }
 
     log.info("영화 제목 '{}'으로 영화의 세부정보 조회 성공", title);
@@ -109,9 +107,7 @@ public class MovieService {
     User loginUser = userService.getLoginOrNull();
     if (loginUser != null) {
       Optional<Review> optionalReview = reviewRepository.findByUserAndMovie(loginUser, movie);
-      if (optionalReview.isPresent()) {
-        myReview = reviewService.convertToReviewResponseWithoutCommentsDto(optionalReview.get());
-      }
+      myReview = optionalReview.map(reviewService::convertToReviewResponseWithoutCommentsDto).orElse(null);
     }
 
     ReviewRatingDTO ratingStats = reviewService.getRatingsByMovie(movie);
@@ -142,9 +138,9 @@ public class MovieService {
         .genre_names(movie.getMovieGenres().stream()
             .map(movieGenre -> movieGenre.getGenre().getName())
             .collect(Collectors.toList()))
-        .reviews(reviews != null ? reviews : Collections.emptyList())
+        .reviews(reviews)
         .myReview(myReview)
-        .ratingStats(ratingStats != null ? ratingStats : new ReviewRatingDTO(0.0, new LinkedHashMap<>()))
+        .ratingStats(ratingStats)
         .isAvailable(movie.isAvailable())
         .build();
   }

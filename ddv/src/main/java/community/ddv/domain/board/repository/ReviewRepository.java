@@ -32,7 +32,7 @@ public interface ReviewRepository extends JpaRepository<Review, Long> {
   //Page<Review> findAllByOrderByCreatedAtDesc(Pageable pageable);
   @Query(
       value = """
-            select distinct r from Review r
+            select r from Review r
             join fetch r.user u
             join fetch r.movie m
           """,
@@ -45,4 +45,13 @@ public interface ReviewRepository extends JpaRepository<Review, Long> {
   @Query("select avg(r.rating) from Review r where r.movie = :movie")
   Double findAverageRatingByMovie(@Param("movie") Movie movie);
 
+  @Query("""
+          select r from Review r
+          join fetch r.user u
+          join fetch r.movie m
+          left join fetch r.comments c
+          left join fetch c.user
+          where r.id = :reviewId
+      """)
+  Optional<Review> findWithCommentsById(@Param("reviewId") Long reviewId);
 }

@@ -8,6 +8,7 @@ import community.ddv.domain.board.dto.ReviewResponseDTO;
 import community.ddv.domain.board.entity.Comment;
 import community.ddv.domain.board.entity.Review;
 import community.ddv.domain.board.repository.CommentRepository;
+import community.ddv.domain.board.repository.LikeRepository;
 import community.ddv.domain.board.repository.ReviewRepository;
 import community.ddv.domain.movie.entity.Movie;
 import community.ddv.domain.movie.repostitory.MovieRepository;
@@ -37,6 +38,7 @@ public class ReviewService {
   private final MovieRepository movieRepository;
   private final UserService userService;
   private final CommentRepository commentRepository;
+  private final LikeRepository likeRepository;
 
   /**
    * 영화 리뷰 작성 _ 유저는 특정 영화에 대해 한 번만 리뷰 작성 가능
@@ -151,12 +153,9 @@ public class ReviewService {
   @Transactional(readOnly = true)
   public ReviewResponseDTO getReviewById(Long reviewId) {
 
-    Review review = reviewRepository.findById(reviewId)
-        .orElseThrow(() -> {
-          log.warn("리뷰 조회 실패 - 리뷰 ID : {}", reviewId);
-          return new DeepdiviewException(ErrorCode.REVIEW_NOT_FOUND);
-        });
-
+    //Review review = reviewRepository.findById(reviewId)
+    Review review = reviewRepository.findWithCommentsById(reviewId)
+        .orElseThrow(() -> new DeepdiviewException(ErrorCode.REVIEW_NOT_FOUND));
     return convertToReviewResponseWithCommentsDto(review);
   }
 
@@ -195,32 +194,36 @@ public class ReviewService {
   }
 
 
-  // 특정 영화의 평균별점, 별점 분포 조회 메서드
+  /**
+   * 특정 영화의 평균별점, 별점 분포 조회 메서드
+   */
   public ReviewRatingDTO getRatingsByMovie(Movie movie) {
 
     // 평균 별점
     Double ratingAverage = reviewRepository.findAverageRatingByMovie(movie);
     double roundedRatingAverage = ratingAverage == null ? 0.0 : Math.round(ratingAverage * 100) / 100.0;
 
-    List<Review> reviews = reviewRepository.findByMovie(movie);
-
     // 별점 분포
-    Map<Double, Integer> ratingDistribution = initializeRatingDistribution(); // 별점 분포도
-    reviews.stream()
-        .map(Review::getRating)
-        .filter(Objects::nonNull)
-        .forEach(rating -> ratingDistribution.put(rating, ratingDistribution.get(rating) + 1));
+    List<Review> reviews = reviewRepository.findByMovie(movie);
+    Map<Double, Integer> ratingDistribution = initializeRatingDistribution(reviews);
 
     return new ReviewRatingDTO(roundedRatingAverage, ratingDistribution);
   }
 
   // 별점 분포 초기화 메서드
-  private Map<Double, Integer> initializeRatingDistribution() {
+  private Map<Double, Integer> initializeRatingDistribution(List<Review> reviews) {
+
     // 0.5 - 5.0 순서대로 출력하기 위해 LinkedHashMap 사용 ("0.5": 0 이렇게 매핑)
     Map<Double, Integer> ratingDistribution = new LinkedHashMap<>();
     for (double i = 0.5; i <= 5.0; i += 0.5) {
       ratingDistribution.put(i, 0);
     }
+
+    reviews.stream()
+        .map(Review::getRating)
+        .filter(Objects::nonNull)
+        .forEach(rating -> ratingDistribution.computeIfPresent(rating, (key, value) -> value + 1));
+
     return ratingDistribution;
   }
 
@@ -239,13 +242,12 @@ public class ReviewService {
 
     User loginUser = userService.getLoginOrNull();
     Boolean likedByUser = (loginUser != null)
-        ? review.getLikes().stream().anyMatch(like -> like.getUser().equals(loginUser))
+        ? likeRepository.existsByReviewAndUser(review, loginUser)
         : null;
 
-    //int commentCount = review.getComments().size();
+    // 댓글 개수
     int commentCount = commentRepository.countByReview(review);
 
-    Movie movie = review.getMovie();
     ReviewResponseDTO.ReviewResponseDTOBuilder builder = ReviewResponseDTO.builder()
         .reviewId(review.getId())
         .userId(review.getUser().getId())
@@ -259,9 +261,9 @@ public class ReviewService {
         .commentCount(commentCount)
         .likeCount(review.getLikeCount())
         .likedByUser(likedByUser)
-        .tmdbId(movie.getTmdbId())
-        .movieTitle(movie.getTitle())
-        .posterPath(movie.getPosterPath())
+        .tmdbId(review.getMovie().getTmdbId())
+        .movieTitle(review.getMovie().getTitle())
+        .posterPath(review.getMovie().getPosterPath())
         .certified(review.isCertified());
 
     if (includeComments) {
