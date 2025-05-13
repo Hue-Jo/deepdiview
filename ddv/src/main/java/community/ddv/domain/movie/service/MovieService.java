@@ -12,8 +12,6 @@ import community.ddv.domain.user.entity.User;
 import community.ddv.domain.user.service.UserService;
 import community.ddv.global.exception.DeepdiviewException;
 import community.ddv.global.exception.ErrorCode;
-import java.util.Collections;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -109,9 +107,7 @@ public class MovieService {
     User loginUser = userService.getLoginOrNull();
     if (loginUser != null) {
       Optional<Review> optionalReview = reviewRepository.findByUserAndMovie(loginUser, movie);
-      if (optionalReview.isPresent()) {
-        myReview = reviewService.convertToReviewResponseWithoutCommentsDto(optionalReview.get());
-      }
+      myReview = optionalReview.map(reviewService::convertToReviewResponseWithoutCommentsDto).orElse(null);
     }
 
     ReviewRatingDTO ratingStats = reviewService.getRatingsByMovie(movie);
@@ -142,9 +138,9 @@ public class MovieService {
         .genre_names(movie.getMovieGenres().stream()
             .map(movieGenre -> movieGenre.getGenre().getName())
             .collect(Collectors.toList()))
-        .reviews(reviews != null ? reviews : Collections.emptyList())
+        .reviews(reviews)
         .myReview(myReview)
-        .ratingStats(ratingStats != null ? ratingStats : new ReviewRatingDTO(0.0, new LinkedHashMap<>()))
+        .ratingStats(ratingStats)
         .isAvailable(movie.isAvailable())
         .build();
   }
