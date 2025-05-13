@@ -77,7 +77,7 @@ public class MovieService {
     Page<Movie> movies = movieRepository.findByTitleFlexible(title, page);
     if (movies.isEmpty()) {
       log.warn("키워드 '{}'를 포함하는 영화가 존재하지 않습니다.", title);
-      throw new DeepdiviewException(ErrorCode.KEYWORD_NOT_FOUND);
+      return Page.empty(page);
     }
 
     log.info("영화 제목 '{}'으로 영화의 세부정보 조회 성공", title);
