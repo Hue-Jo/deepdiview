@@ -34,7 +34,7 @@ public class MovieController {
     return ResponseEntity.ok(top20Movies);
   }
 
-  @Operation(summary = "영화 제목으로 상세정보 조회", description = "특정 단어가 포함되어 있는 영화들의 세부정보를 반환합니다. 띄어쓰기를 무시하고도 조회가 됩니다.")
+  @Operation(summary = "키워드로 영화 정보 조회", description = "특정 단어가 포함되어 있는 영화들의 세부정보를 반환합니다. 띄어쓰기를 무시하고도 조회가 됩니다.")
   @GetMapping("/search/list")
   public ResponseEntity<PageResponse<MovieDTO>> getMoviesByTitle(
       @RequestParam("title") String title,
@@ -42,6 +42,14 @@ public class MovieController {
       ) {
     Page<MovieDTO> movies = movieService.searchMoviesByTitle(title, pageable);
     return ResponseEntity.ok(new PageResponse<>(movies));
+  }
+
+  @Operation(summary = "영화 제목 자동완성 5개", description = "특정 글자/단어가 포함되어 있는 영화 제목 5개를 반환합니다. 띄어쓰기를 무시하고도 조회가 됩니다.")
+  @GetMapping("/search/autocomplete")
+  public ResponseEntity<List<String>> autoCompleteMovieTitle(
+      @RequestParam String keyword) {
+    List<String> titles = movieService.autoCompleteTitles(keyword);
+    return ResponseEntity.ok(titles);
   }
 
   @Operation(summary = "특정 영화 상세정보 조회", description = "tmdb에서 제공하는 id값(tmdbId)을 넣어야 조회됩니다.")

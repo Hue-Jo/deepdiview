@@ -12,6 +12,7 @@ import community.ddv.domain.user.entity.User;
 import community.ddv.domain.user.service.UserService;
 import community.ddv.global.exception.DeepdiviewException;
 import community.ddv.global.exception.ErrorCode;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -66,7 +67,7 @@ public class MovieService {
   }
 
   /**
-   * 영화 제목으로 해당 영화의 세부정보 조회 _ 공백 무시 가능 & 특정 글자가 포함되는 조회됨 & 넷플 인기도 순 정렬
+   * 키워드로 영화 검색 _ 공백 무시 가능 & 특정 글자가 포함되는 조회됨 & 넷플 인기도 순 정렬
    * @param title
    */
   @Transactional(readOnly = true)
@@ -86,6 +87,7 @@ public class MovieService {
         });
   }
 
+
   /**
    * 특정 영화 id로 해당 영화의 세부정보 조회
    * @param tmdbId
@@ -99,8 +101,8 @@ public class MovieService {
           return new DeepdiviewException(ErrorCode.MOVIE_NOT_FOUND);
         });
 
-    // 최신 리뷰 5개만 보여주기
-    Pageable pageable = PageRequest.of(0, 5, Sort.by(Direction.DESC, "createdAt"));
+    // 최신 리뷰 9개만 보여주기
+    Pageable pageable = PageRequest.of(0, 9, Sort.by(Direction.DESC, "createdAt"));
     Page<ReviewResponseDTO> reviews = reviewService.getReviewByMovieId(tmdbId, pageable, certifiedFilter);
 
     ReviewResponseDTO myReview = null;
@@ -110,11 +112,20 @@ public class MovieService {
       myReview = optionalReview.map(reviewService::convertToReviewResponseWithoutCommentsDto).orElse(null);
     }
 
-    ReviewRatingDTO ratingStats = reviewService.getRatingsByMovie(movie);
-
   //  log.info("영화 tmdbId = '{}'로 영화의 세부정보 조회 성공", tmdbId);
-    return convertToDto(movie, reviews.getContent(), myReview, ratingStats);
+    return convertToDto(movie, reviews.getContent(), myReview, reviewService.getRatingsByMovie(movie));
   }
+
+
+  /**
+   * 자동완성 5개 반환
+   */
+  @Transactional(readOnly = true)
+  public List<String> autoCompleteTitles(String keyword) {
+    Pageable page = PageRequest.of(0, 5);
+    return movieRepository.find5AutocompleteTitles(keyword, page);
+  }
+
 
   public MovieDTO convertToDto(
       Movie movie,
@@ -138,7 +149,7 @@ public class MovieService {
         .genre_names(movie.getMovieGenres().stream()
             .map(movieGenre -> movieGenre.getGenre().getName())
             .collect(Collectors.toList()))
-        .reviews(reviews)
+        .reviews(reviews != null ? reviews : Collections.emptyList())
         .myReview(myReview)
         .ratingStats(ratingStats)
         .isAvailable(movie.isAvailable())

@@ -44,12 +44,12 @@ public class NotificationService {
    */
   public SseEmitter subscribe(Long userId) {
 
-    log.info("SSE 구독 시작 : userId = {}", userId);
+    //log.info("SSE 구독 시작 : userId = {}", userId);
 
     // 1. 기존 emitter 끊기
     SseEmitter previousEmitter = emitters.remove(userId);
     if (previousEmitter != null) {
-      log.info("기존 emitter 존재 -> 제거 완료 userId = {}", userId);
+      //log.info("기존 emitter 존재 -> 제거 완료 userId = {}", userId);
       previousEmitter.complete();
     }
 
@@ -88,11 +88,11 @@ public class NotificationService {
   //  SSE 초기 메시지 전송 메서드
   private void sendFirstMessage(Long userId, SseEmitter emitter) {
     try {
-      log.info("SSE 초기 메시지 전송 시도: userId = {}", userId);
+      //log.info("SSE 초기 메시지 전송 시도: userId = {}", userId);
       emitter.send(SseEmitter.event()
           .name("connect")
           .data("SSE connect success"));
-      log.info("SSE 초기 메시지 전송 완료");
+      //log.info("SSE 초기 메시지 전송 완료");
     } catch (IOException e) {
       log.error("SSE 초기 메시지 전송 실패: userId = {}, error = {}", userId, e.getMessage());
       emitter.completeWithError(e);
