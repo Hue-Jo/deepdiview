@@ -12,6 +12,7 @@ import community.ddv.domain.user.entity.User;
 import community.ddv.domain.user.service.UserService;
 import community.ddv.global.exception.DeepdiviewException;
 import community.ddv.global.exception.ErrorCode;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -87,6 +88,18 @@ public class MovieService {
   }
 
   /**
+   * 이 주의 영화 정보 조회 _ 영화 정보만 반환
+   * @return
+   */
+  @Transactional(readOnly = true)
+  public MovieDTO getThisWeekMovieDetail(Long tmdbId) {
+    Movie movie = movieRepository.findByTmdbId(tmdbId)
+        .orElseThrow(() -> new DeepdiviewException(ErrorCode.MOVIE_NOT_FOUND));
+    return convertToDto(movie, null, null, reviewService.getRatingsByMovie(movie));
+  }
+
+
+  /**
    * 특정 영화 id로 해당 영화의 세부정보 조회
    * @param tmdbId
    */
@@ -116,6 +129,17 @@ public class MovieService {
     return convertToDto(movie, reviews.getContent(), myReview, ratingStats);
   }
 
+
+  /**
+   * 자동완성 5개 반환
+   */
+  @Transactional(readOnly = true)
+  public List<String> autoCompleteTitles(String keyword) {
+    Pageable page = PageRequest.of(0, 5);
+    return movieRepository.find5AutocompleteTitles(keyword, page);
+  }
+
+
   public MovieDTO convertToDto(
       Movie movie,
       List<ReviewResponseDTO> reviews,
@@ -138,7 +162,7 @@ public class MovieService {
         .genre_names(movie.getMovieGenres().stream()
             .map(movieGenre -> movieGenre.getGenre().getName())
             .collect(Collectors.toList()))
-        .reviews(reviews)
+        .reviews(reviews != null ? reviews : Collections.emptyList())
         .myReview(myReview)
         .ratingStats(ratingStats)
         .isAvailable(movie.isAvailable())
