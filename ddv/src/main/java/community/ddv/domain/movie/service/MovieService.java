@@ -45,7 +45,7 @@ public class MovieService {
     List<Movie> topMovies = movieRepository.findAllByAvailableIsTrueOrderByPopularityDesc(size);
     log.info("인기도 탑{} 영화 조회 성공", size);
     return topMovies.stream()
-        .map(movie -> convertToDto(movie, null, null, reviewService.getRatingsByMovie(movie)))
+        .map(movie -> convertToDto(movie, null, reviewService.getRatingsByMovie(movie)))
         .collect(Collectors.toList());
   }
 
@@ -83,7 +83,7 @@ public class MovieService {
     return movies
         .map(movie -> {
           ReviewRatingDTO ratingStats = reviewService.getRatingsByMovie(movie);
-          return convertToDto(movie, null, null, ratingStats);
+          return convertToDto(movie, null, ratingStats);
         });
   }
 
@@ -101,9 +101,9 @@ public class MovieService {
           return new DeepdiviewException(ErrorCode.MOVIE_NOT_FOUND);
         });
 
-    // 최신 리뷰 9개만 보여주기
-    Pageable pageable = PageRequest.of(0, 9, Sort.by(Direction.DESC, "createdAt"));
-    Page<ReviewResponseDTO> reviews = reviewService.getReviewByMovieId(tmdbId, pageable, certifiedFilter);
+//    // 최신 리뷰 9개만 보여주기
+//    Pageable pageable = PageRequest.of(0, 9, Sort.by(Direction.DESC, "createdAt"));
+//    Page<ReviewResponseDTO> reviews = reviewService.getReviewByMovieId(tmdbId, pageable, certifiedFilter);
 
     ReviewResponseDTO myReview = null;
     User loginUser = userService.getLoginOrNull();
@@ -113,7 +113,7 @@ public class MovieService {
     }
 
   //  log.info("영화 tmdbId = '{}'로 영화의 세부정보 조회 성공", tmdbId);
-    return convertToDto(movie, reviews.getContent(), myReview, reviewService.getRatingsByMovie(movie));
+    return convertToDto(movie, myReview, reviewService.getRatingsByMovie(movie));
   }
 
 
@@ -129,7 +129,7 @@ public class MovieService {
 
   public MovieDTO convertToDto(
       Movie movie,
-      List<ReviewResponseDTO> reviews,
+      //List<ReviewResponseDTO> reviews,
       ReviewResponseDTO myReview,
       ReviewRatingDTO ratingStats) {
 
@@ -149,7 +149,7 @@ public class MovieService {
         .genre_names(movie.getMovieGenres().stream()
             .map(movieGenre -> movieGenre.getGenre().getName())
             .collect(Collectors.toList()))
-        .reviews(reviews != null ? reviews : Collections.emptyList())
+        //.reviews(reviews != null ? reviews : Collections.emptyList())
         .myReview(myReview)
         .ratingStats(ratingStats)
         .isAvailable(movie.isAvailable())

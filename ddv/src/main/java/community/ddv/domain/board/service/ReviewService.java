@@ -188,6 +188,7 @@ public class ReviewService {
    */
   @Transactional(readOnly = true)
   public PageResponse<ReviewResponseDTO> getLatestReviews(Pageable pageable) {
+    //Page<Review> reviews = reviewRepository.findAllByOrderByCreatedAtDesc(pageable);
     Page<Review> reviews = reviewRepository.findLatestReviews(pageable);
     Page<ReviewResponseDTO> reviewResponseDTOS = reviews.map(this::convertToReviewResponseWithoutCommentsDto);
     return new PageResponse<>(reviewResponseDTOS);
