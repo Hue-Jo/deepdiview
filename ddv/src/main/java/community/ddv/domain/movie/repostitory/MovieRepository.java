@@ -25,9 +25,22 @@ public interface MovieRepository extends JpaRepository<Movie, Long> {
   List<Movie> findAllByAvailableIsTrueOrderByPopularityDesc(@Param("limit") int limit);
 
   // 특정 단어가 포함된 영화 정보 리스트 조회(공백 무시)
-  @EntityGraph(attributePaths = {"movieGenres.genre"})
-  @Query("SELECT m FROM Movie m WHERE REPLACE(m.title, ' ', '') LIKE CONCAT('%', REPLACE(:title, ' ', ''), '%') ORDER BY m.popularity DESC")
+  @Query("""
+      SELECT m
+      FROM Movie m
+      WHERE REPLACE(m.title, ' ', '') LIKE CONCAT('%', REPLACE(:title, ' ', ''), '%')
+      ORDER BY m.popularity DESC
+      """)
   Page<Movie> findByTitleFlexible(@Param("title") String title, Pageable pageable);
+
+  // 제목 자동완성 5개
+  @Query("""
+      SELECT m.title
+      FROM Movie m
+      WHERE REPLACE(m.title, ' ', '') LIKE CONCAT('%', REPLACE(:keyword, ' ', ''), '%')
+      ORDER BY m.popularity DESC
+""")
+      List<String> find5AutocompleteTitles(@Param("keyword") String title, Pageable pageable);
 
   // TMDB Id로 특정영화 조회
   Optional<Movie> findByTmdbId(Long tmdbId);
