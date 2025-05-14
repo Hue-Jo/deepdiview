@@ -34,7 +34,7 @@ public class MovieController {
     return ResponseEntity.ok(top20Movies);
   }
 
-  @Operation(summary = "영화 제목으로 상세정보 조회", description = "특정 단어가 포함되어 있는 영화들의 세부정보를 반환합니다. 띄어쓰기를 무시하고도 조회가 됩니다.")
+  @Operation(summary = "키워드로 영화 정보 조회", description = "특정 단어가 포함되어 있는 영화들의 세부정보를 반환합니다. 띄어쓰기를 무시하고도 조회가 됩니다.")
   @GetMapping("/search/list")
   public ResponseEntity<PageResponse<MovieDTO>> getMoviesByTitle(
       @RequestParam("title") String title,
@@ -59,15 +59,6 @@ public class MovieController {
       @RequestParam(value = "certifiedFilter", required = false, defaultValue = "false") Boolean certifiedFilter
       ) {
     MovieDTO movieDetails = movieService.getMovieDetailsById(movieId, certifiedFilter);
-    return ResponseEntity.ok(movieDetails);
-  }
-
-  @Operation(summary = "이 주의 영화 정보 조회", description = "영화 정보만 반환됩니다.")
-  @GetMapping("/this-week/{movieId}")
-  public ResponseEntity<MovieDTO> getThisWeekMovieDetail(
-      @PathVariable Long movieId
-  ) {
-    MovieDTO movieDetails = movieService.getThisWeekMovieDetail(movieId);
     return ResponseEntity.ok(movieDetails);
   }
 }

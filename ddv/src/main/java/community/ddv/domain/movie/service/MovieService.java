@@ -67,7 +67,7 @@ public class MovieService {
   }
 
   /**
-   * 영화 제목으로 해당 영화의 세부정보 조회 _ 공백 무시 가능 & 특정 글자가 포함되는 조회됨 & 넷플 인기도 순 정렬
+   * 키워드로 영화 검색 _ 공백 무시 가능 & 특정 글자가 포함되는 조회됨 & 넷플 인기도 순 정렬
    * @param title
    */
   @Transactional(readOnly = true)
@@ -87,17 +87,6 @@ public class MovieService {
         });
   }
 
-  /**
-   * 이 주의 영화 정보 조회 _ 영화 정보만 반환
-   * @return
-   */
-  @Transactional(readOnly = true)
-  public MovieDTO getThisWeekMovieDetail(Long tmdbId) {
-    Movie movie = movieRepository.findByTmdbId(tmdbId)
-        .orElseThrow(() -> new DeepdiviewException(ErrorCode.MOVIE_NOT_FOUND));
-    return convertToDto(movie, null, null, reviewService.getRatingsByMovie(movie));
-  }
-
 
   /**
    * 특정 영화 id로 해당 영화의 세부정보 조회
@@ -112,8 +101,8 @@ public class MovieService {
           return new DeepdiviewException(ErrorCode.MOVIE_NOT_FOUND);
         });
 
-    // 최신 리뷰 5개만 보여주기
-    Pageable pageable = PageRequest.of(0, 5, Sort.by(Direction.DESC, "createdAt"));
+    // 최신 리뷰 9개만 보여주기
+    Pageable pageable = PageRequest.of(0, 9, Sort.by(Direction.DESC, "createdAt"));
     Page<ReviewResponseDTO> reviews = reviewService.getReviewByMovieId(tmdbId, pageable, certifiedFilter);
 
     ReviewResponseDTO myReview = null;
@@ -123,10 +112,8 @@ public class MovieService {
       myReview = optionalReview.map(reviewService::convertToReviewResponseWithoutCommentsDto).orElse(null);
     }
 
-    ReviewRatingDTO ratingStats = reviewService.getRatingsByMovie(movie);
-
   //  log.info("영화 tmdbId = '{}'로 영화의 세부정보 조회 성공", tmdbId);
-    return convertToDto(movie, reviews.getContent(), myReview, ratingStats);
+    return convertToDto(movie, reviews.getContent(), myReview, reviewService.getRatingsByMovie(movie));
   }
 
 
