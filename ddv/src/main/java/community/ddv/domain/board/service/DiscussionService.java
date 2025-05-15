@@ -64,22 +64,23 @@ public class DiscussionService {
     log.info("리뷰 작성 가능 기간 확인 완료");
 
     // 4. 중복 리뷰 확인 -> 기존에 작성한 리뷰가 있으면 수정
-    Review existingReview = reviewRepository.findByUserAndMovie(user, lastWeekTopMovie)
-        .orElse(null);
-
-    if (existingReview != null) {
-      log.info("기존에 작성한 리뷰가 있으므로 수정 시도 : reviewId = {}", existingReview.getId());
-      ReviewUpdateDTO updateDTO = new ReviewUpdateDTO(
-          reviewDTO.getTitle(),
-          reviewDTO.getContent(),
-          reviewDTO.getRating());
-
-      ReviewResponseDTO updatedReview = reviewService.updateReview(existingReview.getId(), updateDTO);
-      existingReview.updateCertified(true); // 인증 마크 달기
-      reviewRepository.save(existingReview);
-      log.info("기존리뷰 수정완료 : reviewId = {}", existingReview.getId());
-      return updatedReview;
-    }
+    // (사용하지 않는 것으로 수정. 봤던 영화를 또 다시 보고 인증 받고 리뷰를 다시 작성하는 경우가 많이 없을 것으로 판단)
+//    Review existingReview = reviewRepository.findByUserAndMovie(user, lastWeekTopMovie)
+//        .orElse(null);
+//
+//    if (existingReview != null) {
+//      log.info("기존에 작성한 리뷰가 있으므로 수정 시도 : reviewId = {}", existingReview.getId());
+//      ReviewUpdateDTO updateDTO = new ReviewUpdateDTO(
+//          reviewDTO.getTitle(),
+//          reviewDTO.getContent(),
+//          reviewDTO.getRating());
+//
+//      ReviewResponseDTO updatedReview = reviewService.updateReview(existingReview.getId(), updateDTO);
+//      existingReview.updateCertified(true); // 인증 마크 달기
+//      reviewRepository.save(existingReview);
+//      log.info("기존리뷰 수정완료 : reviewId = {}", existingReview.getId());
+//      return updatedReview;
+//    }
 
     // 5. 새 리뷰 생성, 저장
     ReviewDTO newReview = ReviewDTO.builder()
