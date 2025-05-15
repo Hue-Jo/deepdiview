@@ -46,9 +46,9 @@ public interface ReviewRepository extends JpaRepository<Review, Long> {
   Double findAverageRatingByMovie(@Param("movie") Movie movie);
 
   @Query("""
-          select r from Review r
-          join fetch r.user u
-          join fetch r.movie m
+          select distinct r from Review r
+          join fetch r.user
+          join fetch r.movie
           left join fetch r.comments c
           left join fetch c.user
           where r.id = :reviewId
