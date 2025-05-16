@@ -9,7 +9,7 @@ import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
+import org.springframework.data.domain.Sort.Direction;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -38,7 +38,7 @@ public class MovieController {
   @GetMapping("/search/list")
   public ResponseEntity<PageResponse<MovieDTO>> getMoviesByTitle(
       @RequestParam("title") String title,
-      @PageableDefault(size = 10, sort = "popularity", direction = Sort.Direction.DESC) Pageable pageable
+      @PageableDefault(size = 10, sort = "popularity", direction = Direction.DESC) Pageable pageable
       ) {
     Page<MovieDTO> movies = movieService.searchMoviesByTitle(title, pageable);
     return ResponseEntity.ok(new PageResponse<>(movies));

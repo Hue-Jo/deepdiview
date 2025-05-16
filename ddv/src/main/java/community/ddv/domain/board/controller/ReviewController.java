@@ -8,6 +8,7 @@ import community.ddv.global.response.PageResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
+import java.util.ArrayList;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -71,7 +72,15 @@ public class ReviewController {
       @RequestParam(value = "certifiedFilter", required = false, defaultValue = "false") Boolean certifiedFilter,
       @PageableDefault(size = 20, sort = "createdAt", direction = Direction.DESC) Pageable pageable
   ) {
-    Page<ReviewResponseDTO> reviews = reviewService.getReviewByMovieId(tmdbId, pageable, certifiedFilter);
+    List<Sort.Order> orders = new ArrayList<>(pageable.getSort().toList());
+    if (orders.stream().anyMatch(order -> order.getProperty().equals("likeCount"))) {
+      boolean hasCreatedAt = orders.stream().anyMatch(order -> order.getProperty().equals("createdAt"));
+      if (!hasCreatedAt) {
+        orders.add(Sort.Order.desc("createdAt"));
+      }
+    }
+    Pageable newPageable = PageRequest.of(pageable.getPageNumber(), pageable.getPageSize(), Sort.by(orders));
+    Page<ReviewResponseDTO> reviews = reviewService.getReviewByMovieId(tmdbId, newPageable, certifiedFilter);
     return ResponseEntity.ok(new PageResponse<>(reviews));
   }
 
@@ -85,7 +94,7 @@ public class ReviewController {
   @Operation(summary = "최신 리뷰 조회", description = "디폴트 사이즈는 9입니다.")
   @GetMapping("/latest")
   public ResponseEntity<PageResponse<ReviewResponseDTO>> getLatestReviews(
-      @PageableDefault(size = 9, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable
+      @PageableDefault(size = 9, sort = "createdAt", direction = Direction.DESC) Pageable pageable
   ) {
     PageResponse<ReviewResponseDTO> response = reviewService.getLatestReviews(pageable);
     return ResponseEntity.ok(response);
