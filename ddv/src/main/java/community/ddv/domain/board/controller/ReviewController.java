@@ -64,24 +64,14 @@ public class ReviewController {
     return ResponseEntity.ok(reviewService.updateReview(reviewId, reviewUpdateDTO));
   }
 
-  @Operation(summary = "특정 영화에 대한 리뷰 조회", description = "댓글은 포함되어있지 않습니다. ?sortBy=likeCount로 좋아요 순 정렬을 할 수 있습니다." )
+  @Operation(summary = "특정 영화에 대한 리뷰 조회", description = "댓글은 포함되어있지 않습니다." )
   @GetMapping("/movie/{tmdbId}")
   public ResponseEntity<PageResponse<ReviewResponseDTO>> getReviewsByMovieId(
       @PathVariable Long tmdbId,
       @RequestParam(value = "certifiedFilter", required = false, defaultValue = "false") Boolean certifiedFilter,
-      @PageableDefault(size = 20) Pageable pageable,
-      @RequestParam(value = "sortBy", required = false, defaultValue = "createdAt") String sortBy,
-      @RequestParam(value = "direction", required = false, defaultValue = "DESC") Direction direction
+      @PageableDefault(size = 20, sort = "createdAt", direction = Direction.DESC) Pageable pageable
   ) {
-
-    Sort sort = "likeCount".equals(sortBy)
-      // 좋아요순으로 정렬 시 동점일 경우 최신순 정렬
-      ? Sort.by(Sort.Order.by("likeCount").with(direction))
-            .and(Sort.by(Sort.Order.by("createdAt").with(direction)))
-      : Sort.by(Sort.Order.by("createdAt").with(direction));
-
-    Pageable sortedPageable = PageRequest.of(pageable.getPageNumber(), pageable.getPageSize(), sort);
-    Page<ReviewResponseDTO> reviews = reviewService.getReviewByMovieId(tmdbId, sortedPageable, certifiedFilter);
+    Page<ReviewResponseDTO> reviews = reviewService.getReviewByMovieId(tmdbId, pageable, certifiedFilter);
     return ResponseEntity.ok(new PageResponse<>(reviews));
   }
 
@@ -95,11 +85,8 @@ public class ReviewController {
   @Operation(summary = "최신 리뷰 조회", description = "디폴트 사이즈는 9입니다.")
   @GetMapping("/latest")
   public ResponseEntity<PageResponse<ReviewResponseDTO>> getLatestReviews(
-      @RequestParam(defaultValue = "0") int page,
-      @RequestParam(defaultValue = "9") int size
+      @PageableDefault(size = 9, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable
   ) {
-    Sort sortOrder = Sort.by(Sort.Order.desc("createdAt"));
-    Pageable pageable = PageRequest.of(page, size, sortOrder);
     PageResponse<ReviewResponseDTO> response = reviewService.getLatestReviews(pageable);
     return ResponseEntity.ok(response);
   }

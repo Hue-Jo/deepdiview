@@ -11,6 +11,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.data.domain.Sort.Direction;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -69,7 +70,7 @@ public class CommentController {
   @GetMapping
   public ResponseEntity<PageResponse<CommentResponseDto>> getCommentsByReviewId(
       @PathVariable Long reviewId,
-      @PageableDefault(size = 20, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable) {
+      @PageableDefault(size = 20, sort = "createdAt", direction = Direction.ASC) Pageable pageable) {
 
     Page<CommentResponseDto> comments = commentService.getCommentsByReviewId(reviewId, pageable);
     return ResponseEntity.ok(new PageResponse<>(comments));
