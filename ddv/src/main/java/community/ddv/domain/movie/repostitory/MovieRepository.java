@@ -3,6 +3,7 @@ package community.ddv.domain.movie.repostitory;
 import community.ddv.domain.movie.entity.Movie;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.EntityGraph;
@@ -44,5 +45,13 @@ public interface MovieRepository extends JpaRepository<Movie, Long> {
 
   // TMDB Id로 특정영화 조회
   Optional<Movie> findByTmdbId(Long tmdbId);
+
+  @Query("""
+      SELECT m 
+      FROM Movie m 
+      WHERE m.tmdbId NOT IN :excludedTmdbIds 
+      ORDER BY m.popularity DESC
+      """)
+  List<Movie> findTop6RankExcludedTmdbIds(Set<Long> excludedTmdbIds, Pageable pageable);
 
 }
