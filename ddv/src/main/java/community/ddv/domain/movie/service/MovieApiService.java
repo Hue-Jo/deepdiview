@@ -8,8 +8,10 @@ import community.ddv.domain.movie.repostitory.GenreRepository;
 import community.ddv.domain.movie.repostitory.MovieRepository;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Optional;
+import java.util.Map;
 import java.util.Set;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -36,8 +38,12 @@ public class MovieApiService {
   public void fetchAndSaveMovies() {
 
     int currentPage = 1;
-    int totalPages;
+    int totalPages = 1;
     Set<Long> fetchedTmdbIds = new HashSet<>();
+
+    // 기존에 존재하던 영화들은 Map에 넣어둠 (반복문에서 사용되지 않도록 밖으로 빼냄)
+    Map<Long, Movie> existingMovies = movieRepository.findAll().stream()
+        .collect(Collectors.toMap(Movie::getTmdbId, Function.identity()));
 
     do {
       try {
@@ -62,11 +68,9 @@ public class MovieApiService {
             fetchedTmdbIds.add(movie.getTmdbId());
 
             // 이미 DB에 존재하는 TMDB ID인지 확인
-            Optional<Movie> existingMovieOpt = movieRepository.findByTmdbId(movie.getTmdbId());
-
-            // 이미 존재한다면, 인기도만 업데이트 후 저장
-            if (existingMovieOpt.isPresent()) {
-              Movie existingMovie = existingMovieOpt.get();
+            Movie existingMovie = existingMovies.get(movie.getTmdbId());
+            // 이미 존재한다면, 인기도와 현재 제공중인지 여부만 업데이트 후 저장
+            if (existingMovie != null) {
               existingMovie.setPopularity(movie.getPopularity());
               existingMovie.setAvailable(true);
               movieRepository.save(existingMovie);
@@ -75,7 +79,6 @@ public class MovieApiService {
               movieRepository.save(movie);
             }
           }
-
           log.info("영화 정보가 DB에 성공적으로 저장되었습니다. 페이지 " + currentPage + "/" + totalPages);
           currentPage++;
 
