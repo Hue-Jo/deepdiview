@@ -94,8 +94,8 @@ public class VoteService {
 //    LocalDateTime startDate = thisWeekStart;
 //    LocalDateTime endDate = thisWeekEnd;
 
-    // 인기도 탑 5의 영화 세부 정보 가져오기
-    List<MovieDTO> top5Movies = movieService.getTop5Movies();
+    // 인기도 탑 6의 영화 세부 정보 가져오기
+    List<MovieDTO> top6Movies = movieService.getTop6Movies();
     log.info("인기도 탑5의 영화를 가져왔습니다.");
 
     Vote vote = Vote.builder()
@@ -106,7 +106,7 @@ public class VoteService {
         .build();
 
     // 선택된 영화들을 VoteMovie 테이블에 저장
-    for (MovieDTO movieDTO : top5Movies) {
+    for (MovieDTO movieDTO : top6Movies) {
       Movie movie = movieRepository.findByTmdbId(movieDTO.getId())
           .orElseThrow(() -> new DeepdiviewException(ErrorCode.MOVIE_NOT_FOUND));
       VoteMovie voteMovie = VoteMovie.builder()

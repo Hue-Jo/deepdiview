@@ -12,7 +12,6 @@ import community.ddv.domain.user.entity.User;
 import community.ddv.domain.user.service.UserService;
 import community.ddv.global.exception.DeepdiviewException;
 import community.ddv.global.exception.ErrorCode;
-import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -22,8 +21,6 @@ import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
-import org.springframework.data.domain.Sort.Direction;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -59,11 +56,11 @@ public class MovieService {
   }
 
   /**
-   * 넷플릭스 내 인기도 탑 5 영화 세부정보 조회
+   * 넷플릭스 내 인기도 탑 6 영화 세부정보 조회
    */
   @Transactional(readOnly = true)
-  public List<MovieDTO> getTop5Movies() {
-    return getTopMovies(5);
+  public List<MovieDTO> getTop6Movies() {
+    return getTopMovies(6);
   }
 
   /**
