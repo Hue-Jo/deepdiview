@@ -29,7 +29,7 @@ public interface ReviewRepository extends JpaRepository<Review, Long> {
 
   List<Review> findAllByUser_Id(Long userId);
 
-  //Page<Review> findAllByOrderByCreatedAtDesc(Pageable pageable);
+  // 최신 리뷰 조회
   @Query(
       value = """
             select r from Review r
@@ -45,6 +45,7 @@ public interface ReviewRepository extends JpaRepository<Review, Long> {
   @Query("select avg(r.rating) from Review r where r.movie = :movie")
   Double findAverageRatingByMovie(@Param("movie") Movie movie);
 
+  // 특정 리뷰 조회 (댓글도 함께 조회)
   @Query("""
           select distinct r from Review r
           join fetch r.user

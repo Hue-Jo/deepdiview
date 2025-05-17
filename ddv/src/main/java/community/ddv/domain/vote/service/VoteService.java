@@ -27,11 +27,15 @@ import java.time.LocalTime;
 import java.time.temporal.TemporalAdjusters;
 import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.cache.annotation.Cacheable;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -94,9 +98,11 @@ public class VoteService {
 //    LocalDateTime startDate = thisWeekStart;
 //    LocalDateTime endDate = thisWeekEnd;
 
-    // 인기도 탑 5의 영화 세부 정보 가져오기
-    List<MovieDTO> top5Movies = movieService.getTop5Movies();
-    log.info("인기도 탑5의 영화를 가져왔습니다.");
+    // 과거에 1위를 했던 영화들 가져오기
+    Set<Long> pastTopMovies = getAllPastTopRankMovies();
+    // 과거 1위 했던 영화 빼고 인기도 탑 6개 가져오기
+    Pageable topMoviesSize = PageRequest.of(0, 6);
+    List<Movie> top6Movies = movieRepository.findTop6RankExcludedTmdbIds(pastTopMovies, topMoviesSize);
 
     Vote vote = Vote.builder()
         .title("다음주의 영화를 선택해주세요")
@@ -106,9 +112,7 @@ public class VoteService {
         .build();
 
     // 선택된 영화들을 VoteMovie 테이블에 저장
-    for (MovieDTO movieDTO : top5Movies) {
-      Movie movie = movieRepository.findByTmdbId(movieDTO.getId())
-          .orElseThrow(() -> new DeepdiviewException(ErrorCode.MOVIE_NOT_FOUND));
+    for (Movie movie : top6Movies) {
       VoteMovie voteMovie = VoteMovie.builder()
           .vote(vote)
           .movie(movie)
@@ -121,6 +125,20 @@ public class VoteService {
     return new VoteCreatedDTO(savedVote);
 
   }
+
+  // 과거 투표 1위했던 영화 조회 메서드
+  public Set<Long> getAllPastTopRankMovies() {
+    List<Vote> allVotes = voteRepository.findAll();
+    Set<Long> topTmdbIds = new HashSet<>();
+    for (Vote vote : allVotes) {
+      List<VoteMovieResultDTO> resultDTOS = calculateVoteResult(vote);
+      if (!resultDTOS.isEmpty()) {
+        topTmdbIds.add(resultDTOS.get(0).getTmdbId());
+      }
+    }
+    return topTmdbIds;
+  }
+
 
   /**
    * 현재 진행중인 투표의 선택지 조회 tmdbIds 반환

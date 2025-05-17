@@ -18,21 +18,13 @@ public class Scheduler {
   private final CacheManager cacheManager;
   private final CertificationService certificationService;
 
-  // 매주 월요일 0시 0분 0초에 영화 데이터 업데이트하면서 인기 영화 목록 캐시 초기화
-  @Scheduled(cron = "0 0 0 * * MON")
+  // 매주 일요일 0시 0분 5초에 영화 데이터 업데이트하면서 인기 영화 목록 캐시 초기화
+  @Scheduled(cron = "5 0 0 * * SUN")
   public void updateMovieApi() {
     log.info("영화정보 업데이트를 시작합니다.");
     movieApiService.fetchAndSaveMovies();
     log.info("영화정보 업데이트를 완료했습니다.");
     clearTopMoviesCache();
-  }
-
-  // 매주 월요일 0시 5분에 런타임 데이터 업데이트
-  @Scheduled(cron = "0 5 0 * * MON")
-  public void updateMovieRuntimeApi() {
-    log.info("런타임정보 업데이트를 시작합니다.");
-    movieApiService.fetchMovieRunTime();
-    log.info("런타임정보 업데이트를 완료했습니다.");
   }
 
   public void clearTopMoviesCache() {
@@ -43,7 +35,15 @@ public class Scheduler {
     log.info("인기영화 캐시 초기화 완료");
   }
 
-  // 지난 주 1위 영화 캐시 초기화
+  // 매주 일요일 0시 2분에 런타임 데이터 업데이트
+  @Scheduled(cron = "0 2 0 * * SUN")
+  public void updateMovieRuntimeApi() {
+    log.info("런타임정보 업데이트를 시작합니다.");
+    movieApiService.fetchMovieRunTime();
+    log.info("런타임정보 업데이트를 완료했습니다.");
+  }
+
+  // 매주 일요일 0시 0분 0초 지난 주 1위 영화 캐시 초기화
   @Scheduled(cron = "0 0 0 * * SUN")
   public void clearTopRankMovieCache() {
     Cache topVotedCache = cacheManager.getCache("topRankMovie");
@@ -54,8 +54,8 @@ public class Scheduler {
     log.info("지난 주 1위 영화 캐시 초기화 완료");
   }
 
-  // 매주 일요일 0시, 인증상태 초기화 스케줄링
-  @Scheduled(cron = "0 0 0 * * SUN")
+  // 매주 일요일 0시 2초, 인증상태 초기화 스케줄링
+  @Scheduled(cron = "2 0 0 * * SUN")
   public void resetCertificationStatus() {
     certificationService.resetCertificationStatus();
   }
