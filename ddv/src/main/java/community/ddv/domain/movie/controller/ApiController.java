@@ -20,7 +20,7 @@ public class ApiController {
   private final MovieApiService movieApiService;
 
   // 장르 정보 저장
-  @Operation(summary = "DB 초기화했을 때 1순위 저장", description = "평소에는 사용하지 않으셔도 됩니다.")
+  @Operation(summary = "DB 초기화했을 때 1순위 저장")
   @GetMapping("/genres")
   public String fetchAndSaveGenres() {
 
@@ -29,7 +29,7 @@ public class ApiController {
   }
 
   // 영화 정보 저장
-  @Operation(summary = "DB 초기화했을 때 후순위 저장", description = "평소에는 사용하지 않으셔도 됩니다.")
+  @Operation(summary = "DB 초기화했을 때 후순위 저장")
   @PostMapping("/movies")
   public String fetchAndSaveMovies() {
 

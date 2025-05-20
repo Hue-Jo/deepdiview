@@ -98,10 +98,6 @@ public class MovieService {
           return new DeepdiviewException(ErrorCode.MOVIE_NOT_FOUND);
         });
 
-//    // 최신 리뷰 9개만 보여주기
-//    Pageable pageable = PageRequest.of(0, 9, Sort.by(Direction.DESC, "createdAt"));
-//    Page<ReviewResponseDTO> reviews = reviewService.getReviewByMovieId(tmdbId, pageable, certifiedFilter);
-
     ReviewResponseDTO myReview = null;
     User loginUser = userService.getLoginOrNull();
     if (loginUser != null) {
@@ -109,7 +105,6 @@ public class MovieService {
       myReview = optionalReview.map(reviewService::convertToReviewResponseWithoutCommentsDto).orElse(null);
     }
 
-  //  log.info("영화 tmdbId = '{}'로 영화의 세부정보 조회 성공", tmdbId);
     return convertToDto(movie, myReview, reviewService.getRatingsByMovie(movie));
   }
 
@@ -126,7 +121,6 @@ public class MovieService {
 
   public MovieDTO convertToDto(
       Movie movie,
-      //List<ReviewResponseDTO> reviews,
       ReviewResponseDTO myReview,
       ReviewRatingDTO ratingStats) {
 
@@ -146,7 +140,6 @@ public class MovieService {
         .genre_names(movie.getMovieGenres().stream()
             .map(movieGenre -> movieGenre.getGenre().getName())
             .collect(Collectors.toList()))
-        //.reviews(reviews != null ? reviews : Collections.emptyList())
         .myReview(myReview)
         .ratingStats(ratingStats)
         .isAvailable(movie.isAvailable())

@@ -1,25 +1,24 @@
 package community.ddv.domain.vote.service;
 
+import community.ddv.domain.movie.entity.Movie;
+import community.ddv.domain.movie.repostitory.MovieRepository;
 import community.ddv.domain.movie.service.MovieService;
-import community.ddv.global.exception.ErrorCode;
 import community.ddv.domain.user.constant.Role;
-import community.ddv.domain.movie.dto.MovieDTO;
+import community.ddv.domain.user.entity.User;
+import community.ddv.domain.user.service.UserService;
 import community.ddv.domain.vote.dto.VoteDTO.VoteCreatedDTO;
 import community.ddv.domain.vote.dto.VoteDTO.VoteResultDTO;
 import community.ddv.domain.vote.dto.VoteMovieResultDTO;
 import community.ddv.domain.vote.dto.VoteParticipationDTO.VoteOptionsDto;
 import community.ddv.domain.vote.dto.VoteParticipationDTO.VoteParticipationRequestDto;
 import community.ddv.domain.vote.dto.VoteParticipationDTO.VoteParticipationResponseDto;
-import community.ddv.domain.movie.entity.Movie;
-import community.ddv.domain.user.entity.User;
 import community.ddv.domain.vote.entity.Vote;
 import community.ddv.domain.vote.entity.VoteMovie;
 import community.ddv.domain.vote.entity.VoteParticipation;
-import community.ddv.global.exception.DeepdiviewException;
-import community.ddv.domain.movie.repostitory.MovieRepository;
 import community.ddv.domain.vote.repository.VoteParticipationRepository;
 import community.ddv.domain.vote.repository.VoteRepository;
-import community.ddv.domain.user.service.UserService;
+import community.ddv.global.exception.DeepdiviewException;
+import community.ddv.global.exception.ErrorCode;
 import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -69,7 +68,7 @@ public class VoteService {
     // 투표 생성은 일요일만 가능, 한 주에 한 번만 가능
     LocalDateTime now = LocalDateTime.now();
 
-    if (now.getDayOfWeek() != DayOfWeek.SUNDAY) {
+    if (now.getDayOfWeek() != DayOfWeek.TUESDAY) {
       log.error("투표 생성은 일요일만 가능합니다 : 현재요일 = {}", now.getDayOfWeek());
       throw new DeepdiviewException(ErrorCode.INVALID_VOTE_CREATE_DATE);
     }

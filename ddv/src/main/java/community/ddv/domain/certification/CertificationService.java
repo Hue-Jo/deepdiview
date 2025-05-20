@@ -110,9 +110,7 @@ public class CertificationService {
     if (status == null) {
       throw new DeepdiviewException(ErrorCode.CERTIFICATION_NOT_FOUND);
     }
-//    if (status.equals(CertificationStatus.APPROVED)) {
-//      throw new DeepdiviewException(ErrorCode.ALREADY_APPROVED);
-//    }
+
     return convertToCertificationDto(certification);
   }
 

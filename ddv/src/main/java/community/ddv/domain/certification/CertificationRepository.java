@@ -16,9 +16,6 @@ public interface CertificationRepository extends JpaRepository<Certification, Lo
 
   boolean existsByUser_IdAndStatus(Long userId, CertificationStatus status);
 
-//  Page<Certification> findByStatus(CertificationStatus status, Pageable pageable);
-//  Page<Certification> findByStatusIsNotNull(Pageable pageable);
-
   // 상태별 조회
   @Query("SELECT c FROM Certification c WHERE " +
       "( c.status = :status) AND " +

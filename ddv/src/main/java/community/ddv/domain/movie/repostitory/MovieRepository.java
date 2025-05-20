@@ -6,7 +6,6 @@ import java.util.Optional;
 import java.util.Set;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -49,7 +48,8 @@ public interface MovieRepository extends JpaRepository<Movie, Long> {
   @Query("""
       SELECT m 
       FROM Movie m 
-      WHERE m.tmdbId NOT IN :excludedTmdbIds 
+      WHERE m.isAvailable = true 
+        AND m.tmdbId NOT IN :excludedTmdbIds 
       ORDER BY m.popularity DESC
       """)
   List<Movie> findTop6RankExcludedTmdbIds(Set<Long> excludedTmdbIds, Pageable pageable);

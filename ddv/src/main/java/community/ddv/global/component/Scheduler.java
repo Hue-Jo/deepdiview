@@ -35,8 +35,8 @@ public class Scheduler {
     log.info("인기영화 캐시 초기화 완료");
   }
 
-  // 매주 일요일 0시 2분에 런타임 데이터 업데이트
-  @Scheduled(cron = "0 2 0 * * SUN")
+  // 매주 일요일 0시 3분에 런타임 데이터 업데이트
+  @Scheduled(cron = "0 3 0 * * SUN")
   public void updateMovieRuntimeApi() {
     log.info("런타임정보 업데이트를 시작합니다.");
     movieApiService.fetchMovieRunTime();
