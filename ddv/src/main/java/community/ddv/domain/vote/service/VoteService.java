@@ -68,7 +68,7 @@ public class VoteService {
     // 투표 생성은 일요일만 가능, 한 주에 한 번만 가능
     LocalDateTime now = LocalDateTime.now();
 
-    if (now.getDayOfWeek() != DayOfWeek.SUNDAY) {
+    if (now.getDayOfWeek() != DayOfWeek.TUESDAY) {
       log.error("투표 생성은 일요일만 가능합니다 : 현재요일 = {}", now.getDayOfWeek());
       throw new DeepdiviewException(ErrorCode.INVALID_VOTE_CREATE_DATE);
     }
