@@ -26,7 +26,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -232,15 +231,18 @@ public class ReviewService {
 
   // 댓글 포함  X
   public ReviewResponseDTO convertToReviewResponseWithoutCommentsDto(Review review) {
-    return convertToReviewResponseDtoBase(review, false);
+    return convertToReviewResponseDtoBase(review, false, null);
   }
 
   // 댓글 포함  O
   public ReviewResponseDTO convertToReviewResponseWithCommentsDto(Review review) {
-    return convertToReviewResponseDtoBase(review, true);
+    List<CommentResponseDto> commentDtos = review.getComments().stream()
+        .map(this::convertToCommentDto)
+        .collect(Collectors.toList());
+    return convertToReviewResponseDtoBase(review, true, commentDtos);
   }
 
-  private ReviewResponseDTO convertToReviewResponseDtoBase(Review review, boolean includeComments) {
+  private ReviewResponseDTO convertToReviewResponseDtoBase(Review review, boolean includeComments, List<CommentResponseDto> commentDtos) {
 
     User loginUser = userService.getLoginOrNull();
     Boolean likedByUser = (loginUser != null)
@@ -268,10 +270,8 @@ public class ReviewService {
         .posterPath(review.getMovie().getPosterPath())
         .certified(review.isCertified());
 
-    if (includeComments) {
-      builder.comments(review.getComments().stream()
-          .map(this::convertToCommentDto)
-          .collect(Collectors.toList()));
+    if (includeComments && commentDtos != null) {
+      builder.comments(commentDtos);
     }
     return builder.build();
   }
