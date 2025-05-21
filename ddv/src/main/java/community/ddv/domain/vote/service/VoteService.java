@@ -11,7 +11,6 @@ import community.ddv.domain.vote.dto.VoteDTO.VoteResultDTO;
 import community.ddv.domain.vote.dto.VoteMovieResultDTO;
 import community.ddv.domain.vote.dto.VoteParticipationDTO.VoteOptionsDto;
 import community.ddv.domain.vote.dto.VoteParticipationDTO.VoteParticipationRequestDto;
-import community.ddv.domain.vote.dto.VoteParticipationDTO.VoteParticipationResponseDto;
 import community.ddv.domain.vote.entity.Vote;
 import community.ddv.domain.vote.entity.VoteMovie;
 import community.ddv.domain.vote.entity.VoteParticipation;
@@ -160,7 +159,7 @@ public class VoteService {
         .collect(Collectors.toList());
 
     log.info("투표 선택지 조회 완료");
-    return new VoteOptionsDto(activatingVote.getId(), tmdbIds);
+    return new VoteOptionsDto(tmdbIds);
   }
 
   /**
@@ -169,7 +168,7 @@ public class VoteService {
    * @param voteParticipationRequestDto
    */
   @Transactional
-  public VoteParticipationResponseDto participateVote(VoteParticipationRequestDto voteParticipationRequestDto) {
+  public VoteResultDTO participateVote(VoteParticipationRequestDto voteParticipationRequestDto) {
 
     User user = userService.getLoginUser();
     log.info("투표 시도 : userId = {} ", user.getId());
@@ -201,37 +200,56 @@ public class VoteService {
     voteParticipationRepository.save(voteParticipation);
     selectedVotedMovie.plusVoteCount(); // 득표수 증가 & 최종 득표시간 업데이트
 
-    log.info("투표 참여 완료: 사용자 ID = {}, 영화 ID = {}", user.getId(),
-        selectedVotedMovie.getMovie().getTmdbId());
-    return new VoteParticipationResponseDto(true, selectedVotedMovie.getMovie().getTmdbId());
+    log.info("투표 참여 완료: 사용자 ID = {}, 영화 ID = {}", user.getId(), selectedVotedMovie.getMovie().getTmdbId());
+    //return new VoteParticipationResponseDto(true, selectedVotedMovie.getMovie().getTmdbId());
+    return createVoteResultDto(vote, user.getId());
 
   }
 
   /**
    * 투표 결과 계산 메서드
    */
-  private List<VoteMovieResultDTO> calculateVoteResult(Vote vote) {
+  private List<VoteMovieResultDTO> calculateVoteResult(Vote vote, Long userId) {
+
+    // 사용자가 선택한 영화 Id 찾기
+    Long selectedTmdbId = null;
+
+    if (userId != null) {
+      selectedTmdbId = vote.getVoteParticipations().stream()
+          .filter(voteParticipation -> voteParticipation.getUser().getId().equals(userId))
+          .map(voteParticipation -> voteParticipation.getSelectedVoteMovie().getMovie().getTmdbId())
+          .findFirst() // 한 투표에서는 한 번만 참여 가능이니까
+          .orElse(null);
+    }
 
     // 투표 결과 저장 리스트 생성
     List<VoteMovieResultDTO> voteResults = new ArrayList<>();
     for (VoteMovie voteMovie : vote.getVoteMovies()) {
       Movie movie = voteMovie.getMovie();
-      VoteMovieResultDTO movieResultDTO = new VoteMovieResultDTO(
-          movie.getTmdbId(),
-          voteMovie.getVoteCount(),
-          0,
-          voteMovie.getLastVotedAt()
-      );
+
+      VoteMovieResultDTO  movieResultDTO = VoteMovieResultDTO.builder()
+          .tmdbId(movie.getTmdbId())
+          .voteCount(voteMovie.getVoteCount())
+          .rank(0)
+          .lastVotedTime(voteMovie.getLastVotedAt())
+          .voted(userId != null ? voteMovie.getMovie().getTmdbId().equals(selectedTmdbId) : null)
+          .build();
+//      VoteMovieResultDTO movieResultDTO = new VoteMovieResultDTO(
+//          movie.getTmdbId(),
+//          voteMovie.getVoteCount(),
+//          0,
+//          voteMovie.getLastVotedAt()
+//      );
       voteResults.add(movieResultDTO);
     }
 
-    // 정렬
+    // 득표수 내림차순, 동일 득표시에는 최신 투표 시간 내림차순 정렬
     voteResults.sort(
-        // 득표수 오름차순 정렬 (comparingInt는 기본적으로 오름차순 정렬만 제공)
+        // 1. 득표수 오름차순 정렬 (comparingInt는 기본적으로 오름차순 정렬만 제공)
         Comparator.comparingInt(VoteMovieResultDTO::getVoteCount)
-            // 내림차순 정렬로 변환
+            // 2. 내림차순 정렬로 변환
             .reversed()
-            // 득표수가 같은 경우, 최신 득표 시간 기준 정렬
+            // 3. 득표수가 같은 경우, 최신 득표 시간 기준 정렬
             .thenComparing(VoteMovieResultDTO::getLastVotedTime, Comparator.nullsLast(Comparator.reverseOrder()))
     );
 
@@ -243,18 +261,16 @@ public class VoteService {
     return voteResults;
   }
 
+  private List<VoteMovieResultDTO> calculateVoteResult(Vote vote) {
+    return calculateVoteResult(vote, null);
+  }
+
   /**
    * 투표 결과 추출 메서드
    */
-  private VoteResultDTO createVoteResultDto(Vote vote) {
-    List<VoteMovieResultDTO> voteResults = calculateVoteResult(vote);
-    return new VoteResultDTO(
-        vote.getId(),
-        vote.getStartDate(),
-        vote.getEndDate(),
-        vote.getEndDate().isAfter(LocalDateTime.now()),
-        voteResults
-    );
+  private VoteResultDTO createVoteResultDto(Vote vote, Long userId) {
+    List<VoteMovieResultDTO> voteResults = calculateVoteResult(vote, userId);;
+    return new VoteResultDTO(voteResults);
   }
 
   /**
@@ -262,27 +278,27 @@ public class VoteService {
    * @param voteId
    */
   @Transactional(readOnly = true)
-  public VoteResultDTO getVoteResult(Long voteId){
+  public VoteResultDTO getVoteResult(Long voteId, Long userId){
     log.info("특정투표 결과 조회 시도 : voteId = {}", voteId);
 
     Vote vote = voteRepository.findById(voteId)
         .orElseThrow(() -> new DeepdiviewException(ErrorCode.VOTE_NOT_FOUND));
 
-    return createVoteResultDto(vote);
+    return createVoteResultDto(vote, userId);
   }
 
   /**
    * 현재 진행중인 투표 결과 조회
    */
   @Transactional(readOnly = true)
-  public VoteResultDTO getCurrentVoteResult(){
+  public VoteResultDTO getCurrentVoteResult(Long userId){
 
     LocalDateTime now = LocalDateTime.now();
     Vote currentVote = voteRepository.findByStartDateBeforeAndEndDateAfter(now, now)
         .orElseThrow(() -> new DeepdiviewException(ErrorCode.VOTE_NOT_FOUND));
 
     log.info("현재 진행중인 투표 결과 조회");
-    return createVoteResultDto(currentVote);
+    return createVoteResultDto(currentVote, userId);
   }
 
 
@@ -296,7 +312,7 @@ public class VoteService {
 
     Vote previousVote = latestVote.get(1); // 두 번쨰로 최신인 투표
     log.info("지난 투표 전체 결과 조회");
-    return getVoteResult(previousVote.getId());
+    return getVoteResult(previousVote.getId(), null);
   }
 
   /**
@@ -317,7 +333,7 @@ public class VoteService {
     Vote lastWeekVote = voteRepository.findByStartDateBetween(voteStarted, voteEnded)
         .orElseThrow(() -> new DeepdiviewException(ErrorCode.VOTE_NOT_FOUND));
 
-    VoteResultDTO voteResults = getVoteResult(lastWeekVote.getId());
+    VoteResultDTO voteResults = getVoteResult(lastWeekVote.getId(), null);
 
     if (voteResults.getResults().isEmpty()) {
       throw new DeepdiviewException(ErrorCode.VOTE_RESULT_NOT_FOUND);
