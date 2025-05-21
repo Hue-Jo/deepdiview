@@ -10,7 +10,7 @@ public class VoteParticipationDTO {
   @Getter
   @AllArgsConstructor
   public static class VoteOptionsDto {
-    private Long voteId;
+    //private Long voteId;
     private List<Long> tmdbIds; // 5개 선택지
   }
 
@@ -22,13 +22,13 @@ public class VoteParticipationDTO {
   }
 
 
-  @Getter
-  @AllArgsConstructor
-  public static class VoteParticipationResponseDto {
-
-    private boolean voteSuccess; // 성공여부
-    private Long tmdbId; // 선택한 영화
-
-  }
+//  @Getter
+//  @AllArgsConstructor
+//  public static class VoteParticipationResponseDto {
+//
+//    private boolean voteSuccess; // 성공여부
+//    private Long tmdbId; // 선택한 영화
+//
+//  }
 
 }

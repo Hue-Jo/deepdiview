@@ -1,10 +1,11 @@
 package community.ddv.domain.vote.controller;
 
+import community.ddv.domain.user.entity.User;
+import community.ddv.domain.user.service.UserService;
 import community.ddv.domain.vote.dto.VoteDTO.VoteCreatedDTO;
 import community.ddv.domain.vote.dto.VoteDTO.VoteResultDTO;
 import community.ddv.domain.vote.dto.VoteParticipationDTO.VoteOptionsDto;
 import community.ddv.domain.vote.dto.VoteParticipationDTO.VoteParticipationRequestDto;
-import community.ddv.domain.vote.dto.VoteParticipationDTO.VoteParticipationResponseDto;
 import community.ddv.domain.vote.service.VoteService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -28,6 +29,7 @@ import org.springframework.web.bind.annotation.RestController;
 public class VoteController {
 
   private final VoteService voteService;
+  private final UserService userService;
 
   @Operation(summary = "투표 생성", description = "관리자 전용, 일요일만 투표 생성 가능")
   @PostMapping
@@ -44,7 +46,7 @@ public class VoteController {
 
   @Operation(summary = "현재 진행중인 투표에 참여하기")
   @PostMapping("/participate")
-  public ResponseEntity<VoteParticipationResponseDto> participateVote(
+  public ResponseEntity<VoteResultDTO> participateVote(
       @Valid @RequestBody VoteParticipationRequestDto voteParticipationRequestDto) {
     return ResponseEntity.ok(voteService.participateVote(voteParticipationRequestDto));
   }
@@ -52,7 +54,9 @@ public class VoteController {
   @Operation(summary = "현재 진행중인 투표 결과 확인", description = "현재 투표가 진행중일 때만 결과 확인 가능합니다.")
   @GetMapping("/result")
   public ResponseEntity<VoteResultDTO> getVoteResult() {
-    return ResponseEntity.ok(voteService.getCurrentVoteResult());
+    User loginuser = userService.getLoginUser();
+    Long userId = loginuser != null ? loginuser.getId() : null;
+    return ResponseEntity.ok(voteService.getCurrentVoteResult(userId));
   }
 
   @Operation(summary = "투표 삭제", description = "관리자만 삭제 가능")
