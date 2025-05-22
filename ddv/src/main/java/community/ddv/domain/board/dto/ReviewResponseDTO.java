@@ -31,5 +31,5 @@ public class ReviewResponseDTO {
   private String posterPath;
   private Boolean certified;
 
-  private List<CommentResponseDto> comments;
+  //private List<CommentResponseDto> comments;
 }

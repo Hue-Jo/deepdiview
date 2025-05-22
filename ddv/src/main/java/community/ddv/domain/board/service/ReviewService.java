@@ -1,11 +1,9 @@
 package community.ddv.domain.board.service;
 
-import community.ddv.domain.board.dto.CommentDTO.CommentResponseDto;
 import community.ddv.domain.board.dto.ReviewDTO;
 import community.ddv.domain.board.dto.ReviewDTO.ReviewUpdateDTO;
 import community.ddv.domain.board.dto.ReviewRatingDTO;
 import community.ddv.domain.board.dto.ReviewResponseDTO;
-import community.ddv.domain.board.entity.Comment;
 import community.ddv.domain.board.entity.Review;
 import community.ddv.domain.board.repository.CommentRepository;
 import community.ddv.domain.board.repository.LikeRepository;
@@ -21,7 +19,6 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -69,7 +66,7 @@ public class ReviewService {
         .build();
 
     reviewRepository.save(review);
-    return convertToReviewResponseWithoutCommentsDto(review);
+    return convertToReviewResponseDto(review);
   }
 
   /**
@@ -117,7 +114,7 @@ public class ReviewService {
         reviewUpdateDTO.getRating()
     );
 
-    return convertToReviewResponseWithoutCommentsDto(review);
+    return convertToReviewResponseDto(review);
 
   }
 
@@ -143,7 +140,7 @@ public class ReviewService {
       reviews = reviewRepository.findByMovie(movie, pageable);
     }
 
-    return reviews.map(this::convertToReviewResponseWithoutCommentsDto);
+    return reviews.map(this::convertToReviewResponseDto);
   }
 
   /**
@@ -156,7 +153,7 @@ public class ReviewService {
     //Review review = reviewRepository.findById(reviewId)
     Review review = reviewRepository.findWithCommentsById(reviewId)
         .orElseThrow(() -> new DeepdiviewException(ErrorCode.REVIEW_NOT_FOUND));
-    return convertToReviewResponseWithCommentsDto(review);
+    return convertToReviewResponseDto(review);
   }
 
   /**
@@ -178,7 +175,7 @@ public class ReviewService {
       reviews = reviewRepository.findByUser_Id(userId, pageable);
     }
 
-    return reviews.map(this::convertToReviewResponseWithoutCommentsDto);
+    return reviews.map(this::convertToReviewResponseDto);
 
   }
 
@@ -190,7 +187,7 @@ public class ReviewService {
   public PageResponse<ReviewResponseDTO> getLatestReviews(Pageable pageable) {
     //Page<Review> reviews = reviewRepository.findAllByOrderByCreatedAtDesc(pageable);
     Page<Review> reviews = reviewRepository.findLatestReviews(pageable);
-    Page<ReviewResponseDTO> reviewResponseDTOS = reviews.map(this::convertToReviewResponseWithoutCommentsDto);
+    Page<ReviewResponseDTO> reviewResponseDTOS = reviews.map(this::convertToReviewResponseDto);
     return new PageResponse<>(reviewResponseDTOS);
   }
 
@@ -229,20 +226,20 @@ public class ReviewService {
   }
 
 
-  // 댓글 포함  X
-  public ReviewResponseDTO convertToReviewResponseWithoutCommentsDto(Review review) {
-    return convertToReviewResponseDtoBase(review, false, null);
-  }
+//  // 댓글 포함  X
+//  public ReviewResponseDTO convertToReviewResponseWithoutCommentsDto(Review review) {
+//    return convertToReviewResponseDtoBase(review, false, null);
+//  }
+//
+//  // 댓글 포함  O
+//  public ReviewResponseDTO convertToReviewResponseWithCommentsDto(Review review) {
+//    List<CommentResponseDto> commentDtos = review.getComments().stream()
+//        .map(this::convertToCommentDto)
+//        .collect(Collectors.toList());
+//    return convertToReviewResponseDtoBase(review, true, commentDtos);
+//  }
 
-  // 댓글 포함  O
-  public ReviewResponseDTO convertToReviewResponseWithCommentsDto(Review review) {
-    List<CommentResponseDto> commentDtos = review.getComments().stream()
-        .map(this::convertToCommentDto)
-        .collect(Collectors.toList());
-    return convertToReviewResponseDtoBase(review, true, commentDtos);
-  }
-
-  private ReviewResponseDTO convertToReviewResponseDtoBase(Review review, boolean includeComments, List<CommentResponseDto> commentDtos) {
+  public ReviewResponseDTO convertToReviewResponseDto(Review review) {
 
     User loginUser = userService.getLoginOrNull();
     Boolean likedByUser = (loginUser != null)
@@ -252,7 +249,8 @@ public class ReviewService {
     // 댓글 개수
     int commentCount = commentRepository.countByReview(review);
 
-    ReviewResponseDTO.ReviewResponseDTOBuilder builder = ReviewResponseDTO.builder()
+    //ReviewResponseDTO.ReviewResponseDTOBuilder builder = ReviewResponseDTO.builder()
+    return ReviewResponseDTO.builder()
         .reviewId(review.getId())
         .userId(review.getUser().getId())
         .nickname(review.getUser().getNickname())
@@ -268,24 +266,25 @@ public class ReviewService {
         .tmdbId(review.getMovie().getTmdbId())
         .movieTitle(review.getMovie().getTitle())
         .posterPath(review.getMovie().getPosterPath())
-        .certified(review.isCertified());
-
-    if (includeComments && commentDtos != null) {
-      builder.comments(commentDtos);
-    }
-    return builder.build();
-  }
-
-  private CommentResponseDto convertToCommentDto(Comment comment) {
-    return CommentResponseDto.builder()
-        .id(comment.getId())
-        .reviewId(comment.getReview().getId())
-        .userId(comment.getUser().getId())
-        .userNickname(comment.getUser().getNickname())
-        .profileImageUrl(comment.getUser().getProfileImageUrl())
-        .content(comment.getContent())
-        .createdAt(comment.getCreatedAt())
-        .updatedAt(comment.getUpdatedAt())
+        .certified(review.isCertified())
         .build();
+
+//    if (includeComments && commentDtos != null) {
+//      builder.comments(commentDtos);
+//    }
+//    return builder.build();
   }
+
+//  private CommentResponseDto convertToCommentDto(Comment comment) {
+//    return CommentResponseDto.builder()
+//        .id(comment.getId())
+//        .reviewId(comment.getReview().getId())
+//        .userId(comment.getUser().getId())
+//        .userNickname(comment.getUser().getNickname())
+//        .profileImageUrl(comment.getUser().getProfileImageUrl())
+//        .content(comment.getContent())
+//        .createdAt(comment.getCreatedAt())
+//        .updatedAt(comment.getUpdatedAt())
+//        .build();
+//  }
 }
