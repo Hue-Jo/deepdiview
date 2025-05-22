@@ -102,7 +102,7 @@ public class MovieService {
     User loginUser = userService.getLoginOrNull();
     if (loginUser != null) {
       Optional<Review> optionalReview = reviewRepository.findByUserAndMovie(loginUser, movie);
-      myReview = optionalReview.map(reviewService::convertToReviewResponseWithoutCommentsDto).orElse(null);
+      myReview = optionalReview.map(reviewService::convertToReviewResponseDto).orElse(null);
     }
 
     return convertToDto(movie, myReview, reviewService.getRatingsByMovie(movie));
