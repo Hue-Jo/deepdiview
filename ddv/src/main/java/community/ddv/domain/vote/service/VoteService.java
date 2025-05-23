@@ -201,7 +201,6 @@ public class VoteService {
     selectedVotedMovie.plusVoteCount(); // 득표수 증가 & 최종 득표시간 업데이트
 
     log.info("투표 참여 완료: 사용자 ID = {}, 영화 ID = {}", user.getId(), selectedVotedMovie.getMovie().getTmdbId());
-    //return new VoteParticipationResponseDto(true, selectedVotedMovie.getMovie().getTmdbId());
     return createVoteResultDto(vote, user.getId());
 
   }
@@ -234,12 +233,6 @@ public class VoteService {
           .lastVotedTime(voteMovie.getLastVotedAt())
           .voted(userId != null ? voteMovie.getMovie().getTmdbId().equals(selectedTmdbId) : null)
           .build();
-//      VoteMovieResultDTO movieResultDTO = new VoteMovieResultDTO(
-//          movie.getTmdbId(),
-//          voteMovie.getVoteCount(),
-//          0,
-//          voteMovie.getLastVotedAt()
-//      );
       voteResults.add(movieResultDTO);
     }
 

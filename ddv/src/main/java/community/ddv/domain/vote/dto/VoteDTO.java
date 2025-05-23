@@ -37,12 +37,6 @@ public class VoteDTO {
             .rank(0)
             .lastVotedTime(voteMovie.getLastVotedAt())
             .build();
-//        VoteMovieResultDTO voteMovieResultDTO = new VoteMovieResultDTO(
-//            movie.getTmdbId(),
-//            voteMovie.getVoteCount(),
-//            0,
-//            voteMovie.getLastVotedAt()
-//        );
         movieDetails.add(voteMovieResultDTO);
         rank++;
 

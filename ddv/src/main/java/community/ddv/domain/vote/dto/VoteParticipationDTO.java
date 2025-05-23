@@ -22,13 +22,4 @@ public class VoteParticipationDTO {
   }
 
 
-//  @Getter
-//  @AllArgsConstructor
-//  public static class VoteParticipationResponseDto {
-//
-//    private boolean voteSuccess; // 성공여부
-//    private Long tmdbId; // 선택한 영화
-//
-//  }
-
 }
