@@ -15,6 +15,7 @@ import lombok.Setter;
 @NoArgsConstructor
 public class VoteMovieResultDTO {
 
+  // 하나의 영화에 대한 투표 결과 정보를 담는 DTO
   private Long tmdbId;
   private int voteCount; // 득표수
   private int rank;      // 등수
