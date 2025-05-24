@@ -201,7 +201,6 @@ public class VoteService {
     selectedVotedMovie.plusVoteCount(); // 득표수 증가 & 최종 득표시간 업데이트
 
     log.info("투표 참여 완료: 사용자 ID = {}, 영화 ID = {}", user.getId(), selectedVotedMovie.getMovie().getTmdbId());
-    //return new VoteParticipationResponseDto(true, selectedVotedMovie.getMovie().getTmdbId());
     return createVoteResultDto(vote, user.getId());
 
   }
@@ -211,7 +210,7 @@ public class VoteService {
    */
   private List<VoteMovieResultDTO> calculateVoteResult(Vote vote, Long userId) {
 
-    // 사용자가 선택한 영화 Id 찾기
+    // 1. 사용자가 선택한 영화 Id 찾기
     Long selectedTmdbId = null;
 
     if (userId != null) {
@@ -222,43 +221,62 @@ public class VoteService {
           .orElse(null);
     }
 
-    // 투표 결과 저장 리스트 생성
-    List<VoteMovieResultDTO> voteResults = new ArrayList<>();
-    for (VoteMovie voteMovie : vote.getVoteMovies()) {
-      Movie movie = voteMovie.getMovie();
+    // 2. 득표수 기준 내림차순 정렬 -> 동수 발생시, 마지막 투표시간 기준 내림차순 정렬
+    List<VoteMovie> sortedVoteMovies = vote.getVoteMovies().stream()
+        .sorted(
+            Comparator.comparing(VoteMovie::getVoteCount).reversed()
+                .thenComparing(
+                    VoteMovie::getLastVotedAt,
+                    Comparator.nullsLast(Comparator.reverseOrder())) // null은 마지막으로
+        ).toList();
 
-      VoteMovieResultDTO  movieResultDTO = VoteMovieResultDTO.builder()
+    // 3. 정렬된 투표결과 DTO 생성
+    List<VoteMovieResultDTO> voteResults = new ArrayList<>();
+    int rank = 1;
+    for (VoteMovie voteMovie : sortedVoteMovies) {
+      Movie movie = voteMovie.getMovie();
+      VoteMovieResultDTO voteResultDto = VoteMovieResultDTO.builder()
           .tmdbId(movie.getTmdbId())
           .voteCount(voteMovie.getVoteCount())
-          .rank(0)
+          .rank(rank++)
           .lastVotedTime(voteMovie.getLastVotedAt())
           .voted(userId != null ? voteMovie.getMovie().getTmdbId().equals(selectedTmdbId) : null)
           .build();
-//      VoteMovieResultDTO movieResultDTO = new VoteMovieResultDTO(
-//          movie.getTmdbId(),
-//          voteMovie.getVoteCount(),
-//          0,
-//          voteMovie.getLastVotedAt()
-//      );
-      voteResults.add(movieResultDTO);
-    }
-
-    // 득표수 내림차순, 동일 득표시에는 최신 투표 시간 내림차순 정렬
-    voteResults.sort(
-        // 1. 득표수 오름차순 정렬 (comparingInt는 기본적으로 오름차순 정렬만 제공)
-        Comparator.comparingInt(VoteMovieResultDTO::getVoteCount)
-            // 2. 내림차순 정렬로 변환
-            .reversed()
-            // 3. 득표수가 같은 경우, 최신 득표 시간 기준 정렬
-            .thenComparing(VoteMovieResultDTO::getLastVotedTime, Comparator.nullsLast(Comparator.reverseOrder()))
-    );
-
-    // 랭크 할당
-    int rank = 1;
-    for (VoteMovieResultDTO resultDTO : voteResults) {
-      resultDTO.setRank(rank++);
+      voteResults.add(voteResultDto);
     }
     return voteResults;
+
+    //    // 투표 결과 저장 리스트 생성
+//    List<VoteMovieResultDTO> voteResults = new ArrayList<>();
+//    for (VoteMovie voteMovie : vote.getVoteMovies()) {
+//      Movie movie = voteMovie.getMovie();
+//
+//      VoteMovieResultDTO  movieResultDTO = VoteMovieResultDTO.builder()
+//          .tmdbId(movie.getTmdbId())
+//          .voteCount(voteMovie.getVoteCount())
+//          .rank(0)
+//          .lastVotedTime(voteMovie.getLastVotedAt())
+//          .voted(userId != null ? voteMovie.getMovie().getTmdbId().equals(selectedTmdbId) : null)
+//          .build();
+//      voteResults.add(movieResultDTO);
+//    }
+//
+//    // 득표수 내림차순, 동일 득표시에는 최신 투표 시간 내림차순 정렬
+//    voteResults.sort(
+//        // 1. 득표수 오름차순 정렬 (comparingInt는 기본적으로 오름차순 정렬만 제공)
+//        Comparator.comparingInt(VoteMovieResultDTO::getVoteCount)
+//            // 2. 내림차순 정렬로 변환
+//            .reversed()
+//            // 3. 득표수가 같은 경우, 최신 득표 시간 기준 정렬
+//            .thenComparing(VoteMovieResultDTO::getLastVotedTime, Comparator.nullsLast(Comparator.reverseOrder()))
+//    );
+//
+//    // 랭크 할당
+//    int rank = 1;
+//    for (VoteMovieResultDTO resultDTO : voteResults) {
+//      resultDTO.setRank(rank++);
+//    }
+//    return voteResults;
   }
 
   private List<VoteMovieResultDTO> calculateVoteResult(Vote vote) {

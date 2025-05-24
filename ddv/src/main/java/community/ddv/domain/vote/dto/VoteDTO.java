@@ -37,12 +37,6 @@ public class VoteDTO {
             .rank(0)
             .lastVotedTime(voteMovie.getLastVotedAt())
             .build();
-//        VoteMovieResultDTO voteMovieResultDTO = new VoteMovieResultDTO(
-//            movie.getTmdbId(),
-//            voteMovie.getVoteCount(),
-//            0,
-//            voteMovie.getLastVotedAt()
-//        );
         movieDetails.add(voteMovieResultDTO);
         rank++;
 
@@ -54,10 +48,7 @@ public class VoteDTO {
   @AllArgsConstructor
   public static class VoteResultDTO {
 
-//    private Long voteId;
-//    private LocalDateTime startDate;
-//    private LocalDateTime endDate;
-//    private boolean isActivating; // 진행중 여부
+    // 여러 영화의 투표 결과를 모은 전체 결과 목록을 담는 DTO
     private List<VoteMovieResultDTO> results; // 영화별 투표 결과 리스트
 
   }

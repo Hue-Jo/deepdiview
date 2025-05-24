@@ -38,9 +38,7 @@ public class VoteMovie {
 
 
   public void updateLastVotedAt() {
-    if (this.lastVotedAt == null) {
-      this.lastVotedAt = LocalDateTime.now();  // 최초 투표 시점
-    }
+    this.lastVotedAt = LocalDateTime.now();  // 최초 투표 시점
   }
 
   public void plusVoteCount() {

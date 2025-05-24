@@ -226,19 +226,6 @@ public class ReviewService {
   }
 
 
-//  // 댓글 포함  X
-//  public ReviewResponseDTO convertToReviewResponseWithoutCommentsDto(Review review) {
-//    return convertToReviewResponseDtoBase(review, false, null);
-//  }
-//
-//  // 댓글 포함  O
-//  public ReviewResponseDTO convertToReviewResponseWithCommentsDto(Review review) {
-//    List<CommentResponseDto> commentDtos = review.getComments().stream()
-//        .map(this::convertToCommentDto)
-//        .collect(Collectors.toList());
-//    return convertToReviewResponseDtoBase(review, true, commentDtos);
-//  }
-
   public ReviewResponseDTO convertToReviewResponseDto(Review review) {
 
     User loginUser = userService.getLoginOrNull();
@@ -249,7 +236,6 @@ public class ReviewService {
     // 댓글 개수
     int commentCount = commentRepository.countByReview(review);
 
-    //ReviewResponseDTO.ReviewResponseDTOBuilder builder = ReviewResponseDTO.builder()
     return ReviewResponseDTO.builder()
         .reviewId(review.getId())
         .userId(review.getUser().getId())
@@ -268,23 +254,5 @@ public class ReviewService {
         .posterPath(review.getMovie().getPosterPath())
         .certified(review.isCertified())
         .build();
-
-//    if (includeComments && commentDtos != null) {
-//      builder.comments(commentDtos);
-//    }
-//    return builder.build();
   }
-
-//  private CommentResponseDto convertToCommentDto(Comment comment) {
-//    return CommentResponseDto.builder()
-//        .id(comment.getId())
-//        .reviewId(comment.getReview().getId())
-//        .userId(comment.getUser().getId())
-//        .userNickname(comment.getUser().getNickname())
-//        .profileImageUrl(comment.getUser().getProfileImageUrl())
-//        .content(comment.getContent())
-//        .createdAt(comment.getCreatedAt())
-//        .updatedAt(comment.getUpdatedAt())
-//        .build();
-//  }
 }
