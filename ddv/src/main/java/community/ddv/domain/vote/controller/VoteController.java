@@ -33,9 +33,9 @@ public class VoteController {
 
   @Operation(summary = "투표 생성", description = "관리자 전용, 일요일만 투표 생성 가능")
   @PostMapping
-  public ResponseEntity<VoteCreatedDTO> createVote() {
-    VoteCreatedDTO responseDTO = voteService.createVote();
-    return ResponseEntity.status(HttpStatus.CREATED).body(responseDTO);
+  public ResponseEntity<VoteOptionsDto> createVote() {
+    VoteOptionsDto voteCreateDtos = voteService.createVote();
+    return ResponseEntity.status(HttpStatus.CREATED).body(voteCreateDtos);
   }
 
   @Operation(summary = "현재 진행중인 투표의 선택지 조회", description = "현재 투표가 진행중일 때만 조회 가능합니다.")
