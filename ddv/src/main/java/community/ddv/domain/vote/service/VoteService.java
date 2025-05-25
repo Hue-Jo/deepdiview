@@ -24,9 +24,11 @@ import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.temporal.TemporalAdjusters;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
@@ -150,14 +152,23 @@ public class VoteService {
     log.info("투표 선택지 조회 시도");
 
     // 현재 진행중인 투표 조회
-    LocalDateTime today = LocalDateTime.now();
-    log.debug("현재 시간 : {}", today);
-    Vote activatingVote = voteRepository.findByStartDateBeforeAndEndDateAfter(today, today)
-        .orElseThrow(() -> new DeepdiviewException(ErrorCode.INVALID_VOTE_PERIOD));
+    LocalDateTime now = LocalDateTime.now();
+    Optional<Vote> activatingVote = voteRepository.findByStartDateBeforeAndEndDateAfter(now, now);
+
+    // 투표가 진행중이지는 않지만 관리자가 투표를 생성해둔 경우 (일요일) 다음주의 투표 선택지 보여주기
+    if (activatingVote.isEmpty() && now.getDayOfWeek() == DayOfWeek.SUNDAY) {
+      activatingVote = voteRepository.findFirstByStartDateAfterOrderByStartDateAsc(now);
+    }
+    // 일요일에 투표가 생성되지 않은 경우에는 빈 리스트 반환
+    if (activatingVote.isEmpty()) {
+      return new VoteOptionsDto(Collections.emptyList());
+    }
+
+    Vote vote = activatingVote.get();
 
     // 선택지의 tmdbId 추출
-    List<Long> tmdbIds = activatingVote.getVoteMovies().stream().map(
-            voteMovie -> voteMovie.getMovie().getTmdbId())
+    List<Long> tmdbIds = vote.getVoteMovies().stream()
+        .map(voteMovie -> voteMovie.getMovie().getTmdbId())
         .collect(Collectors.toList());
 
     log.info("투표 선택지 조회 완료");
