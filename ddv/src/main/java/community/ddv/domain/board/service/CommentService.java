@@ -11,9 +11,13 @@ import community.ddv.domain.user.entity.User;
 import community.ddv.global.exception.DeepdiviewException;
 import community.ddv.domain.board.repository.CommentRepository;
 import community.ddv.domain.user.service.UserService;
+import community.ddv.global.response.CursorPageResponse;
+import java.time.LocalDateTime;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -102,16 +106,53 @@ public class CommentService {
     commentRepository.delete(comment);
   }
 
+
   @Transactional(readOnly = true)
-  public Page<CommentResponseDto> getCommentsByReviewId(Long reviewId, Pageable pageable) {
+  public CursorPageResponse<CommentResponseDto> getCommentsByReviewId(
+      Long reviewId, LocalDateTime cursorCreatedAt, Long cursorId, int size) {
     log.info("리뷰 {}의 댓글 조회 요청", reviewId);
 
     Review review = reviewRepository.findById(reviewId)
         .orElseThrow(() -> new DeepdiviewException(ErrorCode.REVIEW_NOT_FOUND));
 
-    return commentRepository.findByReview(review, pageable)
-        .map(this::convertToCommentResponse);
+    // 커서 방식이므로 Page 번호는 항상 0으로 고정
+    // size + 1로 요청한 이유 : 다음 페이지가 존재하는지 판단하기 위해 하나 더 가져옴
+    Pageable pageable = PageRequest.of(0, size+1);
+
+    List<Comment> comments;
+    // 커서 정보가 있는 경우 이전 커서보다 더 이전 데이터 조회
+    if (cursorCreatedAt != null && cursorId != null) {
+      comments = commentRepository.findCommentsByReviewBeforeCursor(review, cursorCreatedAt, cursorId, pageable);
+    } else {
+      // 커서 정보가 없는 경우 (첫 요청) 최신순 댓글 가져옴
+      comments = commentRepository.findByReviewOrderByCreatedAtDescIdDesc(review, pageable);
+    }
+
+    // 아직 더 가져올 데이터가 있는지 여부
+    boolean hasNext = comments.size() > size;
+
+    // 응답으로는 요청한 size만 보내야 하니까 일부러 더 넣은 1개 제거
+    if (hasNext) {
+      comments = comments.subList(0, size);
+    }
+
+    List<CommentResponseDto> content = comments.stream()
+        .map(this::convertToCommentResponse)
+        .toList();
+
+    // 다음 커서로 사용할 createdAt 및 id 세팅
+    LocalDateTime nextCreatedAt = null;
+    Long nextId = null;
+
+    if (hasNext && !comments.isEmpty()) {
+      Comment last = comments.get(comments.size() - 1);
+      nextCreatedAt = last.getCreatedAt();
+      nextId = last.getId();
+    }
+
+    return new CursorPageResponse<>(content, nextCreatedAt, nextId, hasNext);
   }
+
 
   @Transactional(readOnly = true)
   public Page<CommentResponseDto> getCommentsByUserId(Long userId, Pageable pageable) {
