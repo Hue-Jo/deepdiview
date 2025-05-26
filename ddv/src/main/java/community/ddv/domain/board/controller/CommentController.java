@@ -3,15 +3,12 @@ package community.ddv.domain.board.controller;
 import community.ddv.domain.board.dto.CommentDTO;
 import community.ddv.domain.board.dto.CommentDTO.CommentResponseDto;
 import community.ddv.domain.board.service.CommentService;
-import community.ddv.global.response.PageResponse;
+import community.ddv.global.response.CursorPageResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
+import java.time.LocalDateTime;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort.Direction;
-import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -21,6 +18,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
@@ -67,11 +65,13 @@ public class CommentController {
 
   @Operation(summary = "특정 리뷰에 달린 댓글 조회")
   @GetMapping
-  public ResponseEntity<PageResponse<CommentResponseDto>> getCommentsByReviewId(
+  public ResponseEntity<CursorPageResponse<CommentResponseDto>> getCommentsByReviewId(
       @PathVariable Long reviewId,
-      @PageableDefault(size = 20, sort = "createdAt", direction = Direction.DESC) Pageable pageable) {
-
-    Page<CommentResponseDto> comments = commentService.getCommentsByReviewId(reviewId, pageable);
-    return ResponseEntity.ok(new PageResponse<>(comments));
+      @RequestParam(required = false) LocalDateTime createdAt,
+      @RequestParam(required = false) Long commentId,
+      @RequestParam(defaultValue = "20") int size) {
+    CursorPageResponse<CommentResponseDto> response =
+        commentService.getCommentsByReviewId(reviewId, createdAt, commentId, size);
+    return ResponseEntity.ok(response);
   }
 }

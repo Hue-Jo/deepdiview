@@ -227,8 +227,10 @@ public class CertificationService {
       certifications = certificationRepository.findByStatusWithCursor(status,cursorCreatedAt, cursorId, pageable);
     }
 
-    // 다음 커서 계산
+    // 다음 페이지 존재 여부 판단
     boolean hasNext = certifications.size() == size;
+
+    // 다음 요청을 위한 커서 값 준비
     LocalDateTime nextCreatedAt = null;
     Long nextCertificationId = null;
 
