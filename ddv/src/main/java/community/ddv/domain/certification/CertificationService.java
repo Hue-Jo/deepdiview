@@ -316,11 +316,12 @@ public class CertificationService {
     }
 
     // S3에서 파일 삭제
-    for (Certification certification : certifications) {
+    List<String> urls = certificationRepository.findAllCertificationUrls();
+    for (String certificationUrl : urls) {
       try {
-        fileStorageService.deleteFile(certification.getCertificationUrl());
+        fileStorageService.deleteFile(certificationUrl);
       } catch (RuntimeException e) {
-        log.info("인증샷 파일을 S3에서 삭제 실패 : url = {}", certification.getCertificationUrl());
+        log.info("인증샷 파일을 S3에서 삭제 실패 : url = {}", certificationUrl);
       }
     }
 
