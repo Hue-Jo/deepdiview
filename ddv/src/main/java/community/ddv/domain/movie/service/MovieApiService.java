@@ -45,47 +45,49 @@ public class MovieApiService {
     Map<Long, Movie> existingMovies = movieRepository.findAll().stream()
         .collect(Collectors.toMap(Movie::getTmdbId, Function.identity()));
 
-    do {
+    Map<Long, Genre> genreMap = genreRepository.findAll().stream()
+        .collect(Collectors.toMap(Genre::getId, Function.identity()));
+
+    boolean hasNext = true;
+    while (hasNext) {
       try {
         // API 호출
         String url = TMDB_MOVIE_API_URL + tmdbKey + "&page=" + currentPage;
         ResponseEntity<MovieResponse> response = restTemplate.getForEntity(url, MovieResponse.class);
 
-        if (response.getStatusCode().is2xxSuccessful() && response.getBody() != null) {
-
-          // 응답 본문에서 영화 데이터, 총 페이지 수 가져오기
-          MovieResponse movieResponse = response.getBody();
-          totalPages = movieResponse.getTotal_pages();
-
-          // DTO에서 Entity로 변환 후 저장
-          List<Movie> movies = response.getBody().getResults()
-              .stream()
-              .map(this::toMovieEntity)
-              .toList();
-
-          for (Movie movie : movies) {
-
-            fetchedTmdbIds.add(movie.getTmdbId());
-
-            // 이미 DB에 존재하는 TMDB ID인지 확인
-            Movie existingMovie = existingMovies.get(movie.getTmdbId());
-            // 이미 존재한다면, 인기도와 현재 제공중인지 여부만 업데이트 후 저장
-            if (existingMovie != null) {
-              existingMovie.setPopularity(movie.getPopularity());
-              existingMovie.setAvailable(true);
-              movieRepository.save(existingMovie);
-            } else {
-              // 존재하지 않는다면 새로 저장
-              movieRepository.save(movie);
-            }
-          }
-          log.info("영화 정보가 DB에 성공적으로 저장되었습니다. 페이지 " + currentPage + "/" + totalPages);
-          currentPage++;
-
-        } else {
-          log.error("API로부터 응답을 받아오지 못 했습니다.");
+        if (!response.getStatusCode().is2xxSuccessful() && response.getBody() == null) {
+          log.error("API로부터 응답을 받아오지 못했습니다.");
           break;
         }
+
+        MovieResponse movieResponse = response.getBody();
+        totalPages = movieResponse.getTotal_pages();
+
+        // DTO에서 Entity로 변환 후 저장
+        List<Movie> movies = response.getBody().getResults().stream()
+            .map(movieDto -> toMovieEntity(movieDto, genreMap))
+            .toList();
+
+        for (Movie movie : movies) {
+          fetchedTmdbIds.add(movie.getTmdbId());
+
+          // 이미 DB에 존재하는 TMDB ID인지 확인
+          Movie existingMovie = existingMovies.get(movie.getTmdbId());
+          // 이미 존재한다면, 인기도와 현재 제공중인지 여부만 업데이트 후 저장
+          if (existingMovie != null) {
+            existingMovie.setPopularity(movie.getPopularity());
+            existingMovie.setAvailable(true);
+            movieRepository.save(existingMovie);
+          } else {
+            // 존재하지 않는다면 새로 저장
+            movieRepository.save(movie);
+          }
+        }
+        log.info("영화 정보가 DB에 성공적으로 저장되었습니다. 페이지 " + currentPage + "/" + totalPages);
+
+        currentPage++;
+        hasNext = currentPage <= totalPages;
+
       } catch (RestClientException e) {
         log.error("API 호출 실패", e);
         break;
@@ -93,11 +95,10 @@ public class MovieApiService {
         log.error("예상치 못한 예외 발생", e);
         break;
       }
-    } while (currentPage <= totalPages);
+    }
 
     // DB에는 있지만 API에서 사라진 영화는 isAvailable = false로 변경
-    List<Movie> allMovies = movieRepository.findAll();
-    for (Movie movie : allMovies) {
+    for (Movie movie : existingMovies.values()) {
       if (!fetchedTmdbIds.contains(movie.getTmdbId())) {
         movie.changeAsUnavailable();
         movieRepository.save(movie);
@@ -144,7 +145,7 @@ public class MovieApiService {
   }
 
 
-  private Movie toMovieEntity(MovieDTO movieDTO) {
+  private Movie toMovieEntity(MovieDTO movieDTO, Map<Long, Genre> genreMap) {
     Movie movie = Movie.builder()
         .tmdbId(movieDTO.getId())
         .title(movieDTO.getTitle())
@@ -158,7 +159,10 @@ public class MovieApiService {
         .build();
 
     for (Long genreId : movieDTO.getGenre_ids()) {
-      Genre genre = genreRepository.findById(genreId).orElseThrow(() -> new RuntimeException("장르를 찾을 수 없습니다."));
+      Genre genre = genreMap.get(genreId);
+      if (genre == null) {
+        throw new RuntimeException("장르를 찾을 수 없습니다. ID: " + genreId);
+      }
       movie.addGenre(genre);
     }
     return movie;
