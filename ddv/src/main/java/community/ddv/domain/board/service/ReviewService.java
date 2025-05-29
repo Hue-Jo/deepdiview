@@ -15,6 +15,8 @@ import community.ddv.domain.user.service.UserService;
 import community.ddv.global.exception.DeepdiviewException;
 import community.ddv.global.exception.ErrorCode;
 import community.ddv.global.response.PageResponse;
+import java.time.ZoneId;
+import java.time.ZoneOffset;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -244,8 +246,8 @@ public class ReviewService {
         .reviewTitle(review.getTitle())
         .reviewContent(review.getContent())
         .rating(review.getRating())
-        .createdAt(review.getCreatedAt())
-        .updatedAt(review.getUpdatedAt())
+        .createdAt(review.getCreatedAt().atOffset(ZoneOffset.of("+09:00")))
+        .updatedAt(review.getUpdatedAt().atOffset(ZoneOffset.of("+09:00")))
         .commentCount(commentCount)
         .likeCount(review.getLikeCount())
         .likedByUser(likedByUser)
