@@ -2,6 +2,7 @@ package community.ddv.domain.board.dto;
 
 import community.ddv.domain.board.dto.CommentDTO.CommentResponseDto;
 import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 import java.util.List;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -21,8 +22,8 @@ public class ReviewResponseDTO {
   private String reviewTitle;
   private String reviewContent;
   private Double rating;
-  private LocalDateTime createdAt;
-  private LocalDateTime updatedAt;
+  private OffsetDateTime createdAt;
+  private OffsetDateTime updatedAt;
   private Integer commentCount;
   private Integer likeCount;
   private Boolean likedByUser;
