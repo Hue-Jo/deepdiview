@@ -6,7 +6,6 @@ import community.ddv.domain.movie.service.MovieService;
 import community.ddv.domain.user.constant.Role;
 import community.ddv.domain.user.entity.User;
 import community.ddv.domain.user.service.UserService;
-import community.ddv.domain.vote.dto.VoteDTO.VoteCreatedDTO;
 import community.ddv.domain.vote.dto.VoteDTO.VoteResultDTO;
 import community.ddv.domain.vote.dto.VoteMovieResultDTO;
 import community.ddv.domain.vote.dto.VoteParticipationDTO.VoteOptionsDto;
@@ -258,38 +257,6 @@ public class VoteService {
       voteResults.add(voteResultDto);
     }
     return voteResults;
-
-    //    // 투표 결과 저장 리스트 생성
-//    List<VoteMovieResultDTO> voteResults = new ArrayList<>();
-//    for (VoteMovie voteMovie : vote.getVoteMovies()) {
-//      Movie movie = voteMovie.getMovie();
-//
-//      VoteMovieResultDTO  movieResultDTO = VoteMovieResultDTO.builder()
-//          .tmdbId(movie.getTmdbId())
-//          .voteCount(voteMovie.getVoteCount())
-//          .rank(0)
-//          .lastVotedTime(voteMovie.getLastVotedAt())
-//          .voted(userId != null ? voteMovie.getMovie().getTmdbId().equals(selectedTmdbId) : null)
-//          .build();
-//      voteResults.add(movieResultDTO);
-//    }
-//
-//    // 득표수 내림차순, 동일 득표시에는 최신 투표 시간 내림차순 정렬
-//    voteResults.sort(
-//        // 1. 득표수 오름차순 정렬 (comparingInt는 기본적으로 오름차순 정렬만 제공)
-//        Comparator.comparingInt(VoteMovieResultDTO::getVoteCount)
-//            // 2. 내림차순 정렬로 변환
-//            .reversed()
-//            // 3. 득표수가 같은 경우, 최신 득표 시간 기준 정렬
-//            .thenComparing(VoteMovieResultDTO::getLastVotedTime, Comparator.nullsLast(Comparator.reverseOrder()))
-//    );
-//
-//    // 랭크 할당
-//    int rank = 1;
-//    for (VoteMovieResultDTO resultDTO : voteResults) {
-//      resultDTO.setRank(rank++);
-//    }
-//    return voteResults;
   }
 
   private List<VoteMovieResultDTO> calculateVoteResult(Vote vote) {

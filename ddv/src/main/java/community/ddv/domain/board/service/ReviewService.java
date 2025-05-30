@@ -15,7 +15,6 @@ import community.ddv.domain.user.service.UserService;
 import community.ddv.global.exception.DeepdiviewException;
 import community.ddv.global.exception.ErrorCode;
 import community.ddv.global.response.PageResponse;
-import java.time.ZoneId;
 import java.time.ZoneOffset;
 import java.util.LinkedHashMap;
 import java.util.List;
