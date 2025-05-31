@@ -39,7 +39,7 @@ public interface CertificationRepository extends JpaRepository<Certification, Lo
     Pageable pageable
   );
 
-  @Query(value = "SELECT certificationUrl FROM certification", nativeQuery = true)
+  @Query(value = "SELECT certification_url FROM certification", nativeQuery = true)
   List<String> findAllCertificationUrls();
 
   // ENUM 타입을 NULL로 초기화 하기 위해 네이티브쿼리 사용

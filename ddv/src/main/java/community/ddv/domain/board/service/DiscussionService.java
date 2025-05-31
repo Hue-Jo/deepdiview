@@ -1,18 +1,15 @@
 package community.ddv.domain.board.service;
 
-import community.ddv.global.exception.ErrorCode;
 import community.ddv.domain.board.dto.ReviewDTO;
-import community.ddv.domain.board.dto.ReviewDTO.ReviewUpdateDTO;
 import community.ddv.domain.board.dto.ReviewResponseDTO;
-import community.ddv.domain.board.entity.Review;
-import community.ddv.domain.board.repository.ReviewRepository;
-import community.ddv.domain.movie.entity.Movie;
 import community.ddv.domain.certification.CertificationService;
-import community.ddv.domain.vote.service.VoteService;
-import community.ddv.domain.user.entity.User;
-import community.ddv.global.exception.DeepdiviewException;
+import community.ddv.domain.movie.entity.Movie;
 import community.ddv.domain.movie.repostitory.MovieRepository;
+import community.ddv.domain.user.entity.User;
 import community.ddv.domain.user.service.UserService;
+import community.ddv.domain.vote.service.VoteService;
+import community.ddv.global.exception.DeepdiviewException;
+import community.ddv.global.exception.ErrorCode;
 import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -32,7 +29,6 @@ public class DiscussionService {
   private final UserService userService;
 
   private final MovieRepository movieRepository;
-  private final ReviewRepository reviewRepository;
 
   /**
    * 인증 승인 받은 사용자의 투표 1위 영화에 대한 리뷰 작성
