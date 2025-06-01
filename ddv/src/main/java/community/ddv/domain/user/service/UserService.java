@@ -1,5 +1,6 @@
 package community.ddv.domain.user.service;
 
+import community.ddv.domain.board.dto.ReviewRatingDTO;
 import community.ddv.domain.board.entity.Review;
 import community.ddv.domain.board.repository.CommentRepository;
 import community.ddv.domain.board.repository.ReviewRepository;
@@ -357,7 +358,7 @@ public class UserService {
     int commentCount = commentRepository.countByUser_Id(user.getId());
 
     List<Review> reviews = reviewRepository.findAllByUser_Id(user.getId());
-    Map<Double, Long> ratingDistribution = getRatingDistribution(reviews);
+    ReviewRatingDTO ratingStats = getRatingStats(reviews);
 
     LocalDate today = LocalDate.now();
     // 일요일이 되면 다음주 토요일로 계산 되는 것 방지용 (일요일을 토요일처럼 생각)
@@ -391,7 +392,7 @@ public class UserService {
         .oneLineIntro(user.getOneLineIntroduction())
         .reviewCount(reviewCount)
         .commentCount(commentCount)
-        .ratingDistribution(ratingDistribution)
+        .ratingStats(ratingStats)
         .certificationStatus(certificationStatus)
         .rejectionReason(rejectionReason)
         .build();
@@ -412,7 +413,7 @@ public class UserService {
     int commentCount = commentRepository.countByUser_Id(userId);
 
     List<Review> reviews = reviewRepository.findAllByUser_Id(user.getId());
-    Map<Double, Long> ratingDistribution = getRatingDistribution(reviews);
+    ReviewRatingDTO ratingStats = getRatingStats(reviews);
 
     return UserInfoResponseDto.builder()
         .nickname(user.getNickname())
@@ -420,11 +421,11 @@ public class UserService {
         .oneLineIntro(user.getOneLineIntroduction())
         .reviewCount(reviewCount)
         .commentCount(commentCount)
-        .ratingDistribution(ratingDistribution)
+        .ratingStats(ratingStats)
         .build();
   }
 
-  private Map<Double, Long> getRatingDistribution(List<Review> reviews) {
+  private ReviewRatingDTO getRatingStats(List<Review> reviews) {
 
     Map<Double, Long> distribution = reviews.stream()
         .map(Review::getRating)
@@ -433,12 +434,22 @@ public class UserService {
             Collectors.counting()
         ));
 
-    Map<Double, Long> ratingDistribution = new LinkedHashMap<>();
+    Map<Double, Integer> ratingDistribution = new LinkedHashMap<>();
     for (double i = 0.5; i <= 5.0; i += 0.5) {
-      ratingDistribution.put(i, distribution.getOrDefault(i, 0L));
+      ratingDistribution.put(i, distribution.getOrDefault(i, 0L).intValue());
     }
 
-    return ratingDistribution;
+    double ratingAverage = reviews.stream()
+        .mapToDouble(Review::getRating)
+        .average()
+        .orElse(0.0);
+
+    double roundedRating = Math.round(ratingAverage*10.0)/10.0;
+
+    return ReviewRatingDTO.builder()
+        .ratingAverage(roundedRating)
+        .ratingDistribution(ratingDistribution)
+        .build();
   }
 
   // 로그인 여부 확인 메서드

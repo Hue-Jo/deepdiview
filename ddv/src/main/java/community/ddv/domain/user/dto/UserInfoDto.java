@@ -1,5 +1,6 @@
 package community.ddv.domain.user.dto;
 
+import community.ddv.domain.board.dto.ReviewRatingDTO;
 import community.ddv.domain.certification.constant.CertificationStatus;
 import community.ddv.domain.certification.constant.RejectionReason;
 import jakarta.validation.constraints.NotBlank;
@@ -70,7 +71,7 @@ public class UserInfoDto {
     private String oneLineIntro;
     private int reviewCount; // 리뷰 작성 개수
     private int commentCount; // 댓글 작성 개수
-    private Map<Double, Long> ratingDistribution; // 별점 분포
+    private ReviewRatingDTO ratingStats; // 별점 분포, 평균 별점
     private CertificationStatus certificationStatus; // 인증 상태
     private RejectionReason rejectionReason; // 인증 거절 사유
   }
