@@ -200,7 +200,7 @@ public class ReviewService {
 
     // 평균 별점
     Double ratingAverage = reviewRepository.findAverageRatingByMovie(movie);
-    double roundedRatingAverage = ratingAverage == null ? 0.0 : Math.round(ratingAverage * 100) / 100.0;
+    double roundedRatingAverage = ratingAverage == null ? 0.0 : Math.round(ratingAverage * 10.0) / 10.0;
 
     // 별점 분포
     List<Review> reviews = reviewRepository.findByMovie(movie);
