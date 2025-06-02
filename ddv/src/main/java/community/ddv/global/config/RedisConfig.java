@@ -43,6 +43,15 @@ public class RedisConfig {
   }
 
   @Bean
+  RedisTemplate<String, String> redisForbiddenWordsTemplate() {
+    RedisTemplate<String, String> template = new RedisTemplate<>();
+    template.setConnectionFactory(redisConnectionFactory());
+    template.setKeySerializer(new StringRedisSerializer());
+    template.setValueSerializer(new StringRedisSerializer());
+    return template;
+  }
+
+  @Bean
   public RedisTemplate<String, Long> redisVoteResultTemplate() {
     RedisTemplate<String, Long> template = new RedisTemplate<>();
     template.setConnectionFactory(redisConnectionFactory());
