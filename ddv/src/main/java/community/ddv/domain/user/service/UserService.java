@@ -51,7 +51,7 @@ import org.springframework.transaction.annotation.Transactional;
 public class UserService {
 
   private final UserRepository userRepository;
-  private final RedisTemplate<String, String> redisTokenTemplate;
+  private final RedisTemplate<String, String> redisStringTemplate;
   private final PasswordEncoder passwordEncoder;
   private final JwtProvider jwtProvider;
   private final ReviewRepository reviewRepository;
@@ -116,7 +116,7 @@ public class UserService {
     // 엑세스 토큰 생성
     String accessToken = jwtProvider.generateAccessToken(user.getEmail(), user.getRole());
 
-    String refreshToken = redisTokenTemplate.opsForValue().get(user.getEmail());
+    String refreshToken = redisStringTemplate.opsForValue().get(user.getEmail());
     // 리프레시 토큰 생성 (없거나 만료되었으면 새로 생성)
     if (refreshToken == null || !jwtProvider.isTokenValid(refreshToken)) {
       refreshToken = generateAndStoreRefreshToken(user);
@@ -139,7 +139,7 @@ public class UserService {
   private String generateAndStoreRefreshToken(User user) {
     String newRefreshToken = jwtProvider.generateRefreshToken(user.getEmail(), user.getRole());
     // set(키, 값, 숫자, TimeUnit)으로  일정시간(15일) 후 자동 삭제되는 토큰 저장
-    redisTokenTemplate.opsForValue().set(user.getEmail(), newRefreshToken, 15, TimeUnit.DAYS);
+    redisStringTemplate.opsForValue().set(user.getEmail(), newRefreshToken, 15, TimeUnit.DAYS);
     return newRefreshToken;
   }
 
@@ -157,7 +157,7 @@ public class UserService {
         .orElseThrow(() -> new DeepdiviewException(ErrorCode.USER_NOT_FOUND));
 
     // 리프레시 토큰 삭제
-    Boolean deletedRefreshToken = redisTokenTemplate.delete(email);
+    Boolean deletedRefreshToken = redisStringTemplate.delete(email);
     // NullPointException 방지를 위해 Boolean 객체 사용
     if (Boolean.TRUE.equals(deletedRefreshToken)) {
       log.info("리프레시 토큰 삭제 완료");
@@ -174,7 +174,7 @@ public class UserService {
 
       if (remainTime > 0) {
         // 남은 시간동안 블랙리스트로 등록
-        redisTokenTemplate.opsForValue().set(accessToken, "logout", remainTime, TimeUnit.MILLISECONDS);
+        redisStringTemplate.opsForValue().set(accessToken, "logout", remainTime, TimeUnit.MILLISECONDS);
         log.info("엑세스토큰 블랙리스트로 등록 완료");
       } else {
         log.info("만료된 엑세스 토큰");
@@ -201,7 +201,7 @@ public class UserService {
 
     // 리프레시 토큰에서 이메일 추출 후, Redis에 저장된 토큰과 일치 여부 확인
     String email = jwtProvider.extractEmail(refreshToken);
-    String storedRefreshToken = redisTokenTemplate.opsForValue().get(email);
+    String storedRefreshToken = redisStringTemplate.opsForValue().get(email);
     if (!refreshToken.equals(storedRefreshToken)) {
       throw new DeepdiviewException(ErrorCode.INVALID_REFRESH_TOKEN);
     }
@@ -246,13 +246,13 @@ public class UserService {
 
       if (remainTime > 0) {
         // 남은 시간동안 블랙리스트로 등록
-        redisTokenTemplate.opsForValue()
+        redisStringTemplate.opsForValue()
             .set(accessToken, "logout", remainTime, TimeUnit.MILLISECONDS);
         log.info("엑세스 토큰 블랙리스트로 등록 완료");
       }
     }
 
-    redisTokenTemplate.delete(user.getEmail());
+    redisStringTemplate.delete(user.getEmail());
     log.info("리프레시 토큰 삭제");
 
     // 사용자 삭제

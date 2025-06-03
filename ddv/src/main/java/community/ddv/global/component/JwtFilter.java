@@ -28,7 +28,7 @@ public class JwtFilter extends OncePerRequestFilter {
 
   private final JwtProvider jwtProvider;
   private final UserDetailsService userDetailsService;
-  private final RedisTemplate<String, String> redisTokenTemplate;
+  private final RedisTemplate<String, String> redisStringTemplate;
 
   @Override
   protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response,
@@ -38,7 +38,7 @@ public class JwtFilter extends OncePerRequestFilter {
     String token = jwtProvider.extractToken(request);
     try {
       if (token != null) {
-        String isBlacked = redisTokenTemplate.opsForValue().get(token);
+        String isBlacked = redisStringTemplate.opsForValue().get(token);
         if ("logout".equals(isBlacked)) {
           log.warn("블랙리스트로 등록된 토큰. 접근 거부");
           setErrorResponse(response, HttpServletResponse.SC_UNAUTHORIZED, "로그아웃된 토큰입니다.");
