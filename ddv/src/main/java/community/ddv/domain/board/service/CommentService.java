@@ -28,6 +28,7 @@ import org.springframework.transaction.annotation.Transactional;
 public class CommentService {
 
   private final UserService userService;
+  private final forbiddenWordsFilter forbiddenWordsFilter;
   private final CommentRepository commentRepository;
   private final ReviewRepository reviewRepository;
   private final NotificationService notificationService;
@@ -42,10 +43,12 @@ public class CommentService {
         .orElseThrow(() -> new DeepdiviewException(ErrorCode.REVIEW_NOT_FOUND));
     log.info("댓글이 달릴 reviewId: {}", review.getId());
 
+    String filteredContent = forbiddenWordsFilter.filterForbiddenWords(commentRequestDto.getContent());
+
     Comment comment = Comment.builder()
         .review(review)
         .user(user)
-        .content(commentRequestDto.getContent())
+        .content(filteredContent)
         .build();
 
     Comment newComment = commentRepository.save(comment);
@@ -75,7 +78,10 @@ public class CommentService {
       throw new DeepdiviewException(ErrorCode.INVALID_USER);
     }
 
-    comment.updateContent(commentRequestDto.getContent());
+    String filteredContent = forbiddenWordsFilter.filterForbiddenWords(commentRequestDto.getContent());
+
+
+    comment.updateContent(filteredContent);
     commentRepository.flush();
 
     return convertToCommentResponse(comment);
