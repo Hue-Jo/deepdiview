@@ -386,7 +386,7 @@ public class UserService {
 
     CertificationStatus certificationStatus =
         certification != null
-            ? certification.getStatus() : null;
+            ? certification.getStatus() : CertificationStatus.NONE;
 
     RejectionReason rejectionReason =
         certification != null && certification.getStatus() == CertificationStatus.REJECTED
