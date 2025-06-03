@@ -57,6 +57,7 @@ public class UserService {
   private final ReviewRepository reviewRepository;
   private final CommentRepository commentRepository;
   private final CertificationRepository certificationRepository;
+  private final EmailService emailService;
 
   @Value("${profile.image.default-url}")
   private String defaultProfileImageUrl;
@@ -69,6 +70,11 @@ public class UserService {
   public void signUp(SignUpDto signUpDto) {
     log.info("회원가입 시도");
 
+    // 이메일 인증여부 확인
+    if (!emailService.isVerified(signUpDto.getEmail())) {
+      log.warn("이메일 인증하지 않음");
+      throw new DeepdiviewException(ErrorCode.EMAIL_NOT_VERIFIED);
+    }
     // 같은 이메일로 중복 회원가입 불가
     if (userRepository.findByEmail(signUpDto.getEmail()).isPresent()) {
       log.warn("중복 회원가입 불가");
@@ -94,6 +100,7 @@ public class UserService {
         .build();
 
     userRepository.save(user);
+    redisStringTemplate.delete("EMAIL_VERIFIED:" + signUpDto.getEmail());
     log.info("회원가입 완료");
   }
 
