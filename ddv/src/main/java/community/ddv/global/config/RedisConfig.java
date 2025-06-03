@@ -32,9 +32,8 @@ public class RedisConfig {
     return new LettuceConnectionFactory(redisHost, redisPort);
   }
 
-  // 리프레시 토큰 용 RedisTemplate
   @Bean
-  RedisTemplate<String, String> redisTokenTemplate() {
+  RedisTemplate<String, String> redisStringTemplate() {
     RedisTemplate<String, String> template = new RedisTemplate<>();
     template.setConnectionFactory(redisConnectionFactory());
     template.setKeySerializer(new StringRedisSerializer());

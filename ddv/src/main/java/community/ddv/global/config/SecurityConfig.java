@@ -38,6 +38,7 @@ public class SecurityConfig {
       "/swagger-ui/**",
       "/api/users/signup",
       "/api/users/login",
+      "/api/emails/**",
       "/api/fetch/genres",
       "/api/fetch/movies",
       "/api/fetch/runtimes",

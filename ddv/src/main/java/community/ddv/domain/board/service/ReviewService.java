@@ -35,6 +35,7 @@ public class ReviewService {
   private final ReviewRepository reviewRepository;
   private final MovieRepository movieRepository;
   private final UserService userService;
+  private final forbiddenWordsFilter forbiddenWordsFilter;
   private final CommentRepository commentRepository;
   private final LikeRepository likeRepository;
 
@@ -55,12 +56,15 @@ public class ReviewService {
       throw new DeepdiviewException(ErrorCode.ALREADY_COMMITTED_REVIEW);
     }
 
+    String filteredTitle = forbiddenWordsFilter.filterForbiddenWords(reviewDTO.getTitle());
+    String filteredContent = forbiddenWordsFilter.filterForbiddenWords(reviewDTO.getContent());
+
     Review review = Review.builder()
         .user(user)
         .movie(movie)
         .tmdbId(movie.getTmdbId())
-        .title(reviewDTO.getTitle())
-        .content(reviewDTO.getContent())
+        .title(filteredTitle)
+        .content(filteredContent)
         .rating(reviewDTO.getRating())
         .likeCount(0)
         .certified(reviewDTO.isCertified())
@@ -109,9 +113,12 @@ public class ReviewService {
       throw new DeepdiviewException(ErrorCode.INVALID_USER);
     }
 
+    String filteredTitle = forbiddenWordsFilter.filterForbiddenWords(reviewUpdateDTO.getTitle());
+    String filteredContent = forbiddenWordsFilter.filterForbiddenWords(reviewUpdateDTO.getContent());
+
     review.updateReview(
-        reviewUpdateDTO.getTitle(),
-        reviewUpdateDTO.getContent(),
+        filteredTitle,
+        filteredContent,
         reviewUpdateDTO.getRating()
     );
 
