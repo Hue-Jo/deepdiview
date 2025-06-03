@@ -1,9 +1,6 @@
 package community.ddv.domain.board.dto;
 
-import community.ddv.domain.board.dto.CommentDTO.CommentResponseDto;
-import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
-import java.util.List;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
