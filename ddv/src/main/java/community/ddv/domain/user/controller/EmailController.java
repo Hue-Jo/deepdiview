@@ -32,6 +32,6 @@ public class EmailController {
       @RequestBody EmailVerifyRequest verifyRequest
   ) {
     emailService.verifyAuthCode(verifyRequest.getEmail(), verifyRequest.getCode());
-    return ResponseEntity.ok().build();
+    return ResponseEntity.noContent().build();
   }
 }
