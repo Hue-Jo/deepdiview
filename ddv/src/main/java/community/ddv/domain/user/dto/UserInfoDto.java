@@ -6,7 +6,6 @@ import community.ddv.domain.certification.constant.RejectionReason;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
-import java.util.Map;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -30,6 +29,9 @@ public class UserInfoDto {
 
   @Getter
   public static class PasswordUpdateDto {
+
+    @NotBlank(message = "현재 사용중인 비밀번호를 입력해주세요")
+    private String currentPassword;
 
     @Pattern(
         regexp = "^(?=.*[a-z])(?=.*\\d)[a-z\\d]{8,}$",

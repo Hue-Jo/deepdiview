@@ -14,6 +14,7 @@ public enum ErrorCode {
   EMAIL_NOT_VERIFIED("이메일 인증을 해주세요", HttpStatus.BAD_REQUEST),
   ALREADY_EXIST_MEMBER("이미 존재하는 사용자입니다.", HttpStatus.BAD_REQUEST),
   ALREADY_EXIST_NICKNAME("이미 존재하는 닉네임입니다. 다른 닉네임을 작성해주세요", HttpStatus.BAD_REQUEST),
+  NOT_MATCHED_PASSWORD("확인용 비밀번호와 일치하지 않습니다. 다시 확인해주세요", HttpStatus.BAD_REQUEST),
   NOT_VALID_PASSWORD("비밀번호가 일치하지 않습니다. 비밀번호를 다시 확인해주세요", HttpStatus.BAD_REQUEST),
   NOT_ENOUGH_PASSWORD("비밀번호는 8자 이상으로 설정해야 합니다.", HttpStatus.BAD_REQUEST),
   EMPTY_PASSWORD("비밀번호를 확인해주세요", HttpStatus.BAD_REQUEST),

@@ -83,7 +83,7 @@ public class UserService {
     // 비밀번호 확인 로직 통과 여부
     if (!signUpDto.getPassword().equals(signUpDto.getConfirmPassword())) {
       log.warn("비밀번호 확인 로직 통과 X");
-      throw new DeepdiviewException(ErrorCode.NOT_VALID_PASSWORD);
+      throw new DeepdiviewException(ErrorCode.NOT_MATCHED_PASSWORD);
     }
     // 중복 닉네임 사용불가
     if (userRepository.findByNickname(signUpDto.getNickname()).isPresent()) {
@@ -299,8 +299,18 @@ public class UserService {
     User user = getLoginUser();
     log.info("비밀번호 수정시도 : {}", user.getEmail());
 
+    String currentPassword = passwordUpdateDto.getCurrentPassword();
     String newPassword = passwordUpdateDto.getNewPassword();
     String newConfirmPassword = passwordUpdateDto.getNewConfirmPassword();
+
+    // 사용중인 비밀번호 입력여부 확인
+    if (currentPassword == null || currentPassword.isBlank()) {
+      throw new DeepdiviewException(ErrorCode.EMPTY_PASSWORD);
+    }
+    // 사용중인 비밀번호 일치여부 확인
+    if (!passwordEncoder.matches(currentPassword, user.getPassword())) {
+      throw new DeepdiviewException(ErrorCode.NOT_VALID_PASSWORD);
+    }
 
     // 비밀번호 변경 시도 여부 확인
     if ((newPassword != null && !newPassword.isBlank()) || (newConfirmPassword != null && !newConfirmPassword.isBlank())) {
@@ -310,7 +320,7 @@ public class UserService {
         throw new DeepdiviewException(ErrorCode.EMPTY_PASSWORD);
       }
       if (!newPassword.equals(newConfirmPassword)) {
-        throw new DeepdiviewException(ErrorCode.NOT_VALID_PASSWORD);
+        throw new DeepdiviewException(ErrorCode.NOT_MATCHED_PASSWORD);
       }
       user.updatePassword(passwordEncoder.encode(newPassword));
     }
