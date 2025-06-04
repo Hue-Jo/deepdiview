@@ -24,7 +24,7 @@ public class EmailController {
       @RequestBody EmailRequest emailRequest
   ) {
     emailService.sendAuthCode(emailRequest.getEmail());
-    return ResponseEntity.ok().build();
+    return ResponseEntity.noContent().build();
   }
 
   @PostMapping("/verify")
