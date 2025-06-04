@@ -16,9 +16,4 @@ public class EmailDto {
     private String code;
   }
 
-  @Getter
-  @AllArgsConstructor
-  public static class EmailVerifyResponse {
-    private boolean success;
-  }
 }

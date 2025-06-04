@@ -1,5 +1,7 @@
 package community.ddv.domain.user.service;
 
+import community.ddv.global.exception.DeepdiviewException;
+import community.ddv.global.exception.ErrorCode;
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
 import java.time.Duration;
@@ -43,26 +45,33 @@ public class EmailService {
   private String buildEmailHTML(String authCode) {
     return """
         <div style="width: 100%%; text-align: center; font-family: Arial, sans-serif; padding: 20px;">
-          <h2 style="color: #4b4bfc;">[DeepDiview] 이메일 인증 코드</h2>
-          <p>아래의 인증 코드를 5분 내에 입력해주세요.</p>
+          <h2 style="color: #4b4bfc;">[DeepDiview] 가입을 위한 인증 코드 안내</h2>
+          <p>아래 인증 코드를 확인하여 이메일 인증을 완료해주세요</p>
           <div style="display: inline-block; padding: 15px 30px; background-color: #e0e0ff;
-                      border: 2px solid #5f5dff; border-radius: 10px; margin-top: 20px;">
+                      border: 2px solid #5f5dff; border-radius: 10px; margin: 20px;">
             <span style="font-size: 25px; font-weight: bold; color: #4b4bfc;">%s</span>
           </div>
+          <p>인증 코드는 5분 내에 입력해주세요.</p>
         </div>
         """.formatted(authCode);
   }
 
   // 인증코드 검증
-  public boolean verifyAuthCode(String email, String authCode) {
+  public void verifyAuthCode(String email, String authCode) {
     String key = "authCode:" + email;
     String savedCode = redisStringTemplate.opsForValue().get(key);
-    if (authCode.equals(savedCode)) {
-      redisStringTemplate.delete(key);
-      redisStringTemplate.opsForValue().set("EMAIL_VERIFIED:" + email, "true", Duration.ofMinutes(10));
-      return true;
+
+    // 만료된 코드 입력시
+    if (savedCode == null) {
+      throw new DeepdiviewException(ErrorCode.EXPIRED_CODE);
     }
-    return false;
+    // 일치하지 않는 코드 입력시
+    if (!savedCode.equals(authCode)) {
+      throw new DeepdiviewException(ErrorCode.INVALID_CODE);
+    }
+
+    redisStringTemplate.delete(key);
+    redisStringTemplate.opsForValue().set("EMAIL_VERIFIED:" + email, "true", Duration.ofMinutes(10));
   }
 
   // 인증 여부 확인 메서드
