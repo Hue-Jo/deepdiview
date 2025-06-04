@@ -2,7 +2,6 @@ package community.ddv.domain.user.controller;
 
 import community.ddv.domain.user.dto.EmailDto.EmailRequest;
 import community.ddv.domain.user.dto.EmailDto.EmailVerifyRequest;
-import community.ddv.domain.user.dto.EmailDto.EmailVerifyResponse;
 import community.ddv.domain.user.service.EmailService;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
@@ -29,14 +28,10 @@ public class EmailController {
   }
 
   @PostMapping("/verify")
-  public ResponseEntity<EmailVerifyResponse> verifyCode(
+  public ResponseEntity<Void> verifyCode(
       @RequestBody EmailVerifyRequest verifyRequest
   ) {
-    boolean isValid = emailService.verifyAuthCode(verifyRequest.getEmail(), verifyRequest.getCode());
-    if (isValid) {
-      return ResponseEntity.ok(new EmailVerifyResponse(true));
-    } else {
-      return ResponseEntity.badRequest().body(new EmailVerifyResponse(false));
-    }
+    emailService.verifyAuthCode(verifyRequest.getEmail(), verifyRequest.getCode());
+    return ResponseEntity.ok().build();
   }
 }
