@@ -2,7 +2,6 @@ package community.ddv.domain.user.dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
-import lombok.RequiredArgsConstructor;
 
 public class EmailDto {
 
