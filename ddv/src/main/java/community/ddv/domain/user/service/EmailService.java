@@ -1,5 +1,6 @@
 package community.ddv.domain.user.service;
 
+import community.ddv.domain.user.repository.UserRepository;
 import community.ddv.global.exception.DeepdiviewException;
 import community.ddv.global.exception.ErrorCode;
 import jakarta.mail.MessagingException;
@@ -18,9 +19,15 @@ public class EmailService {
 
   private final JavaMailSender mailSender;
   private final RedisTemplate<String, String> redisStringTemplate;
+  private final UserRepository userRepository;
 
   // 인증코드 생성 & 이메일 전송
   public void sendAuthCode(String email) {
+
+    if (userRepository.existsByEmail(email)) {
+      throw new DeepdiviewException(ErrorCode.ALREADY_EXIST_MEMBER);
+    }
+
     String authCode = createRandomCode();
 
     redisStringTemplate.opsForValue().set("authCode:" + email, authCode, Duration.ofMinutes(5));
