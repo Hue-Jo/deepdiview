@@ -57,7 +57,7 @@ public class CertificationService {
     }
 
     String certificationUrl = fileStorageService.uploadFile(certificationImageFile);
-    log.info("S3에 인증샷 업로드 완료 : url = {} ", certificationUrl);
+    log.info("S3에 인증샷 업로드 완료");
 
     Certification certification = Certification.builder()
         .user(user)
@@ -143,10 +143,7 @@ public class CertificationService {
     String newCertificationUrl = fileStorageService.uploadFile(certificationImageFile);
 
     // 인증샷 수정
-    certification.setCertificationUrl(newCertificationUrl);
-    certification.setStatus(CertificationStatus.PENDING);
-    certification.setRejectionReason(null);
-    certification.setCreatedAt(LocalDateTime.now());
+    certification.updateCertification(newCertificationUrl);
 
     Certification updatedCertification = certificationRepository.save(certification);
     log.info("인증샷 수정 완료 : certificationId = {}", updatedCertification.getId());

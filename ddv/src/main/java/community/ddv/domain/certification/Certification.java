@@ -24,7 +24,6 @@ import lombok.Setter;
 @AllArgsConstructor
 @Builder
 @Getter
-@Setter
 public class Certification {
 
   @Id
@@ -48,6 +47,13 @@ public class Certification {
   public void setStatus(CertificationStatus status, RejectionReason rejectionReason) {
     this.status = status;
     this.rejectionReason = rejectionReason;
+  }
+
+  public void updateCertification(String newUrl) {
+    this.certificationUrl = newUrl;
+    this.status = CertificationStatus.PENDING;
+    this.rejectionReason = null;
+    this.createdAt = LocalDateTime.now();
   }
 
 
