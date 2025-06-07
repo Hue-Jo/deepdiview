@@ -12,5 +12,5 @@ public interface LikeRepository extends JpaRepository<Like, Long> {
   Optional<Like> findByUserAndReview(User user, Review review);
 
   boolean existsByReviewAndUser(Review review, User user);
-
+  void deleteByReviewAndUser(Review review, User user);
 }
