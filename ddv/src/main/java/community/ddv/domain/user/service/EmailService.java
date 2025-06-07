@@ -32,11 +32,6 @@ public class EmailService {
 
     redisStringTemplate.opsForValue().set("authCode:" + email, authCode, Duration.ofMinutes(5));
 
-//    SimpleMailMessage message = new SimpleMailMessage();
-//    message.setTo(email);
-//    message.setSubject("[DeepDiview] 이메일 인증 코드");
-//    message.setText("인증 코드 : " + authCode + "\n5분 내로 입력해주세요");
-
     try {
       MimeMessage message = mailSender.createMimeMessage();
       MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");

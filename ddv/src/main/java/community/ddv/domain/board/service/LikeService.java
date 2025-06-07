@@ -30,25 +30,30 @@ public class LikeService {
     Review review = reviewRepository.findById(reviewId)
         .orElseThrow(() -> new DeepdiviewException(ErrorCode.REVIEW_NOT_FOUND));
 
-    Like existingLike = likeRepository.findByUserAndReview(user, review).orElse(null);
-    // 좋아요가 눌러져 있으면 좋아요 취소, 좋아요를 누른 적이 없으면 좋아요
-    if (existingLike != null) {
-      likeRepository.delete(existingLike);
-      likeRepository.flush();
-      review.decreaseLikeCount();
-      reviewRepository.save(review);
-      log.info("좋아요 취소 (좋아요 -1)");
-    } else {
-      Like newlike = Like.builder()
-          .user(user)
-          .review(review)
-          .build();
-      likeRepository.save(newlike);
-      review.increaseLikeCount();
-      log.info("좋아요 성공 (좋아요 +1)");
+    boolean existingLike = likeRepository.existsByReviewAndUser(review, user);
 
-      notificationService.likeAdded(user.getId(), review.getId());
+    // 좋아요가 눌러져 있으면 좋아요 취소, 좋아요를 누른 적이 없으면 좋아요
+    if (existingLike) {
+      unlike(user, review);
+    } else {
+      like(user, review);
     }
   }
 
+  private void like(User user, Review review) {
+    Like newlike = Like.builder()
+        .user(user)
+        .review(review)
+        .build();
+    likeRepository.save(newlike);
+    review.increaseLikeCount();
+    log.info("좋아요 성공 (좋아요 +1)");
+    notificationService.likeAdded(user.getId(), review.getId());
+  }
+
+  private void unlike(User user, Review review) {
+    likeRepository.deleteByReviewAndUser(review, user);
+    review.decreaseLikeCount();
+    log.info("좋아요 취소 (좋아요 -1)");
+  }
 }

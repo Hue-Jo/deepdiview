@@ -18,9 +18,6 @@ public interface CommentRepository extends JpaRepository<Comment, Long> {
 
   int countByReview(Review review);
 
-  // 특정 리뷰에 달린 댓글 조회
-  //Page<Comment> findByReview(Review review, Pageable pageable);
-
   // 커서 없는 첫 페이지
   List<Comment> findByReviewOrderByCreatedAtDescIdDesc(Review review, Pageable pageable);
 
@@ -38,7 +35,6 @@ public interface CommentRepository extends JpaRepository<Comment, Long> {
       @Param("id") Long id,
       Pageable pageable
   );
-
 
   // 특정 사용자가 작성한 댓글 조회
   Page<Comment> findByUser_Id(Long userId, Pageable pageable);
