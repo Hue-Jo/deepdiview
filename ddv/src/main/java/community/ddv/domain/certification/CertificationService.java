@@ -305,27 +305,25 @@ public class CertificationService {
 
     log.info("새로운 주가 됨에 따라 인증상태 초기화");
 
-    List<Certification> certifications = certificationRepository.findAll();
+    // 이번주 월-토에 들어온 인증들
+    LocalDateTime startOfWeek = LocalDate.now().with(DayOfWeek.MONDAY).atStartOfDay();
+    LocalDateTime endOfWeek = LocalDate.now().with(DayOfWeek.SATURDAY).atTime(LocalTime.MAX);
 
+    List<Certification> certifications = certificationRepository.findAllByCreatedAtBetween(startOfWeek, endOfWeek);
     if (certifications.isEmpty()) {
-      log.warn("초기화할 인증 데이터가 없어 초기화를 스킵합니다.");
+      log.warn("이번 주 인증 데이터가 없어 초기화를 스킵합니다.");
       return;
     }
 
     // S3에서 파일 삭제
-    List<String> urls = certificationRepository.findAllCertificationUrls();
-    for (String certificationUrl : urls) {
+    for (Certification certification : certifications) {
       try {
-        fileStorageService.deleteFile(certificationUrl);
+        fileStorageService.deleteFile(certification.getCertificationUrl());
       } catch (RuntimeException e) {
-        log.info("인증샷 파일을 S3에서 삭제 실패 : url = {}", certificationUrl);
+        log.info("인증샷 파일을 S3에서 삭제 실패 : url = {}", certification.getCertificationUrl());
       }
     }
-
-    int resetCount = certificationRepository.resetAllCertifications();
-
-    log.info("초기화된 인증 개수 : {} ", resetCount);
-
+    certificationRepository.resetAllCertifications();
   }
 
 }
