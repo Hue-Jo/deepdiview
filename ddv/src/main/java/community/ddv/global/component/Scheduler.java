@@ -58,6 +58,7 @@ public class Scheduler {
   @Scheduled(cron = "2 0 0 * * SUN")
   public void resetCertificationStatus() {
     certificationService.resetCertificationStatus();
+    log.info("인증상태 초기화 완료");
   }
 
 }

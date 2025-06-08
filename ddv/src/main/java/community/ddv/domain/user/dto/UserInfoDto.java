@@ -16,6 +16,10 @@ public class UserInfoDto {
 
   @Getter
   public static class NicknameUpdateRequestDto {
+    @Pattern(
+        regexp = "^(?!\\s)(?!.*\\s{2,})[\\S\\s]{2,10}$",
+        message = "닉네임은 2자 이상 10자 이하이며, 첫 글자 공백와 연속된 공백은 허용되지 않습니다."
+    )
     @NotBlank(message = "새로운 닉네임을 입력해주세요")
     private String newNickname;
   }
@@ -34,9 +38,10 @@ public class UserInfoDto {
     private String currentPassword;
 
     @Pattern(
-        regexp = "^(?=.*[a-z])(?=.*\\d)[a-z\\d]{8,}$",
-        message = "영문 소문자와 숫자를 포함하여 8자 이상이어야 합니다."
+        regexp = "^(?=.*[a-z])(?=.*\\d)[a-z\\d]{8,16}$",
+        message = "영문 소문자와 숫자만을 포함하여 8자 이상 16자 이하여야 합니다."
     )
+    @NotBlank(message = "새 비밀번호를 입력해주세요")
     private String newPassword;
 
     @NotBlank(message = "비밀번호를 확인해주세요")

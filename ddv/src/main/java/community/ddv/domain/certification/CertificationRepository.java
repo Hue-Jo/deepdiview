@@ -39,8 +39,8 @@ public interface CertificationRepository extends JpaRepository<Certification, Lo
     Pageable pageable
   );
 
-  @Query(value = "SELECT certification_url FROM certification", nativeQuery = true)
-  List<String> findAllCertificationUrls();
+
+  List<Certification> findAllByCreatedAtBetween(LocalDateTime startOfWeek, LocalDateTime endOfWeek);
 
   // ENUM 타입을 NULL로 초기화 하기 위해 네이티브쿼리 사용
   @Modifying(clearAutomatically = true, flushAutomatically = true)
