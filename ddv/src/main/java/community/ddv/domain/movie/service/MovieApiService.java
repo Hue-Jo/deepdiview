@@ -126,11 +126,7 @@ public class MovieApiService {
 
         if (response.getStatusCode().is2xxSuccessful() && response.getBody() != null) {
           Integer runtime = response.getBody().getRuntime();
-          if (runtime == null) {
-            movie.updateRuntime(null);
-          } else {
-            movie.updateRuntime(runtime);
-          }
+          movie.updateRuntime(runtime);
           movieRepository.save(movie);
         } else {
           log.warn("런타임 응답 실패 - " + movie.getTmdbId());
