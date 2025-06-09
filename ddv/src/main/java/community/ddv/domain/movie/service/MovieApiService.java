@@ -17,6 +17,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
@@ -35,6 +36,7 @@ public class MovieApiService {
   private final GenreRepository genreRepository;
   private final RestTemplate restTemplate;
 
+  @Transactional
   public void fetchAndSaveMovies() {
 
     int currentPage = 1;
@@ -107,6 +109,7 @@ public class MovieApiService {
     log.info("모든 영화 데이터 저장/업데이트 완료 ");
   }
 
+  @Transactional
   public void fetchMovieRunTime() {
     log.info("영화 런타임 업데이트 시작");
     List<Movie> movies = movieRepository.findAll();
