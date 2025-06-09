@@ -151,7 +151,6 @@ public class MovieApiService {
         .originalTitle(movieDTO.getOriginal_title())
         .overview(movieDTO.getOverview())
         .releaseDate(movieDTO.getRelease_date())
-        .runtime(movieDTO.getRuntime())
         .popularity(movieDTO.getPopularity())
         .posterPath(movieDTO.getPoster_path())
         .backdropPath(movieDTO.getBackdrop_path())
