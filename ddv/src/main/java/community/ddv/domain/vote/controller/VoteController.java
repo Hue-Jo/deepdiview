@@ -2,7 +2,6 @@ package community.ddv.domain.vote.controller;
 
 import community.ddv.domain.user.entity.User;
 import community.ddv.domain.user.service.UserService;
-import community.ddv.domain.vote.dto.VoteDTO.VoteCreatedDTO;
 import community.ddv.domain.vote.dto.VoteDTO.VoteResultDTO;
 import community.ddv.domain.vote.dto.VoteParticipationDTO.VoteOptionsDto;
 import community.ddv.domain.vote.dto.VoteParticipationDTO.VoteParticipationRequestDto;

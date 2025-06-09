@@ -47,7 +47,6 @@ public class VoteService {
   private final VoteParticipationRepository voteParticipationRepository;
   private final MovieRepository movieRepository;
   private final UserService userService;
-  private final MovieService movieService;
 
   /**
    * 관리자의 투표 생성 한 주에는 한 번만 투표 생성 가능

@@ -113,7 +113,7 @@ public class MovieApiService {
 
     for (Movie movie : movies) {
       // 이미 런타임 정보가 있는 경우, continue
-      if (movie.getRuntime() != null) {
+      if (movie.getRuntime() != null && movie.getRuntime() > 0) {
         continue;
       }
 

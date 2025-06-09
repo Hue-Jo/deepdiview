@@ -7,6 +7,7 @@ import lombok.Getter;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
+// User를 Spring Security가 인식할 수 있는 형태로 래핑하는 역할
 @Getter
 public class UserDetailsImpl implements UserDetails {
 
