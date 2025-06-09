@@ -22,7 +22,7 @@ public class AdminInitializer {
     if (userRepository.findByEmail("admin@mail.com").isEmpty()) {
       User admin = User.builder()
           .email("admin@mail.com")
-          .password(passwordEncoder.encode("admin"))
+          .password(passwordEncoder.encode("12345678a"))
           .role(Role.ADMIN)
           .build();
       userRepository.save(admin);
