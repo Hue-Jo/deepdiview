@@ -1,5 +1,6 @@
 package community.ddv.domain.board.service;
 
+import community.ddv.domain.board.dto.ReviewResponseDTO;
 import community.ddv.global.exception.ErrorCode;
 import community.ddv.domain.board.dto.CommentDTO.CommentRequestDto;
 import community.ddv.domain.board.dto.CommentDTO.CommentResponseDto;
@@ -28,6 +29,7 @@ import org.springframework.transaction.annotation.Transactional;
 public class CommentService {
 
   private final UserService userService;
+  private final ReviewService reviewService;
   private final forbiddenWordsFilter forbiddenWordsFilter;
   private final CommentRepository commentRepository;
   private final ReviewRepository reviewRepository;
@@ -167,7 +169,7 @@ public class CommentService {
     userService.getLoginUser();
 
     return commentRepository.findByUser_Id(userId, pageable)
-        .map(this::convertToCommentResponse);
+        .map(this::convertToCommentResponseByUser);
   }
 
 
@@ -181,6 +183,22 @@ public class CommentService {
         .content(comment.getContent())
         .createdAt(comment.getCreatedAt())
         .updatedAt(comment.getUpdatedAt())
+        .build();
+  }
+
+  private CommentResponseDto convertToCommentResponseByUser(Comment comment) {
+
+    ReviewResponseDTO reviewDto = reviewService.convertToReviewResponseDto(comment.getReview());
+    return CommentResponseDto.builder()
+        .id(comment.getId())
+        .reviewId(comment.getReview().getId())
+        .userId(comment.getUser().getId())
+        .userNickname(comment.getUser().getNickname())
+        .profileImageUrl(comment.getUser().getProfileImageUrl())
+        .content(comment.getContent())
+        .createdAt(comment.getCreatedAt())
+        .updatedAt(comment.getUpdatedAt())
+        .review(reviewDto)
         .build();
   }
 }
