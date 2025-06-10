@@ -33,6 +33,8 @@ public class CommentDTO {
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 
+    private ReviewResponseDTO review;
+
   }
 
 

@@ -41,7 +41,7 @@ public class Movie {
 
   private Integer runtime; // 런타임
   public void updateRuntime(Integer runtime) {
-    if (this.runtime == null || this.runtime <= 0) {
+    if (this.runtime == null || this.runtime == 0) {
       this.runtime = runtime;
     }
   }
