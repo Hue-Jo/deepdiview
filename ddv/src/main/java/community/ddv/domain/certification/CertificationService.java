@@ -1,8 +1,9 @@
 package community.ddv.domain.certification;
 
-import community.ddv.domain.certification.CertificationDTO.CertificationResponseDto;
+import community.ddv.domain.certification.CertificationDTO.CertificationDetailResponseDto;
 import community.ddv.domain.certification.constant.CertificationStatus;
 import community.ddv.domain.certification.constant.RejectionReason;
+import community.ddv.domain.certification.CertificationDTO.CertificationWrapperDto;
 import community.ddv.domain.notification.NotificationService;
 import community.ddv.domain.user.constant.Role;
 import community.ddv.domain.user.entity.User;
@@ -17,7 +18,6 @@ import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.temporal.TemporalAdjusters;
 import java.util.List;
-import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.PageRequest;
@@ -41,7 +41,7 @@ public class CertificationService {
    * @param certificationImageFile
    */
   @Transactional
-  public CertificationResponseDto submitCertification(MultipartFile certificationImageFile) {
+  public CertificationWrapperDto submitCertification(MultipartFile certificationImageFile) {
 
     User user = userService.getLoginUser();
 
@@ -68,12 +68,11 @@ public class CertificationService {
 
     Certification savedCertification = certificationRepository.save(certification);
     log.info("인증샷 업로드 성공 : certificationId = {}", savedCertification.getId());
-    return CertificationResponseDto.builder()
-        .id(savedCertification.getId())
-        .userId(savedCertification.getUser().getId())
-        .certificationUrl(savedCertification.getCertificationUrl())
+
+    CertificationDetailResponseDto infoDto= convertToCertificationDto(savedCertification);
+    return CertificationWrapperDto .builder()
         .status(savedCertification.getStatus())
-        .createdAt(savedCertification.getCreatedAt())
+        .certificationDetails(infoDto)
         .build();
   }
 
@@ -81,7 +80,7 @@ public class CertificationService {
    * 자신이 올린 사진 URL, 상태 반환
    */
   @Transactional(readOnly = true)
-  public CertificationResponseDto getMyCertification() {
+  public CertificationWrapperDto getMyCertification() {
     User user = userService.getLoginUser();  // 로그인된 사용자 정보 가져오기
 
     LocalDate startOfWeek = LocalDate.now().with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY));
@@ -94,31 +93,26 @@ public class CertificationService {
             endOfWeek.atTime(LocalTime.MAX)) // 토요일 11시 59분 59초
         .orElse(null);
 
-    if (certification == null) {
-      return CertificationResponseDto.builder()
-          .id(null)
-          .userId(null)
-          .certificationUrl(null)
+    if (certification == null || certification.getStatus() == null) {
+      return CertificationWrapperDto.builder()
           .status(CertificationStatus.NONE)
-          .createdAt(null)
-          .rejectionReason(null)
+          .certificationDetails(null)
           .build();
     }
 
-    CertificationStatus status = certification.getStatus();
+    CertificationDetailResponseDto certificationDetailResponseDto = convertToCertificationDto(certification);
 
-    if (status == null) {
-      throw new DeepdiviewException(ErrorCode.CERTIFICATION_NOT_FOUND);
-    }
-
-    return convertToCertificationDto(certification);
+    return CertificationWrapperDto.builder()
+        .status(certification.getStatus())
+        .certificationDetails(certificationDetailResponseDto)
+        .build();
   }
 
   /**
    * 일반사용자 _ 인증샷 수정
    */
   @Transactional
-  public CertificationResponseDto updateCertification(MultipartFile certificationImageFile) {
+  public CertificationWrapperDto updateCertification(MultipartFile certificationImageFile) {
 
     User user = userService.getLoginUser();
 
@@ -148,13 +142,10 @@ public class CertificationService {
     Certification updatedCertification = certificationRepository.save(certification);
     log.info("인증샷 수정 완료 : certificationId = {}", updatedCertification.getId());
 
-    return CertificationResponseDto.builder()
-        .id(updatedCertification.getId())
-        .userId(updatedCertification.getUser().getId())
-        .certificationUrl(updatedCertification.getCertificationUrl())
+    CertificationDetailResponseDto certificationDetailResponseDto = convertToCertificationDto(updatedCertification);
+    return CertificationWrapperDto.builder()
         .status(updatedCertification.getStatus())
-        .rejectionReason(null)
-        .createdAt(updatedCertification.getCreatedAt())
+        .certificationDetails(certificationDetailResponseDto)
         .build();
   }
 
@@ -192,7 +183,7 @@ public class CertificationService {
    * @param status   (인증상태 PENDING, APPROVED, REJECTED)
    */
   @Transactional(readOnly = true)
-  public CursorPageResponse<CertificationResponseDto> getCertificationsByStatus(
+  public CursorPageResponse<CertificationWrapperDto> getCertificationsByStatus(
       CertificationStatus status, LocalDateTime cursorCreatedAt, Long cursorId, int size) {
 
     log.info("관리자의 인증 목록 조회 시작");
@@ -238,11 +229,14 @@ public class CertificationService {
       nextCertificationId = lastCertification.getId();
     }
 
-    List<CertificationResponseDto> certificationResponses = certifications.stream()
-        .map(this::convertToCertificationDto)
-        .collect(Collectors.toList());
+    List<CertificationWrapperDto> certificationWrapperDtos = certifications.stream()
+        .map(certification -> CertificationWrapperDto.builder()
+            .status(certification.getStatus())
+            .certificationDetails(convertToCertificationDto(certification))
+            .build())
+        .toList();
 
-    return new CursorPageResponse<>(certificationResponses, nextCreatedAt, nextCertificationId, hasNext);
+    return new CursorPageResponse<>(certificationWrapperDtos, nextCreatedAt, nextCertificationId, hasNext);
 
   }
 
@@ -254,7 +248,7 @@ public class CertificationService {
    * @param rejectionReason
    */
   @Transactional
-  public CertificationResponseDto proceedCertification(Long certificationId, boolean approve, RejectionReason rejectionReason) {
+  public CertificationWrapperDto proceedCertification(Long certificationId, boolean approve, RejectionReason rejectionReason) {
     log.info("인증 처리 시작 : certificationId = {}", certificationId);
     User admin = userService.getLoginUser();
     if (!admin.getRole().equals(Role.ADMIN)) {
@@ -279,7 +273,10 @@ public class CertificationService {
 
     notificationService.certificateResult(certification.getId(), certification.getStatus());
 
-    return convertToCertificationDto(certification);
+    return CertificationWrapperDto.builder()
+        .status(certification.getStatus())
+        .certificationDetails(convertToCertificationDto(certification))
+        .build();
   }
 
 
@@ -288,18 +285,18 @@ public class CertificationService {
     return certificationRepository.existsByUser_IdAndStatus(userId, CertificationStatus.APPROVED);
   }
 
-  private CertificationResponseDto convertToCertificationDto(Certification certification) {
-    return CertificationResponseDto.builder()
+
+  private CertificationDetailResponseDto convertToCertificationDto(Certification certification) {
+    return CertificationDetailResponseDto.builder()
         .id(certification.getId())
         .userId(certification.getUser().getId())
         .certificationUrl(certification.getCertificationUrl())
         .createdAt(certification.getCreatedAt())
-        .status(certification.getStatus())
         .rejectionReason(certification.getRejectionReason())
         .build();
   }
 
-  // 인증상태 초기화 (새로운 주가 시작되기 전, 인증 상태를 null로 초기화)
+  // 인증상태 초기화 (새로운 주가 시작되기 전, 인증 상태를 null (API로는 NONE)로 초기화)
   @Transactional
   public void resetCertificationStatus() {
 
@@ -308,6 +305,8 @@ public class CertificationService {
     // 이번주 월-토에 들어온 인증들
     LocalDateTime startOfWeek = LocalDate.now().with(DayOfWeek.MONDAY).atStartOfDay();
     LocalDateTime endOfWeek = LocalDate.now().with(DayOfWeek.SATURDAY).atTime(LocalTime.MAX);
+    // 테스트용 endOfWeek 
+    //LocalDateTime endOfWeek = LocalDateTime.now();
 
     List<Certification> certifications = certificationRepository.findAllByCreatedAtBetween(startOfWeek, endOfWeek);
     if (certifications.isEmpty()) {

@@ -1,8 +1,8 @@
 package community.ddv.domain.certification;
 
 import community.ddv.domain.certification.CertificationDTO.CertificationRequestDto;
-import community.ddv.domain.certification.CertificationDTO.CertificationResponseDto;
 import community.ddv.domain.certification.constant.CertificationStatus;
+import community.ddv.domain.certification.CertificationDTO.CertificationWrapperDto;
 import community.ddv.global.response.CursorPageResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -33,7 +33,7 @@ public class CertificationController {
 
   @Operation(summary = "인증샷 제출", description = "파일 업로드")
   @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-  public ResponseEntity<CertificationResponseDto> submitCertification(
+  public ResponseEntity<CertificationWrapperDto> submitCertification(
       @Parameter(description = "인증샷 파일")
       @RequestParam("file") MultipartFile file) {
     return ResponseEntity.ok(certificationService.submitCertification(file));
@@ -41,14 +41,13 @@ public class CertificationController {
 
   @Operation(summary = "인증샷, 상태 확인", description = "인증샷 url, 인증상태 반환")
   @GetMapping("/me")
-  public ResponseEntity<CertificationResponseDto> getCertification() {
-    CertificationResponseDto certificationResponseDto = certificationService.getMyCertification();
-    return ResponseEntity.ok(certificationResponseDto);
+  public ResponseEntity<CertificationWrapperDto> getCertification() {
+    return ResponseEntity.ok(certificationService.getMyCertification());
   }
 
   @Operation(summary = "인증샷 수정", description = "파일 재업로드, PENDING/REJECTED 상태의 유저만 사용 가능")
   @PutMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-  public ResponseEntity<CertificationResponseDto> updateCertification(
+  public ResponseEntity<CertificationWrapperDto> updateCertification(
       @Parameter(description = "인증샷 파일")
       @RequestParam("file") MultipartFile file) {
     return ResponseEntity.ok(certificationService.updateCertification(file));
@@ -63,14 +62,14 @@ public class CertificationController {
 
   @Operation(summary = "인증 목록 조회 (실시간성 보장을 위해 커서기반 페이징 사용)", description = "관리자 전용 - 보류, 승인, 거절 필터링 가능 | 한 번에 10개씩 반환 ㅣ 인증요청을 한 지 오래된 순서대로 정렬됩니다.")
   @GetMapping("/admin")
-  public ResponseEntity<CursorPageResponse<CertificationResponseDto>> getPendingCertifications(
+  public ResponseEntity<CursorPageResponse<CertificationWrapperDto>> getPendingCertifications(
       @Parameter(description = "PENDING, APPROVED, REJECTED만 사용")
       @RequestParam(required = false) CertificationStatus status,
       @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime createdAt,
       @RequestParam(required = false) Long certificationId,
       @RequestParam(defaultValue = "10") int size)
   {
-    CursorPageResponse<CertificationResponseDto> certifications =
+    CursorPageResponse<CertificationWrapperDto> certifications =
         certificationService.getCertificationsByStatus(status, createdAt, certificationId, size);
     return ResponseEntity.ok(certifications);
   }
@@ -78,10 +77,11 @@ public class CertificationController {
 
   @Operation(summary = "인증 승인/거절", description = "관리자 전용 - 승인 : true / 거절 : false | 거절시 rejectionReason: OTHER_MOVIE_IMAGE, WRONG_IMAGE, UNIDENTIFIABLE_IMAGE")
   @PostMapping("/admin/proceeding/{certificationId}")
-  public ResponseEntity<CertificationResponseDto> proceedCertification(
+  public ResponseEntity<CertificationWrapperDto> proceedCertification(
       @PathVariable Long certificationId,
       @RequestBody CertificationRequestDto requestDto) {
-    CertificationResponseDto responseDto = certificationService.proceedCertification(certificationId, requestDto.isApprove(), requestDto.getRejectionReason());
+    CertificationWrapperDto responseDto =
+        certificationService.proceedCertification(certificationId, requestDto.isApprove(), requestDto.getRejectionReason());
     return ResponseEntity.ok(responseDto);
   }
 }
