@@ -93,19 +93,7 @@ public class CertificationService {
             endOfWeek.atTime(LocalTime.MAX)) // 토요일 11시 59분 59초
         .orElse(null);
 
-    if (certification == null || certification.getStatus() == null) {
-      return CertificationWrapperDto.builder()
-          .status(CertificationStatus.NONE)
-          .certificationDetails(null)
-          .build();
-    }
-
-    CertificationDetailResponseDto certificationDetailResponseDto = convertToCertificationDto(certification);
-
-    return CertificationWrapperDto.builder()
-        .status(certification.getStatus())
-        .certificationDetails(certificationDetailResponseDto)
-        .build();
+    return certificationResponse(certification);
   }
 
   /**
@@ -142,11 +130,7 @@ public class CertificationService {
     Certification updatedCertification = certificationRepository.save(certification);
     log.info("인증샷 수정 완료 : certificationId = {}", updatedCertification.getId());
 
-    CertificationDetailResponseDto certificationDetailResponseDto = convertToCertificationDto(updatedCertification);
-    return CertificationWrapperDto.builder()
-        .status(updatedCertification.getStatus())
-        .certificationDetails(certificationDetailResponseDto)
-        .build();
+    return certificationResponse(updatedCertification);
   }
 
   /**
@@ -230,10 +214,7 @@ public class CertificationService {
     }
 
     List<CertificationWrapperDto> certificationWrapperDtos = certifications.stream()
-        .map(certification -> CertificationWrapperDto.builder()
-            .status(certification.getStatus())
-            .certificationDetails(convertToCertificationDto(certification))
-            .build())
+        .map(this::certificationResponse)
         .toList();
 
     return new CursorPageResponse<>(certificationWrapperDtos, nextCreatedAt, nextCertificationId, hasNext);
@@ -273,10 +254,7 @@ public class CertificationService {
 
     notificationService.certificateResult(certification.getId(), certification.getStatus());
 
-    return CertificationWrapperDto.builder()
-        .status(certification.getStatus())
-        .certificationDetails(convertToCertificationDto(certification))
-        .build();
+    return certificationResponse(certification);
   }
 
 
@@ -285,6 +263,21 @@ public class CertificationService {
     return certificationRepository.existsByUser_IdAndStatus(userId, CertificationStatus.APPROVED);
   }
 
+
+  private CertificationWrapperDto certificationResponse(Certification certification) {
+
+    if (certification == null || certification.getStatus() == null) {
+      return CertificationWrapperDto.builder()
+          .status(CertificationStatus.NONE)
+          .certificationDetails(null)
+          .build();
+    }
+
+    return CertificationWrapperDto.builder()
+        .status(certification.getStatus())
+        .certificationDetails(convertToCertificationDto(certification))
+        .build();
+  }
 
   private CertificationDetailResponseDto convertToCertificationDto(Certification certification) {
     return CertificationDetailResponseDto.builder()
@@ -305,8 +298,8 @@ public class CertificationService {
     // 이번주 월-토에 들어온 인증들
     LocalDateTime startOfWeek = LocalDate.now().with(DayOfWeek.MONDAY).atStartOfDay();
     LocalDateTime endOfWeek = LocalDate.now().with(DayOfWeek.SATURDAY).atTime(LocalTime.MAX);
-    // 테스트용 endOfWeek 
-    //LocalDateTime endOfWeek = LocalDateTime.now();
+    // 테스트용 endOfWeek
+    //ocalDateTime endOfWeek = LocalDateTime.now();
 
     List<Certification> certifications = certificationRepository.findAllByCreatedAtBetween(startOfWeek, endOfWeek);
     if (certifications.isEmpty()) {
