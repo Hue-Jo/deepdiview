@@ -19,12 +19,19 @@ public class CertificationDTO {
 
     @Getter
     @Builder
-    public static class CertificationResponseDto {
+    public static class CertificationWrapperDto {
+
+        private CertificationStatus status;
+        private CertificationDetailResponseDto certificationDetails;
+    }
+
+    @Getter
+    @Builder
+    public static class CertificationDetailResponseDto {
 
         private Long id;
         private Long userId;
         private String certificationUrl;
-        private CertificationStatus status;
         private LocalDateTime createdAt;
         private RejectionReason rejectionReason;
     }
