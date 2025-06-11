@@ -81,6 +81,8 @@ public class CertificationService {
    */
   @Transactional(readOnly = true)
   public CertificationWrapperDto getMyCertification() {
+
+    validateSunday(); // 일요일에는 확인 불가
     User user = userService.getLoginUser();  // 로그인된 사용자 정보 가져오기
 
     LocalDate startOfWeek = LocalDate.now().with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY));
@@ -169,6 +171,8 @@ public class CertificationService {
   @Transactional(readOnly = true)
   public CursorPageResponse<CertificationWrapperDto> getCertificationsByStatus(
       CertificationStatus status, LocalDateTime cursorCreatedAt, Long cursorId, int size) {
+
+    validateSunday(); // 일요일에는 확인 불가
 
     log.info("관리자의 인증 목록 조회 시작");
     User admin = userService.getLoginUser();
@@ -263,6 +267,12 @@ public class CertificationService {
     return certificationRepository.existsByUser_IdAndStatus(userId, CertificationStatus.APPROVED);
   }
 
+  private void validateSunday() {
+    if (LocalDate.now().getDayOfWeek() == DayOfWeek.SUNDAY) {
+      throw new DeepdiviewException(ErrorCode. CERTIFICATION_CHECK_NOT_ALLOWED_ON_SUNDAY);
+    }
+  }
+
 
   private CertificationWrapperDto certificationResponse(Certification certification) {
 
@@ -299,7 +309,7 @@ public class CertificationService {
     LocalDateTime startOfWeek = LocalDate.now().with(DayOfWeek.MONDAY).atStartOfDay();
     LocalDateTime endOfWeek = LocalDate.now().with(DayOfWeek.SATURDAY).atTime(LocalTime.MAX);
     // 테스트용 endOfWeek
-    //ocalDateTime endOfWeek = LocalDateTime.now();
+    //localDateTime endOfWeek = LocalDateTime.now();
 
     List<Certification> certifications = certificationRepository.findAllByCreatedAtBetween(startOfWeek, endOfWeek);
     if (certifications.isEmpty()) {
