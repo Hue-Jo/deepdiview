@@ -5,6 +5,8 @@ import community.ddv.domain.user.service.UserService;
 import community.ddv.global.response.PageResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import java.util.HashMap;
+import java.util.Map;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort.Direction;
@@ -45,10 +47,11 @@ public class NotificationController {
 
   @Operation(summary = "특정 알림 읽음처리")
   @PutMapping("/{notificationId}/read")
-  public ResponseEntity<Void> markNotificationAsRead(
+  public ResponseEntity<Map<String, Boolean>> markNotificationAsRead(
       @PathVariable Long notificationId) {
-    notificationService.markNotificationAsRead(notificationId);
-    return ResponseEntity.noContent().build();
+    boolean hasUnread = notificationService.markNotificationAsRead(notificationId);
+    Map<String, Boolean> response = Map.of("hasUnread", hasUnread);
+    return ResponseEntity.ok(response);
   }
 
   @Operation(summary = "전체 알림 읽음처리")
@@ -60,9 +63,10 @@ public class NotificationController {
 
   @Operation(summary = "안 읽은 알림 여부 확인용")
   @GetMapping("/unread-exists")
-  public ResponseEntity<Boolean> hasUnreadNotifications() {
-    boolean result = notificationService.isNotReadNotification();
-    return ResponseEntity.ok(result);
+  public ResponseEntity<Map<String, Boolean>> hasUnreadNotifications() {
+    boolean hasUnread = notificationService.isNotReadNotification();
+    Map<String, Boolean> response = Map.of("hasUnread", hasUnread);
+    return ResponseEntity.ok(response);
   }
 
 }

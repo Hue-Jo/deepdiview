@@ -293,7 +293,7 @@ public class NotificationService {
    * 특정 알림 읽음 처리
    * @param notificationId
    */
-  public void markNotificationAsRead(Long notificationId) {
+  public boolean markNotificationAsRead(Long notificationId) {
     User user = userService.getLoginUser();
     log.info("알림 읽음 시도 : userId = {}", user.getId());
     Notification notification = notificationRepository.findByIdAndUser_Id(notificationId,user.getId())
@@ -304,6 +304,8 @@ public class NotificationService {
       notificationRepository.save(notification);
       log.info("알림 읽음처리 완료");
     }
+
+    return notificationRepository.existsByUser_IdAndIsReadFalse(user.getId());
   }
 
   /**
