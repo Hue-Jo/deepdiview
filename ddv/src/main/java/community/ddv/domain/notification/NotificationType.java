@@ -5,8 +5,8 @@ import lombok.Getter;
 @Getter
 public enum NotificationType {
 
-  COMMENT_ADDED("내 리뷰에 새 댓글이 달렸습니다."),
-  LIKE_ADDED("내 리뷰에 좋아요가 달렸습니다."),
+  NEW_COMMENT("내 리뷰에 새 댓글이 달렸습니다."),
+  NEW_LIKE_ADDED("내 리뷰에 좋아요가 달렸습니다."),
   CERTIFICATION_APPROVED("인증이 승인되었습니다."),
   CERTIFICATION_REJECTED("인증이 거절되었습니다.");
 

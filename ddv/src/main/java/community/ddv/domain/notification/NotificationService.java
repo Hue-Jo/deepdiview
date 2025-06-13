@@ -168,7 +168,7 @@ public class NotificationService {
 
     Notification notification = Notification.builder()
         .user(reviewer)
-        .notificationType(NotificationType.COMMENT_ADDED)
+        .notificationType(NotificationType.NEW_COMMENT)
         .relatedId(reviewId)
         .isRead(false)
         .createdAt(LocalDateTime.now())
@@ -178,7 +178,7 @@ public class NotificationService {
 
     NotificationDTO notificationDTO = new NotificationDTO(
         notification.getId(),
-        NotificationType.COMMENT_ADDED
+        NotificationType.NEW_COMMENT
     );
 
     log.info("댓글이 달렸다는 알림 전송 완료 ");
@@ -206,7 +206,7 @@ public class NotificationService {
 
     Notification notification = Notification.builder()
         .user(reviewer)
-        .notificationType(NotificationType.LIKE_ADDED)
+        .notificationType(NotificationType.NEW_LIKE_ADDED)
         .relatedId(reviewId)
         .isRead(false)
         .createdAt(LocalDateTime.now())
@@ -216,7 +216,7 @@ public class NotificationService {
 
     NotificationDTO notificationDTO = new NotificationDTO(
         notification.getId(),
-        NotificationType.LIKE_ADDED
+        NotificationType.NEW_LIKE_ADDED
     );
 
     log.info("좋아요가 달렸다는 알림 전송 완료");
