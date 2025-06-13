@@ -1,6 +1,7 @@
 package community.ddv.domain.certification;
 
 import community.ddv.domain.certification.CertificationDTO.CertificationDetailResponseDto;
+import community.ddv.domain.certification.CertificationDTO.UserInformationDto;
 import community.ddv.domain.certification.constant.CertificationStatus;
 import community.ddv.domain.certification.constant.RejectionReason;
 import community.ddv.domain.certification.CertificationDTO.CertificationWrapperDto;
@@ -286,22 +287,31 @@ public class CertificationService {
       return CertificationWrapperDto.builder()
           .status(CertificationStatus.NONE)
           .certificationDetails(null)
+          .userInformation(null)
           .build();
     }
 
     return CertificationWrapperDto.builder()
         .status(certification.getStatus())
         .certificationDetails(convertToCertificationDto(certification))
+        .userInformation(convertToUserInformationDto(certification.getUser()))
         .build();
   }
 
   private CertificationDetailResponseDto convertToCertificationDto(Certification certification) {
     return CertificationDetailResponseDto.builder()
         .id(certification.getId())
-        .userId(certification.getUser().getId())
         .certificationUrl(certification.getCertificationUrl())
         .createdAt(certification.getCreatedAt())
         .rejectionReason(certification.getRejectionReason())
+        .build();
+  }
+
+  private UserInformationDto convertToUserInformationDto(User user) {
+    return UserInformationDto.builder()
+        .userId(user.getId())
+        .userNickname(user.getNickname())
+        .profileImageUrl(user.getProfileImageUrl())
         .build();
   }
 
