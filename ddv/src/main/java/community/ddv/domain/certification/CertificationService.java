@@ -96,7 +96,7 @@ public class CertificationService {
             endOfWeek.atTime(LocalTime.MAX)) // 토요일 11시 59분 59초
         .orElse(null);
 
-    return certificationResponse(certification);
+    return certificationResponse(certification, user.getId());
   }
 
   /**
@@ -133,7 +133,7 @@ public class CertificationService {
     Certification updatedCertification = certificationRepository.save(certification);
     log.info("인증샷 수정 완료 : certificationId = {}", updatedCertification.getId());
 
-    return certificationResponse(updatedCertification);
+    return certificationResponse(updatedCertification, user.getId());
   }
 
   /**
@@ -225,7 +225,7 @@ public class CertificationService {
     }
 
     List<CertificationWrapperDto> certificationWrapperDtos = certifications.stream()
-        .map(this::certificationResponse)
+        .map(certification -> certificationResponse(certification, null))
         .toList();
 
     return new CursorPageResponse<>(certificationWrapperDtos, nextCreatedAt, nextCertificationId, hasNext);
@@ -265,7 +265,7 @@ public class CertificationService {
 
     notificationService.certificateResult(certification.getId(), certification.getStatus());
 
-    return certificationResponse(certification);
+    return certificationResponse(certification, null);
   }
 
 
@@ -281,7 +281,7 @@ public class CertificationService {
   }
 
 
-  private CertificationWrapperDto certificationResponse(Certification certification) {
+  private CertificationWrapperDto certificationResponse(Certification certification, Long userId) {
 
     if (certification == null || certification.getStatus() == null) {
       return CertificationWrapperDto.builder()
@@ -291,10 +291,13 @@ public class CertificationService {
           .build();
     }
 
+    User user = certification.getUser();
+    boolean isOwner = user.getId().equals(userId);
+
     return CertificationWrapperDto.builder()
         .status(certification.getStatus())
         .certificationDetails(convertToCertificationDto(certification))
-        .userInformation(convertToUserInformationDto(certification.getUser()))
+        .userInformation(isOwner ? null : convertToUserInformationDto(certification.getUser()))
         .build();
   }
 
