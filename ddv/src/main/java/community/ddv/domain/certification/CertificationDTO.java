@@ -23,6 +23,7 @@ public class CertificationDTO {
 
         private CertificationStatus status;
         private CertificationDetailResponseDto certificationDetails;
+        private UserInformationDto userInformation;
     }
 
     @Getter
@@ -30,12 +31,18 @@ public class CertificationDTO {
     public static class CertificationDetailResponseDto {
 
         private Long id;
-        private Long userId;
         private String certificationUrl;
         private LocalDateTime createdAt;
         private RejectionReason rejectionReason;
     }
 
+    @Getter
+    @Builder
+    public static class UserInformationDto {
+        private Long userId;
+        private String userNickname;
+        private String profileImageUrl;
 
+    }
 
 }
