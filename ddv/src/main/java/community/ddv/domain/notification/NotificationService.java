@@ -206,7 +206,7 @@ public class NotificationService {
 
     Notification notification = Notification.builder()
         .user(reviewer)
-        .notificationType(NotificationType.NEW_LIKE_ADDED)
+        .notificationType(NotificationType.NEW_LIKE)
         .relatedId(reviewId)
         .isRead(false)
         .createdAt(LocalDateTime.now())
@@ -216,7 +216,7 @@ public class NotificationService {
 
     NotificationDTO notificationDTO = new NotificationDTO(
         notification.getId(),
-        NotificationType.NEW_LIKE_ADDED
+        NotificationType.NEW_LIKE
     );
 
     log.info("좋아요가 달렸다는 알림 전송 완료");
@@ -269,11 +269,26 @@ public class NotificationService {
     log.info("알림 목록 조회 요청");
     User user = userService.getLoginUser();
     log.info("요청자 : userId = {}", user.getId());
-    Page<Notification> notifications = notificationRepository.findByUser_IdOrderByCreatedAtDesc(user.getId(), pageable);
+
+    // 30일 전의 알림만 가져오기
+    LocalDateTime dayBeforeOneMonth = LocalDateTime.now().minusDays(30);
+
+    Page<Notification> notifications = notificationRepository.findByUser_IdAndCreatedAtAfterOrderByCreatedAtDesc(user.getId(), dayBeforeOneMonth, pageable);
     Page<NotificationResponseDTO> notificationResponseDTOS =
         notifications.map(this::convertToNotificationResponseDTO);
+
     return new PageResponse<>(notificationResponseDTOS);
   }
+
+  /**
+   * 30일을 넘긴 알림 삭제
+   */
+  @Transactional
+  public void deleteOldNotifications() {
+    LocalDateTime cutoff = LocalDateTime.now().minusDays(31);
+    notificationRepository.deleteByCreatedAtBefore(cutoff);
+  }
+
 
   private NotificationResponseDTO convertToNotificationResponseDTO(Notification notification) {
     return NotificationResponseDTO.builder()

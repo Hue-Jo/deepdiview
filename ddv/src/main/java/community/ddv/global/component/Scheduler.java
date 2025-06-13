@@ -61,5 +61,13 @@ public class Scheduler {
     log.info("인증상태 초기화 완료");
   }
 
+  // 매일 새벽 3시, 31일된 알림 삭제 처리 스케줄링
+//  @Scheduled(cron = "0 0 3 * * *")
+//  public void deleteOldNotifications() {
+//    log.info("31일 이상 지난 알림 삭제 시작");
+//    certificationService.deleteCertification();
+//    log.info("31일 이상 지난 알림 삭제 완료");
+//  }
+
 }
 
