@@ -17,26 +17,34 @@ public interface CertificationRepository extends JpaRepository<Certification, Lo
   boolean existsByUser_IdAndStatus(Long userId, CertificationStatus status);
 
   // 상태별 조회
-  @Query("SELECT c FROM Certification c WHERE " +
-      "( c.status = :status) AND " +
-      "((c.createdAt > :createdAt) OR (c.createdAt = :createdAt AND c.id > :id)) " +
-      "ORDER BY c.createdAt ASC, c.id ASC")
+  @Query("""
+        SELECT c FROM Certification c
+        WHERE(c.status = :status)
+        AND ((c.createdAt > :createdAt) OR (c.createdAt = :createdAt AND c.id > :id))
+        AND c.createdAt <= :endOfWeek
+        ORDER BY c.createdAt ASC, c.id ASC
+        """)
   List<Certification> findByStatusWithCursor(
       @Param("status") CertificationStatus status,
       @Param("createdAt") LocalDateTime createdAt,
       @Param("id") Long id,
+      @Param("endOfWeek") LocalDateTime endOfWeek,
       Pageable pageable
   );
 
   // 전체 조회
-  @Query("SELECT c FROM Certification c WHERE " +
-      "(c.status IS NOT NULL) AND " +
-      "((c.createdAt > :createdAt) OR (c.createdAt = :createdAt AND c.id > :id)) " +
-      "ORDER BY c.createdAt ASC, c.id ASC")
+  @Query("""
+      SELECT c FROM Certification c
+      WHERE (c.status IS NOT NULL)
+      AND ((c.createdAt > :createdAt) OR (c.createdAt = :createdAt AND c.id > :id))
+      AND c.createdAt <= :endOfWeek
+      ORDER BY c.createdAt ASC, c.id ASC
+      """)
   List<Certification> findAllWithCursor(
     @Param("createdAt") LocalDateTime createdAt,
     @Param("id") Long id,
-    Pageable pageable
+    @Param("endOfWeek") LocalDateTime endOfWeek,
+      Pageable pageable
   );
 
 

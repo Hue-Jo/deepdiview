@@ -181,9 +181,15 @@ public class CertificationService {
       throw new DeepdiviewException(ErrorCode.ONLY_ADMIN_CAN);
     }
 
+    LocalDateTime startOfWeek = getStartOfThisWeek();
+    LocalDateTime endOfWeek = getEndOfThisWeek();
+
     // 처음 목록 요청시, 커서정보가 없기 때문에 가장 오래된 시간, 0L로 기본값으로 주기
-    if (cursorCreatedAt == null) {
-      cursorCreatedAt = LocalDateTime.MIN;
+//    if (cursorCreatedAt == null) {
+//      cursorCreatedAt = LocalDateTime.MIN;
+//    }
+    if (cursorCreatedAt == null || cursorCreatedAt.isBefore(startOfWeek)) {
+      cursorCreatedAt = startOfWeek;
     }
     if (cursorId == null) {
       cursorId = 0L;
@@ -196,11 +202,11 @@ public class CertificationService {
     if (status == null) {
       // 전체 조회
       log.info("인증 전체 조회");
-      certifications = certificationRepository.findAllWithCursor(cursorCreatedAt, cursorId, pageable);
+      certifications = certificationRepository.findAllWithCursor(cursorCreatedAt, cursorId, endOfWeek, pageable);
     } else {
       // 인증 상태에 따른 조회
       log.info("인증 상태에 따른 조회 : status = {}", status);
-      certifications = certificationRepository.findByStatusWithCursor(status,cursorCreatedAt, cursorId, pageable);
+      certifications = certificationRepository.findByStatusWithCursor(status,cursorCreatedAt, cursorId, endOfWeek, pageable);
     }
 
     // 다음 페이지 존재 여부 판단
@@ -328,4 +334,15 @@ public class CertificationService {
     certificationRepository.resetAllCertifications();
   }
 
+  private LocalDateTime getStartOfThisWeek() {
+    return LocalDate.now()
+        .with(DayOfWeek.MONDAY)
+        .atStartOfDay();
+  }
+
+  private LocalDateTime getEndOfThisWeek() {
+    return LocalDate.now()
+        .with(DayOfWeek.SATURDAY)
+        .atTime(LocalTime.MAX);
+  }
 }
