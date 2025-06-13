@@ -135,7 +135,7 @@ public class NotificationService {
     if (emitter != null) {
       try {
         emitter.send(notificationDTO);
-        log.info("알림 전송 성공 : userId = {}, notificationType = {}", userId, notificationDTO.getMessage());
+        //log.info("알림 전송 성공 : userId = {}, notificationType = {}", userId, notificationDTO.getMessage());
       } catch (IOException e) {
         log.info("알림 전송 실패 : userId = {}", userId);
         emitter.completeWithError(e);
@@ -168,7 +168,8 @@ public class NotificationService {
 
     Notification notification = Notification.builder()
         .user(reviewer)
-        .notificationType(NotificationType.COMMENT_ADDED)
+        .notificationType(NotificationType.NEW_COMMENT)
+        .relatedId(reviewId)
         .isRead(false)
         .createdAt(LocalDateTime.now())
         .build();
@@ -177,9 +178,7 @@ public class NotificationService {
 
     NotificationDTO notificationDTO = new NotificationDTO(
         notification.getId(),
-        "comment",
-        NotificationType.COMMENT_ADDED.getMessage(),
-        reviewId
+        NotificationType.NEW_COMMENT
     );
 
     log.info("댓글이 달렸다는 알림 전송 완료 ");
@@ -207,7 +206,8 @@ public class NotificationService {
 
     Notification notification = Notification.builder()
         .user(reviewer)
-        .notificationType(NotificationType.LIKE_ADDED)
+        .notificationType(NotificationType.NEW_LIKE_ADDED)
+        .relatedId(reviewId)
         .isRead(false)
         .createdAt(LocalDateTime.now())
         .build();
@@ -216,9 +216,7 @@ public class NotificationService {
 
     NotificationDTO notificationDTO = new NotificationDTO(
         notification.getId(),
-        "like",
-        NotificationType.LIKE_ADDED.getMessage(),
-        reviewId
+        NotificationType.NEW_LIKE_ADDED
     );
 
     log.info("좋아요가 달렸다는 알림 전송 완료");
@@ -241,16 +239,15 @@ public class NotificationService {
     User user = certification.getUser();
     log.info("인증 요청자 : userId = {}", user.getId());
 
-    String message = "";
-    if (status == CertificationStatus.APPROVED) {
-      message = "인증이 승인되었습니다.";
-    } else if (status == CertificationStatus.REJECTED) {
-      message = "인증이 거절되었습니다.";
-    }
+    NotificationType  notificationType =
+        status == CertificationStatus.APPROVED
+            ? NotificationType.CERTIFICATION_APPROVED
+            : NotificationType.CERTIFICATION_REJECTED;
 
     Notification notification = Notification.builder()
         .user(user)
-        .notificationType(NotificationType.CERTIFICATION_RESULT)
+        .notificationType(notificationType)
+        .relatedId(certificationId)
         .isRead(false)
         .createdAt(LocalDateTime.now())
         .build();
@@ -260,9 +257,7 @@ public class NotificationService {
 
     NotificationDTO notificationDTO = new NotificationDTO(
         notification.getId(),
-        "certification",
-        message,
-        certificationId
+        notificationType
     );
 
     sendNotification(user.getId(), notificationDTO);
@@ -283,6 +278,8 @@ public class NotificationService {
   private NotificationResponseDTO convertToNotificationResponseDTO(Notification notification) {
     return NotificationResponseDTO.builder()
         .notificationId(notification.getId())
+        .notificationType(notification.getNotificationType())
+        .relatedId(notification.getRelatedId())
         .message(notification.getNotificationType().getMessage())
         .isRead(notification.isRead())
         .createdAt(notification.getCreatedAt())
@@ -293,7 +290,7 @@ public class NotificationService {
    * 특정 알림 읽음 처리
    * @param notificationId
    */
-  public void markNotificationAsRead(Long notificationId) {
+  public boolean markNotificationAsRead(Long notificationId) {
     User user = userService.getLoginUser();
     log.info("알림 읽음 시도 : userId = {}", user.getId());
     Notification notification = notificationRepository.findByIdAndUser_Id(notificationId,user.getId())
@@ -304,6 +301,8 @@ public class NotificationService {
       notificationRepository.save(notification);
       log.info("알림 읽음처리 완료");
     }
+
+    return notificationRepository.existsByUser_IdAndIsReadFalse(user.getId());
   }
 
   /**

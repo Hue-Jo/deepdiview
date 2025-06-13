@@ -1,5 +1,6 @@
 package community.ddv.domain.notification.dto;
 
+import community.ddv.domain.notification.NotificationType;
 import java.time.LocalDateTime;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -12,7 +13,9 @@ import lombok.NoArgsConstructor;
 @Builder
 public class NotificationResponseDTO {
   private Long notificationId;
+  private NotificationType notificationType;
   private String message;
+  private Long relatedId;
   private boolean isRead;
   private LocalDateTime createdAt;
 

@@ -32,6 +32,8 @@ public class Notification {
   @Enumerated(EnumType.STRING)
   private NotificationType notificationType; // 알림 타입/메시지
 
+  private Long relatedId; // 알림대상(리뷰, 인증 id)
+
   private boolean isRead; // 확인 여부
 
   public void markAsRead() {
