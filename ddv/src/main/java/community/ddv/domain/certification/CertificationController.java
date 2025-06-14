@@ -7,6 +7,7 @@ import community.ddv.global.response.CursorPageResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import java.time.LocalDateTime;
 import lombok.RequiredArgsConstructor;
 import org.springframework.format.annotation.DateTimeFormat;
@@ -79,9 +80,9 @@ public class CertificationController {
   @PostMapping("/admin/proceeding/{certificationId}")
   public ResponseEntity<CertificationWrapperDto> proceedCertification(
       @PathVariable Long certificationId,
-      @RequestBody CertificationRequestDto requestDto) {
+      @RequestBody @Valid CertificationRequestDto requestDto) {
     CertificationWrapperDto responseDto =
-        certificationService.proceedCertification(certificationId, requestDto.isApprove(), requestDto.getRejectionReason());
+        certificationService.proceedCertification(certificationId, requestDto.getApprove(), requestDto.getRejectionReason());
     return ResponseEntity.ok(responseDto);
   }
 }

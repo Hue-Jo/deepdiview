@@ -15,6 +15,6 @@ public interface NotificationRepository extends JpaRepository<Notification, Long
   Page<Notification> findByUser_IdAndCreatedAtAfterOrderByCreatedAtDesc(Long userId, LocalDateTime dayBeforeOneMonth, Pageable pageable);
   List<Notification> findByUser_IdAndIsReadFalseOrderByCreatedAtDesc(Long userId);
   boolean existsByUser_IdAndIsReadFalse(Long userId);
-  void deleteByCreatedAtBefore(LocalDateTime cutoff);
+  void deleteByCreatedAtBefore(LocalDateTime notificationResetDay);
 
 }
