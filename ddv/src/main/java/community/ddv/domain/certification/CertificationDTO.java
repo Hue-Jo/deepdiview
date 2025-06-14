@@ -2,6 +2,7 @@ package community.ddv.domain.certification;
 
 import community.ddv.domain.certification.constant.CertificationStatus;
 import community.ddv.domain.certification.constant.RejectionReason;
+import jakarta.validation.constraints.NotNull;
 import java.time.LocalDateTime;
 import lombok.Builder;
 import lombok.Getter;
@@ -13,7 +14,8 @@ public class CertificationDTO {
     @Getter
     public static class CertificationRequestDto {
 
-        private boolean approve;
+        @NotNull(message = "승인 여부를 선택해주세요")
+        private Boolean approve;
         private RejectionReason rejectionReason;
     }
 

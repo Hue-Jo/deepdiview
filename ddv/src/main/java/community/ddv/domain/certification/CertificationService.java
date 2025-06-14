@@ -247,6 +247,14 @@ public class CertificationService {
       log.error("관리자만 처리 가능합니다.");
       throw new DeepdiviewException(ErrorCode.ONLY_ADMIN_CAN);
     }
+
+    if (!approve && rejectionReason == null) {
+      throw new DeepdiviewException(ErrorCode.REJECTION_REASON_REQUIRED);
+    }
+    if (approve && rejectionReason != null) {
+      throw new DeepdiviewException(ErrorCode.APPROVAL_SHOULD_NOT_HAVE_REASON);
+    }
+
     Certification certification = certificationRepository.findById(certificationId)
         .orElseThrow(() -> {
           log.error("인증 정보를 찾을 수 없음");

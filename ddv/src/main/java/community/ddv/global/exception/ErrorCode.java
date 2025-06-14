@@ -57,6 +57,8 @@ public enum ErrorCode {
   CERTIFICATION_NOT_ALLOWED_ON_SUNDAY("인증 가능 기간은 '월-토'입니다.", HttpStatus.BAD_REQUEST),
   CERTIFICATION_CHECK_NOT_ALLOWED_ON_SUNDAY("일요일에는 인증 상태를 확인할 수 없습니다.", HttpStatus.BAD_REQUEST),
   CERTIFICATION_NOT_FOUND("인증요청이 존재하지 않습니다.", HttpStatus.NOT_FOUND),
+  REJECTION_REASON_REQUIRED("거절일 경우, 거절 사유는 필수입니다.", HttpStatus.BAD_REQUEST),
+  APPROVAL_SHOULD_NOT_HAVE_REASON("승인일 경우, 거절 사유를 입력하면 안 됩니다.",HttpStatus.BAD_REQUEST),
   ALREADY_APPROVED("이미 승인되었습니다.", HttpStatus.BAD_REQUEST),
 
   // 토론 관련 에러코드
