@@ -81,7 +81,7 @@ public class NotificationService {
       emitters.remove(userId);
     });
 
-    log.info("SSE emitter 등록 완료 : userId = {}, 현재 emitter 수 = {}", userId, emitters.size());
+    //log.info("SSE emitter 등록 완료 : userId = {}, 현재 emitter 수 = {}", userId, emitters.size());
     return newEmitter;
   }
 
@@ -135,7 +135,6 @@ public class NotificationService {
     if (emitter != null) {
       try {
         emitter.send(notificationDTO);
-        //log.info("알림 전송 성공 : userId = {}, notificationType = {}", userId, notificationDTO.getMessage());
       } catch (IOException e) {
         log.info("알림 전송 실패 : userId = {}", userId);
         emitter.completeWithError(e);
