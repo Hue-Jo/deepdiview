@@ -2,6 +2,7 @@ package community.ddv.global.component;
 
 import community.ddv.domain.certification.CertificationService;
 import community.ddv.domain.movie.service.MovieApiService;
+import community.ddv.domain.notification.NotificationService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.cache.Cache;
@@ -17,6 +18,7 @@ public class Scheduler {
   private final MovieApiService movieApiService;
   private final CacheManager cacheManager;
   private final CertificationService certificationService;
+  private final NotificationService notificationService;
 
   // 매주 일요일 0시 0분 5초에 영화 데이터 업데이트하면서 인기 영화 목록 캐시 초기화
   @Scheduled(cron = "5 0 0 * * SUN")
@@ -62,12 +64,12 @@ public class Scheduler {
   }
 
   // 매일 새벽 3시, 31일된 알림 삭제 처리 스케줄링
-//  @Scheduled(cron = "0 0 3 * * *")
-//  public void deleteOldNotifications() {
-//    log.info("31일 이상 지난 알림 삭제 시작");
-//    certificationService.deleteCertification();
-//    log.info("31일 이상 지난 알림 삭제 완료");
-//  }
+  @Scheduled(cron = "0 0 3 * * *")
+  public void deleteOldNotifications() {
+    log.info("31일 이상 지난 알림 삭제 시작");
+    notificationService.deleteOldNotifications();
+    log.info("31일 이상 지난 알림 삭제 완료");
+  }
 
 }
 

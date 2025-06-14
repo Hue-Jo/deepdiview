@@ -285,8 +285,8 @@ public class NotificationService {
    */
   @Transactional
   public void deleteOldNotifications() {
-    LocalDateTime cutoff = LocalDateTime.now().minusDays(31);
-    notificationRepository.deleteByCreatedAtBefore(cutoff);
+    LocalDateTime notificationResetDay = LocalDateTime.now().minusDays(31);
+    notificationRepository.deleteByCreatedAtBefore(notificationResetDay);
   }
 
 
