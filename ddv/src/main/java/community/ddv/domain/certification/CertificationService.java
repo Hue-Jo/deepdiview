@@ -154,8 +154,8 @@ public class CertificationService {
       throw new DeepdiviewException(ErrorCode.ALREADY_APPROVED);
     }
 
-    // 인증 상태를 null로 초기화
-    certification.setStatus(null, null);
+    // 인증 상태를 NONE으로 초기화
+    certification.resetStatus();
 
     // S3에서 파일 삭제
     fileStorageService.deleteFile(certification.getCertificationUrl());

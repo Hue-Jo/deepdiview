@@ -45,9 +45,9 @@ public class Certification {
 
   private LocalDateTime createdAt; // 인증 제출 시각
 
-  public void setStatus(CertificationStatus status, RejectionReason rejectionReason) {
-    this.status = status;
-    this.rejectionReason = rejectionReason;
+  public void resetStatus() {
+    this.status = CertificationStatus.NONE;
+    this.rejectionReason = null;
   }
 
   public void approve() {
