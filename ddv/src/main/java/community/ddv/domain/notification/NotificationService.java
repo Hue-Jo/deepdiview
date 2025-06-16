@@ -81,7 +81,7 @@ public class NotificationService {
       emitters.remove(userId);
     });
 
-    //log.info("SSE emitter 등록 완료 : userId = {}, 현재 emitter 수 = {}", userId, emitters.size());
+    log.info("현재 emitter 수 = {}", emitters.size());
     return newEmitter;
   }
 

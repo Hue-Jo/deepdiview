@@ -201,7 +201,7 @@ public class UserService {
    * @param refreshToken
    */
   public TokenDto reissueAccessToken(String refreshToken) {
-    //log.info("리프레시 토큰으로 엑세스 토큰 재발급 요청");
+    log.info("리프레시 토큰으로 엑세스 토큰 재발급 요청");
 
     // 리프레시 토큰이 유효한지 확인
     if (!jwtProvider.isTokenValid(refreshToken)) {
@@ -257,7 +257,7 @@ public class UserService {
         // 남은 시간동안 블랙리스트로 등록
         redisStringTemplate.opsForValue()
             .set(accessToken, "logout", remainTime, TimeUnit.MILLISECONDS);
-        //log.info("엑세스 토큰 블랙리스트로 등록 완료");
+        log.info("엑세스 토큰 블랙리스트로 등록 완료");
       }
     }
 
