@@ -245,15 +245,6 @@ public class CertificationService {
       throw new DeepdiviewException(ErrorCode.ONLY_ADMIN_CAN);
     }
 
-    if (!approve && rejectionReason == null) {
-      log.warn("거절 사유 없음 : certificationId = {}", certificationId);
-      throw new DeepdiviewException(ErrorCode.REJECTION_REASON_REQUIRED);
-    }
-    if (approve && rejectionReason != null) {
-      log.warn("승인 요청에 거절 사유 포함 : certificationId = {}", certificationId);
-      throw new DeepdiviewException(ErrorCode.APPROVAL_SHOULD_NOT_HAVE_REASON);
-    }
-
     Certification certification = certificationRepository.findById(certificationId)
         .orElseThrow(() -> {
           log.error("인증 정보를 찾을 수 없음");
@@ -261,13 +252,18 @@ public class CertificationService {
         });
 
     if (approve) {
-      certification.setStatus(CertificationStatus.APPROVED, null);
+      if (rejectionReason != null) {
+        log.warn("승인 요청에 거절 사유 포함 : certificationId = {}", certificationId);
+        throw new DeepdiviewException(ErrorCode.APPROVAL_SHOULD_NOT_HAVE_REASON);
+      }
+      certification.approve();
       log.info("인증 승인 : certificationId = {}", certificationId);
     } else {
-      certification.setStatus(CertificationStatus.REJECTED, rejectionReason);
+      certification.reject(rejectionReason);
       log.info("인증 거절 : certificationId = {}, 거절 사유 = {}", certificationId, rejectionReason);
     }
     log.info("인증 상태 변경 완료 : certificationId = {}, newStatus = {} ", certificationId, certification.getStatus());
+
     certificationRepository.save(certification);
 
     notificationService.certificateResult(certification.getId(), certification.getStatus());
