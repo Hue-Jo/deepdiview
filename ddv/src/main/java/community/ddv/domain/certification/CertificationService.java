@@ -154,8 +154,8 @@ public class CertificationService {
       throw new DeepdiviewException(ErrorCode.ALREADY_APPROVED);
     }
 
-    // 인증 상태를 null로 초기화
-    certification.setStatus(null, null);
+    // 인증 상태를 NONE으로 초기화
+    certification.resetStatus();
 
     // S3에서 파일 삭제
     fileStorageService.deleteFile(certification.getCertificationUrl());
@@ -186,9 +186,6 @@ public class CertificationService {
     LocalDateTime endOfWeek = getEndOfThisWeek();
 
     // 처음 목록 요청시, 커서정보가 없기 때문에 가장 오래된 시간, 0L로 기본값으로 주기
-//    if (cursorCreatedAt == null) {
-//      cursorCreatedAt = LocalDateTime.MIN;
-//    }
     if (cursorCreatedAt == null || cursorCreatedAt.isBefore(startOfWeek)) {
       cursorCreatedAt = startOfWeek;
     }
@@ -248,13 +245,6 @@ public class CertificationService {
       throw new DeepdiviewException(ErrorCode.ONLY_ADMIN_CAN);
     }
 
-    if (!approve && rejectionReason == null) {
-      throw new DeepdiviewException(ErrorCode.REJECTION_REASON_REQUIRED);
-    }
-    if (approve && rejectionReason != null) {
-      throw new DeepdiviewException(ErrorCode.APPROVAL_SHOULD_NOT_HAVE_REASON);
-    }
-
     Certification certification = certificationRepository.findById(certificationId)
         .orElseThrow(() -> {
           log.error("인증 정보를 찾을 수 없음");
@@ -262,30 +252,23 @@ public class CertificationService {
         });
 
     if (approve) {
-      certification.setStatus(CertificationStatus.APPROVED, null);
+      if (rejectionReason != null) {
+        log.warn("승인 요청에 거절 사유 포함 : certificationId = {}", certificationId);
+        throw new DeepdiviewException(ErrorCode.APPROVAL_SHOULD_NOT_HAVE_REASON);
+      }
+      certification.approve();
       log.info("인증 승인 : certificationId = {}", certificationId);
     } else {
-      certification.setStatus(CertificationStatus.REJECTED, rejectionReason);
+      certification.reject(rejectionReason);
       log.info("인증 거절 : certificationId = {}, 거절 사유 = {}", certificationId, rejectionReason);
     }
     log.info("인증 상태 변경 완료 : certificationId = {}, newStatus = {} ", certificationId, certification.getStatus());
+
     certificationRepository.save(certification);
 
     notificationService.certificateResult(certification.getId(), certification.getStatus());
 
     return certificationResponse(certification, null);
-  }
-
-
-  // 사용자가 특정 영화에 대해 인증된 상태인지 확인
-  public boolean isUserCertified(Long userId) {
-    return certificationRepository.existsByUser_IdAndStatus(userId, CertificationStatus.APPROVED);
-  }
-
-  private void validateSunday() {
-    if (LocalDate.now().getDayOfWeek() == DayOfWeek.SUNDAY) {
-      throw new DeepdiviewException(ErrorCode. CERTIFICATION_CHECK_NOT_ALLOWED_ON_SUNDAY);
-    }
   }
 
 
@@ -355,12 +338,26 @@ public class CertificationService {
     certificationRepository.resetAllCertifications();
   }
 
+  // 사용자가 특정 영화에 대해 인증된 상태인지 확인
+  public boolean isUserCertified(Long userId) {
+    return certificationRepository.existsByUser_IdAndStatus(userId, CertificationStatus.APPROVED);
+  }
+
+  // 일요일에는 확인 불가 예외처리 메서드
+  private void validateSunday() {
+    if (LocalDate.now().getDayOfWeek() == DayOfWeek.SUNDAY) {
+      throw new DeepdiviewException(ErrorCode. CERTIFICATION_CHECK_NOT_ALLOWED_ON_SUNDAY);
+    }
+  }
+
+  // 월요일 0시
   private LocalDateTime getStartOfThisWeek() {
     return LocalDate.now()
         .with(DayOfWeek.MONDAY)
         .atStartOfDay();
   }
 
+  // 토요일 23.59.59
   private LocalDateTime getEndOfThisWeek() {
     return LocalDate.now()
         .with(DayOfWeek.SATURDAY)

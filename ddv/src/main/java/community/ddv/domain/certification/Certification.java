@@ -3,6 +3,8 @@ package community.ddv.domain.certification;
 import community.ddv.domain.certification.constant.CertificationStatus;
 import community.ddv.domain.certification.constant.RejectionReason;
 import community.ddv.domain.user.entity.User;
+import community.ddv.global.exception.DeepdiviewException;
+import community.ddv.global.exception.ErrorCode;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
@@ -43,8 +45,21 @@ public class Certification {
 
   private LocalDateTime createdAt; // 인증 제출 시각
 
-  public void setStatus(CertificationStatus status, RejectionReason rejectionReason) {
-    this.status = status;
+  public void resetStatus() {
+    this.status = CertificationStatus.NONE;
+    this.rejectionReason = null;
+  }
+
+  public void approve() {
+    this.status = CertificationStatus.APPROVED;
+    this.rejectionReason = null;
+  }
+
+  public void reject(RejectionReason rejectionReason) {
+    if (rejectionReason == null) {
+      throw new DeepdiviewException(ErrorCode.REJECTION_REASON_REQUIRED);
+    }
+    this.status = CertificationStatus.REJECTED;
     this.rejectionReason = rejectionReason;
   }
 

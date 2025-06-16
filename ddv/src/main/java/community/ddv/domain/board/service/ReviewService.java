@@ -71,6 +71,7 @@ public class ReviewService {
         .build();
 
     reviewRepository.save(review);
+    log.info("리뷰 작성 성공 - 사용자 ID: {}, 리뷰 ID: {}", user.getId(), review.getId());
     return convertToReviewResponseDto(review);
   }
 
@@ -121,7 +122,7 @@ public class ReviewService {
         filteredContent,
         reviewUpdateDTO.getRating()
     );
-
+    log.info("리뷰 삭제 성공 - 리뷰 ID: {}", reviewId);
     return convertToReviewResponseDto(review);
 
   }
