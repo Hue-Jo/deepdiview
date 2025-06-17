@@ -5,7 +5,6 @@ import community.ddv.domain.board.repository.ReviewRepository;
 import community.ddv.domain.certification.Certification;
 import community.ddv.domain.certification.CertificationRepository;
 import community.ddv.domain.certification.constant.CertificationStatus;
-import community.ddv.domain.notification.dto.NotificationDTO;
 import community.ddv.domain.notification.dto.NotificationResponseDTO;
 import community.ddv.domain.user.entity.User;
 import community.ddv.domain.user.service.UserService;
@@ -128,14 +127,14 @@ public class NotificationService {
   /**
    * 알림 전송 메서드
    * @param userId
-   * @param notificationDTO
+   * @param notificationResponseDTO
    */
-  public void sendNotification(Long userId, NotificationDTO notificationDTO) {
+  public void sendNotification(Long userId, NotificationResponseDTO notificationResponseDTO) {
     SseEmitter emitter = emitters.get(userId);
 
     if (emitter != null) {
       try {
-        emitter.send(notificationDTO);
+        emitter.send(notificationResponseDTO);
       } catch (IOException e) {
         log.info("알림 전송 실패 : userId = {}", userId);
         emitter.completeWithError(e);
@@ -176,13 +175,14 @@ public class NotificationService {
 
     notificationRepository.save(notification);
 
-    NotificationDTO notificationDTO = new NotificationDTO(
-        notification.getId(),
-        NotificationType.NEW_COMMENT
-    );
+//    NotificationDTO notificationDTO = new NotificationDTO(
+//        notification.getId(),
+//        NotificationType.NEW_COMMENT
+//    );
+    NotificationResponseDTO responseDTO = responseDTO(notification);
 
     log.info("댓글이 달렸다는 알림 전송 완료 ");
-    sendNotification(reviewer.getId(), notificationDTO);
+    sendNotification(reviewer.getId(), responseDTO);
   }
 
 
@@ -214,14 +214,15 @@ public class NotificationService {
 
     notificationRepository.save(notification);
 
-    NotificationDTO notificationDTO = new NotificationDTO(
-        notification.getId(),
-        NotificationType.NEW_LIKE
-    );
+//    NotificationDTO notificationDTO = new NotificationDTO(
+//        notification.getId(),
+//        NotificationType.NEW_LIKE
+//    );
+    NotificationResponseDTO responseDTO = responseDTO(notification);
 
     log.info("좋아요가 달렸다는 알림 전송 완료");
 
-    sendNotification(reviewer.getId(), notificationDTO);
+    sendNotification(reviewer.getId(), responseDTO);
   }
 
 
@@ -255,12 +256,13 @@ public class NotificationService {
     notificationRepository.save(notification);
     log.info("인증 결과 알림 전송");
 
-    NotificationDTO notificationDTO = new NotificationDTO(
-        notification.getId(),
-        notificationType
-    );
+//    NotificationDTO notificationDTO = new NotificationDTO(
+//        notification.getId(),
+//        notificationType
+//    );
+    NotificationResponseDTO responseDTO = responseDTO(notification);
 
-    sendNotification(user.getId(), notificationDTO);
+    sendNotification(user.getId(), responseDTO);
   }
 
   // 알림 목록 조회
@@ -323,6 +325,16 @@ public class NotificationService {
         .build();
   }
 
+  private NotificationResponseDTO responseDTO(Notification notification) {
+    return new NotificationResponseDTO(
+        notification.getId(),
+        notification.getNotificationType(),
+        notification.getNotificationType().getMessage(),
+        notification.getRelatedId(),
+        notification.isRead(),
+        notification.getCreatedAt()
+    );
+  }
   /**
    * 특정 알림 읽음 처리
    * @param notificationId
