@@ -175,10 +175,6 @@ public class NotificationService {
 
     notificationRepository.save(notification);
 
-//    NotificationDTO notificationDTO = new NotificationDTO(
-//        notification.getId(),
-//        NotificationType.NEW_COMMENT
-//    );
     NotificationResponseDTO responseDTO = responseDTO(notification);
 
     log.info("댓글이 달렸다는 알림 전송 완료 ");
@@ -214,10 +210,6 @@ public class NotificationService {
 
     notificationRepository.save(notification);
 
-//    NotificationDTO notificationDTO = new NotificationDTO(
-//        notification.getId(),
-//        NotificationType.NEW_LIKE
-//    );
     NotificationResponseDTO responseDTO = responseDTO(notification);
 
     log.info("좋아요가 달렸다는 알림 전송 완료");
@@ -256,10 +248,6 @@ public class NotificationService {
     notificationRepository.save(notification);
     log.info("인증 결과 알림 전송");
 
-//    NotificationDTO notificationDTO = new NotificationDTO(
-//        notification.getId(),
-//        notificationType
-//    );
     NotificationResponseDTO responseDTO = responseDTO(notification);
 
     sendNotification(user.getId(), responseDTO);
@@ -296,10 +284,6 @@ public class NotificationService {
       nextCreatedAt = lastNotification.getCreatedAt();
       nextCursorId = lastNotification.getId();
     }
-//
-//    Page<Notification> notifications = notificationRepository.findByUser_IdAndCreatedAtAfterOrderByCreatedAtDesc(user.getId(), dayBeforeOneMonth, pageable);
-//    Page<NotificationResponseDTO> notificationResponseDTOS =
-//        notifications.map(this::convertToNotificationResponseDTO);
 
     return new CursorPageResponse<>(notificationResponseDTOS, nextCreatedAt, nextCursorId, hasNext);
   }
