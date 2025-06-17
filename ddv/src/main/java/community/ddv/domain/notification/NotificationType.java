@@ -16,4 +16,8 @@ public enum NotificationType {
     this.message = message;
   }
 
+  public String getMessage() {
+    return message;
+  }
+
 }

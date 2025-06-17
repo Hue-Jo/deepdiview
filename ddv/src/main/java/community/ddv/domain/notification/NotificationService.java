@@ -11,15 +11,16 @@ import community.ddv.domain.user.entity.User;
 import community.ddv.domain.user.service.UserService;
 import community.ddv.global.exception.DeepdiviewException;
 import community.ddv.global.exception.ErrorCode;
-import community.ddv.global.response.PageResponse;
+import community.ddv.global.response.CursorPageResponse;
 import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
@@ -264,19 +265,41 @@ public class NotificationService {
 
   // 알림 목록 조회
   @Transactional(readOnly = true)
-  public PageResponse<NotificationResponseDTO> getNotifications(Pageable pageable) {
+  public CursorPageResponse<NotificationResponseDTO> getNotifications(
+      LocalDateTime cursorCreatedAt, Long cursorId, int size) {
     log.info("알림 목록 조회 요청");
     User user = userService.getLoginUser();
-    log.info("요청자 : userId = {}", user.getId());
 
     // 30일 전의 알림만 가져오기
     LocalDateTime dayBeforeOneMonth = LocalDateTime.now().minusDays(30);
 
-    Page<Notification> notifications = notificationRepository.findByUser_IdAndCreatedAtAfterOrderByCreatedAtDesc(user.getId(), dayBeforeOneMonth, pageable);
-    Page<NotificationResponseDTO> notificationResponseDTOS =
-        notifications.map(this::convertToNotificationResponseDTO);
+    Pageable pageable = PageRequest.of(0, size+1);
 
-    return new PageResponse<>(notificationResponseDTOS);
+    List<Notification> notifications = notificationRepository.findByUserIdWithCursor(user.getId(), dayBeforeOneMonth, cursorCreatedAt, cursorId, pageable);
+
+    boolean hasNext = notifications.size() > size;
+    if (hasNext) {
+      notifications = notifications.subList(0,size);
+    }
+
+    List<NotificationResponseDTO> notificationResponseDTOS = notifications.stream()
+        .map(this::convertToNotificationResponseDTO)
+        .collect(Collectors.toList());
+
+    Long nextCursorId = null;
+    LocalDateTime nextCreatedAt = null;
+
+    if (hasNext && !notifications.isEmpty()) {
+      Notification lastNotification = notifications.get(notifications.size() - 1);
+      nextCreatedAt = lastNotification.getCreatedAt();
+      nextCursorId = lastNotification.getId();
+    }
+//
+//    Page<Notification> notifications = notificationRepository.findByUser_IdAndCreatedAtAfterOrderByCreatedAtDesc(user.getId(), dayBeforeOneMonth, pageable);
+//    Page<NotificationResponseDTO> notificationResponseDTOS =
+//        notifications.map(this::convertToNotificationResponseDTO);
+
+    return new CursorPageResponse<>(notificationResponseDTOS, nextCreatedAt, nextCursorId, hasNext);
   }
 
   /**
