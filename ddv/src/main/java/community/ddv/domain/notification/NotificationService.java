@@ -5,21 +5,21 @@ import community.ddv.domain.board.repository.ReviewRepository;
 import community.ddv.domain.certification.Certification;
 import community.ddv.domain.certification.CertificationRepository;
 import community.ddv.domain.certification.constant.CertificationStatus;
-import community.ddv.domain.notification.dto.NotificationDTO;
 import community.ddv.domain.notification.dto.NotificationResponseDTO;
 import community.ddv.domain.user.entity.User;
 import community.ddv.domain.user.service.UserService;
 import community.ddv.global.exception.DeepdiviewException;
 import community.ddv.global.exception.ErrorCode;
-import community.ddv.global.response.PageResponse;
+import community.ddv.global.response.CursorPageResponse;
 import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
@@ -127,14 +127,14 @@ public class NotificationService {
   /**
    * 알림 전송 메서드
    * @param userId
-   * @param notificationDTO
+   * @param notificationResponseDTO
    */
-  public void sendNotification(Long userId, NotificationDTO notificationDTO) {
+  public void sendNotification(Long userId, NotificationResponseDTO notificationResponseDTO) {
     SseEmitter emitter = emitters.get(userId);
 
     if (emitter != null) {
       try {
-        emitter.send(notificationDTO);
+        emitter.send(notificationResponseDTO);
       } catch (IOException e) {
         log.info("알림 전송 실패 : userId = {}", userId);
         emitter.completeWithError(e);
@@ -175,13 +175,10 @@ public class NotificationService {
 
     notificationRepository.save(notification);
 
-    NotificationDTO notificationDTO = new NotificationDTO(
-        notification.getId(),
-        NotificationType.NEW_COMMENT
-    );
+    NotificationResponseDTO responseDTO = responseDTO(notification);
 
     log.info("댓글이 달렸다는 알림 전송 완료 ");
-    sendNotification(reviewer.getId(), notificationDTO);
+    sendNotification(reviewer.getId(), responseDTO);
   }
 
 
@@ -213,14 +210,11 @@ public class NotificationService {
 
     notificationRepository.save(notification);
 
-    NotificationDTO notificationDTO = new NotificationDTO(
-        notification.getId(),
-        NotificationType.NEW_LIKE
-    );
+    NotificationResponseDTO responseDTO = responseDTO(notification);
 
     log.info("좋아요가 달렸다는 알림 전송 완료");
 
-    sendNotification(reviewer.getId(), notificationDTO);
+    sendNotification(reviewer.getId(), responseDTO);
   }
 
 
@@ -254,29 +248,44 @@ public class NotificationService {
     notificationRepository.save(notification);
     log.info("인증 결과 알림 전송");
 
-    NotificationDTO notificationDTO = new NotificationDTO(
-        notification.getId(),
-        notificationType
-    );
+    NotificationResponseDTO responseDTO = responseDTO(notification);
 
-    sendNotification(user.getId(), notificationDTO);
+    sendNotification(user.getId(), responseDTO);
   }
 
   // 알림 목록 조회
   @Transactional(readOnly = true)
-  public PageResponse<NotificationResponseDTO> getNotifications(Pageable pageable) {
+  public CursorPageResponse<NotificationResponseDTO> getNotifications(
+      LocalDateTime cursorCreatedAt, Long cursorId, int size) {
     log.info("알림 목록 조회 요청");
     User user = userService.getLoginUser();
-    log.info("요청자 : userId = {}", user.getId());
 
     // 30일 전의 알림만 가져오기
     LocalDateTime dayBeforeOneMonth = LocalDateTime.now().minusDays(30);
 
-    Page<Notification> notifications = notificationRepository.findByUser_IdAndCreatedAtAfterOrderByCreatedAtDesc(user.getId(), dayBeforeOneMonth, pageable);
-    Page<NotificationResponseDTO> notificationResponseDTOS =
-        notifications.map(this::convertToNotificationResponseDTO);
+    Pageable pageable = PageRequest.of(0, size+1);
 
-    return new PageResponse<>(notificationResponseDTOS);
+    List<Notification> notifications = notificationRepository.findByUserIdWithCursor(user.getId(), dayBeforeOneMonth, cursorCreatedAt, cursorId, pageable);
+
+    boolean hasNext = notifications.size() > size;
+    if (hasNext) {
+      notifications = notifications.subList(0,size);
+    }
+
+    List<NotificationResponseDTO> notificationResponseDTOS = notifications.stream()
+        .map(this::convertToNotificationResponseDTO)
+        .collect(Collectors.toList());
+
+    Long nextCursorId = null;
+    LocalDateTime nextCreatedAt = null;
+
+    if (hasNext && !notifications.isEmpty()) {
+      Notification lastNotification = notifications.get(notifications.size() - 1);
+      nextCreatedAt = lastNotification.getCreatedAt();
+      nextCursorId = lastNotification.getId();
+    }
+
+    return new CursorPageResponse<>(notificationResponseDTOS, nextCreatedAt, nextCursorId, hasNext);
   }
 
   /**
@@ -300,6 +309,16 @@ public class NotificationService {
         .build();
   }
 
+  private NotificationResponseDTO responseDTO(Notification notification) {
+    return new NotificationResponseDTO(
+        notification.getId(),
+        notification.getNotificationType(),
+        notification.getNotificationType().getMessage(),
+        notification.getRelatedId(),
+        notification.isRead(),
+        notification.getCreatedAt()
+    );
+  }
   /**
    * 특정 알림 읽음 처리
    * @param notificationId
