@@ -3,6 +3,7 @@ package community.ddv.domain.user.controller;
 import community.ddv.domain.user.dto.EmailDto.EmailRequest;
 import community.ddv.domain.user.dto.EmailDto.EmailVerifyRequest;
 import community.ddv.domain.user.service.EmailService;
+import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -19,6 +20,7 @@ public class EmailController {
 
   private final EmailService emailService;
 
+  @Operation(summary = "인증코드 전송")
   @PostMapping("/send")
   public ResponseEntity<Void> sendCode(
       @RequestBody EmailRequest emailRequest
@@ -27,6 +29,7 @@ public class EmailController {
     return ResponseEntity.noContent().build();
   }
 
+  @Operation(summary = "인증코드 확인/검증")
   @PostMapping("/verify")
   public ResponseEntity<Void> verifyCode(
       @RequestBody EmailVerifyRequest verifyRequest
