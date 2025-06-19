@@ -58,6 +58,13 @@ public class EmailService {
         """.formatted(authCode);
   }
 
+  // 인증코드 6자리 난수 생성 메서드
+  private String createRandomCode() {
+    Random random = new Random();
+    int code = 100000 + random.nextInt(900000); // 6자리 난수
+    return String.valueOf(code);
+  }
+
   // 인증코드 검증
   public void verifyAuthCode(String email, String authCode) {
     String key = "authCode:" + email;
@@ -81,10 +88,5 @@ public class EmailService {
     return "true".equals(redisStringTemplate.opsForValue().get("EMAIL_VERIFIED:" + email));
   }
 
-  // 인증코드 6자리 난수 생성 메서드
-  private String createRandomCode() {
-    Random random = new Random();
-    int code = 100000 + random.nextInt(900000); // 6자리 난수
-    return String.valueOf(code);
-  }
+
 }

@@ -1,6 +1,7 @@
 package community.ddv.domain.board.service;
 
 import community.ddv.domain.board.dto.ReviewDTO;
+import community.ddv.domain.board.dto.ReviewIdResponseDto;
 import community.ddv.domain.board.dto.ReviewResponseDTO;
 import community.ddv.domain.certification.CertificationService;
 import community.ddv.domain.movie.entity.Movie;
@@ -35,7 +36,7 @@ public class DiscussionService {
    * @param reviewDTO
    */
   @Transactional
-  public ReviewResponseDTO createDiscussion(ReviewDTO reviewDTO) {
+  public ReviewIdResponseDto createDiscussion(ReviewDTO reviewDTO) {
 
     // 1. 인증 상태 확인
     User user = userService.getLoginUser();

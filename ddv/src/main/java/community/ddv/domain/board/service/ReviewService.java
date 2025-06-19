@@ -2,6 +2,7 @@ package community.ddv.domain.board.service;
 
 import community.ddv.domain.board.dto.ReviewDTO;
 import community.ddv.domain.board.dto.ReviewDTO.ReviewUpdateDTO;
+import community.ddv.domain.board.dto.ReviewIdResponseDto;
 import community.ddv.domain.board.dto.ReviewRatingDTO;
 import community.ddv.domain.board.dto.ReviewResponseDTO;
 import community.ddv.domain.board.entity.Review;
@@ -44,7 +45,7 @@ public class ReviewService {
    * @param reviewDTO
    */
   @Transactional
-  public ReviewResponseDTO createReview(ReviewDTO reviewDTO) {
+  public ReviewIdResponseDto createReview(ReviewDTO reviewDTO) {
 
     User user = userService.getLoginUser();
 
@@ -72,7 +73,7 @@ public class ReviewService {
 
     reviewRepository.save(review);
     log.info("리뷰 작성 성공 - 사용자 ID: {}, 리뷰 ID: {}", user.getId(), review.getId());
-    return convertToReviewResponseDto(review);
+    return new ReviewIdResponseDto(review.getId());
   }
 
   /**
@@ -102,7 +103,7 @@ public class ReviewService {
    * @return
    */
   @Transactional
-  public ReviewResponseDTO updateReview(Long reviewId, ReviewUpdateDTO reviewUpdateDTO) {
+  public ReviewIdResponseDto updateReview(Long reviewId, ReviewUpdateDTO reviewUpdateDTO) {
 
     User user = userService.getLoginUser();
 
@@ -122,8 +123,8 @@ public class ReviewService {
         filteredContent,
         reviewUpdateDTO.getRating()
     );
-    log.info("리뷰 삭제 성공 - 리뷰 ID: {}", reviewId);
-    return convertToReviewResponseDto(review);
+    log.info("리뷰 수정 성공 - 리뷰 ID: {}", reviewId);
+    return new ReviewIdResponseDto(review.getId());
 
   }
 

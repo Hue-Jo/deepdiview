@@ -1,6 +1,7 @@
 package community.ddv.domain.board.controller;
 
 import community.ddv.domain.board.dto.ReviewDTO;
+import community.ddv.domain.board.dto.ReviewIdResponseDto;
 import community.ddv.domain.board.dto.ReviewResponseDTO;
 import community.ddv.domain.board.service.LikeService;
 import community.ddv.domain.board.service.ReviewService;
@@ -40,10 +41,10 @@ public class ReviewController {
 
   @Operation(summary = "리뷰글 작성")
   @PostMapping
-  public ResponseEntity<ReviewResponseDTO> createReview(
+  public ResponseEntity<ReviewIdResponseDto> createReview(
       @RequestBody @Valid ReviewDTO reviewDTO) {
 
-    ReviewResponseDTO response = reviewService.createReview(reviewDTO);
+    ReviewIdResponseDto response = reviewService.createReview(reviewDTO);
     return ResponseEntity.status(HttpStatus.CREATED).body(response);
   }
 
@@ -58,7 +59,7 @@ public class ReviewController {
 
   @Operation(summary = "리뷰글 수정", description = "제목 내용 별점 각각 수정 가능, 별점은 변경하지 않을 시 null로 들어가야 함")
   @PutMapping("/{reviewId}")
-  public ResponseEntity<ReviewResponseDTO> updateReview(
+  public ResponseEntity<ReviewIdResponseDto> updateReview(
       @PathVariable Long reviewId,
       @RequestBody @Valid ReviewDTO.ReviewUpdateDTO reviewUpdateDTO
   ) {
