@@ -1,6 +1,7 @@
 package community.ddv.domain.board.controller;
 
 import community.ddv.domain.board.dto.ReviewDTO;
+import community.ddv.domain.board.dto.ReviewIdResponseDto;
 import community.ddv.domain.board.dto.ReviewResponseDTO;
 import community.ddv.domain.board.service.DiscussionService;
 import community.ddv.domain.vote.service.VoteService;
@@ -27,10 +28,10 @@ public class DiscussionController {
 
   @Operation(summary = "인증승인된 사용자의 토론 게시판 리뷰 작성", description = "서버에서 지난주 투표1위의 tmdbID가 자동 인식되기 때문에 RequestBody에 tmdbId는 작성하지 않아야 합니다. ")
   @PostMapping("/reviews")
-  public ResponseEntity<ReviewResponseDTO> createDiscussion(
+  public ResponseEntity<ReviewIdResponseDto> createDiscussion(
       @RequestBody @Valid ReviewDTO reviewDTO) {
 
-    ReviewResponseDTO review = discussionService.createDiscussion(reviewDTO);
+    ReviewIdResponseDto review = discussionService.createDiscussion(reviewDTO);
     return ResponseEntity.status(HttpStatus.CREATED).body(review);
   }
 
