@@ -60,29 +60,48 @@ public class NotificationService {
     // 초기 메시지 전송
     sendFirstMessage(userId, newEmitter);
 
-    newEmitter.onCompletion(() -> {
-      SseEmitter current = emitters.get(userId);
-      if (current == newEmitter) {
-        emitters.remove(userId);
-        log.debug("SSE 연결 종료 : userId = {}", userId);
-      }
-    });
+//    newEmitter.onCompletion(() -> {
+//      SseEmitter current = emitters.get(userId);
+//      if (current == newEmitter) {
+//        emitters.remove(userId);
+//        log.debug("SSE 연결 종료 : userId = {}", userId);
+//      }
+//    });
+//
+//    newEmitter.onTimeout(() -> {
+//      SseEmitter current = emitters.get(userId);
+//      if (current == newEmitter) {
+//        emitters.remove(userId);
+//        log.debug("SSE 연결 타임아웃 : userId = {}", userId);
+//      }
+//    });
+//
 
-    newEmitter.onTimeout(() -> {
-      SseEmitter current = emitters.get(userId);
-      if (current == newEmitter) {
-        emitters.remove(userId);
-        log.debug("SSE 연결 타임아웃 : userId = {}", userId);
-      }
-    });
-
+    newEmitter.onCompletion(() -> removeEmitter(userId, newEmitter, "SSE 연결종료"));
+    newEmitter.onTimeout(() -> removeEmitter(userId, newEmitter, "SSE 타임아웃"));
     newEmitter.onError((e) -> {
       log.error("SSE 연결 에러 발생 : userId = {}, error = {}", userId, e.getMessage());
-      emitters.remove(userId);
+      //emitters.remove(userId);
+      removeEmitter(userId, newEmitter, "SSE 연결 에러");
     });
 
-    log.info("현재 emitter 수 = {}", emitters.size());
+    log.info("SSE 구독 완료: userId = {}, 현재 emitter 수 = {}", userId, emitters.size());
     return newEmitter;
+  }
+
+  private void removeEmitter(Long userId, SseEmitter emitter, String reason) {
+    emitters.compute(userId, (key, currentEmitter) -> {
+      if (currentEmitter == emitter) {
+        try {
+          emitter.complete();
+        } catch (Exception e) {
+          log.warn("Emitter 종료 중 예외 발생: userId = {}, error = {}", userId, e.getMessage());
+        }
+        log.debug("Emitter 제거 완료: userId = {}, 이유 = {}", userId, reason);
+        return null;
+      }
+      return currentEmitter;
+    });
   }
 
   //  SSE 초기 메시지 전송 메서드
@@ -96,7 +115,8 @@ public class NotificationService {
     } catch (IOException e) {
       log.error("SSE 초기 메시지 전송 실패: userId = {}, error = {}", userId, e.getMessage());
       emitter.completeWithError(e);
-      emitters.remove(userId);
+      removeEmitter(userId, emitter, "초기 메시지 전송 실패");
+      //emitters.remove(userId);
     }
   }
 
@@ -114,15 +134,21 @@ public class NotificationService {
         emitter.send(SseEmitter.event()
             .name("ping")
             .data("keep-alive"));
-      } catch (IOException e) {
+      } catch (IOException | IllegalStateException e) {
         log.warn("Ping 전송 실패 : userId = {}, error = {}", userId, e.getMessage());
         emitter.completeWithError(e); // 오류 발생 시 연결 종료
-        emitters.remove(userId); // 연결 종료
+        removeEmitter(userId, emitter, "ping 전송 실패 또는 타임아웃");
       }
 
     });
   }
 
+  public void disconnectEmitter(Long userId) {
+    SseEmitter emitter = emitters.remove(userId);
+    if (emitter != null) {
+      removeEmitter(userId, emitter, "로그아웃/탈퇴에 의한 SSE 연결 종료");
+    }
+  }
 
   /**
    * 알림 전송 메서드

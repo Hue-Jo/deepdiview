@@ -159,7 +159,6 @@ public class ReviewService {
    */
   @Transactional(readOnly = true)
   public ReviewResponseDTO getReviewById(Long reviewId) {
-
     //Review review = reviewRepository.findById(reviewId)
     Review review = reviewRepository.findWithCommentsById(reviewId)
         .orElseThrow(() -> new DeepdiviewException(ErrorCode.REVIEW_NOT_FOUND));
