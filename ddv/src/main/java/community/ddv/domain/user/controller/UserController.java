@@ -13,6 +13,7 @@ import community.ddv.domain.user.dto.UserInfoDto.NicknameUpdateResponseDto;
 import community.ddv.domain.user.dto.UserInfoDto.OneLineIntroRequestDto;
 import community.ddv.domain.user.dto.UserInfoDto.OneLineIntroResponseDto;
 import community.ddv.domain.user.dto.UserInfoDto.UserInfoResponseDto;
+import community.ddv.domain.user.service.AuthService;
 import community.ddv.domain.user.service.ProfileImageService;
 import community.ddv.domain.user.service.UserService;
 import community.ddv.global.response.PageResponse;
@@ -50,6 +51,7 @@ import org.springframework.web.multipart.MultipartFile;
 public class UserController {
 
   private final UserService userService;
+  private final AuthService authService;
   private final CommentService commentService;
   private final ReviewService reviewService;
   private final ProfileImageService profileImageService;
@@ -59,7 +61,7 @@ public class UserController {
   @PostMapping("/signup")
   public ResponseEntity<Void> signup(
       @RequestBody @Valid SignDto.SignUpDto signUpDto) {
-    userService.signUp(signUpDto);
+    authService.signUp(signUpDto);
     return ResponseEntity.noContent().build();
   }
 
@@ -68,13 +70,13 @@ public class UserController {
   @PostMapping("/login")
   public ResponseEntity<LoginResponseDto> login(
       @RequestBody @Valid SignDto.LoginDto loginDto) {
-    return ResponseEntity.ok(userService.logIn(loginDto));
+    return ResponseEntity.ok(authService.logIn(loginDto));
   }
 
   @Operation(summary = "로그아웃")
   @DeleteMapping("/logout")
   public ResponseEntity<Void> logout(HttpServletRequest request) {
-    userService.logout(request);
+    authService.logout(request);
     return ResponseEntity.noContent().build();
   }
 
@@ -84,7 +86,7 @@ public class UserController {
   public ResponseEntity<Void> deleteAccount(
       @RequestBody @Valid AccountDeleteDto accountDeleteDto, HttpServletRequest request
   ) {
-    userService.deleteAccount(accountDeleteDto, request);
+    authService.deleteAccount(accountDeleteDto, request);
     return ResponseEntity.noContent().build();
   }
 
@@ -96,7 +98,7 @@ public class UserController {
     String refreshToken = authorization.replace("Bearer ", "");
 
     // 엑세스 토큰 재발급
-    TokenDto newAccessToken = userService.reissueAccessToken(refreshToken);
+    TokenDto newAccessToken = authService.reissueAccessToken(refreshToken);
     return ResponseEntity.ok(newAccessToken);
   }
 
