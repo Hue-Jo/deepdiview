@@ -1,8 +1,5 @@
 package community.ddv.domain.user.service;
 
-import community.ddv.domain.board.repository.CommentRepository;
-import community.ddv.domain.board.repository.ReviewRepository;
-import community.ddv.domain.certification.CertificationRepository;
 import community.ddv.domain.notification.NotificationService;
 import community.ddv.domain.user.constant.Role;
 import community.ddv.domain.user.dto.SignDto.AccountDeleteDto;

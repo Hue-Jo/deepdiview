@@ -60,30 +60,9 @@ public class NotificationService {
     // 초기 메시지 전송
     sendFirstMessage(userId, newEmitter);
 
-//    newEmitter.onCompletion(() -> {
-//      SseEmitter current = emitters.get(userId);
-//      if (current == newEmitter) {
-//        emitters.remove(userId);
-//        log.debug("SSE 연결 종료 : userId = {}", userId);
-//      }
-//    });
-//
-//    newEmitter.onTimeout(() -> {
-//      SseEmitter current = emitters.get(userId);
-//      if (current == newEmitter) {
-//        emitters.remove(userId);
-//        log.debug("SSE 연결 타임아웃 : userId = {}", userId);
-//      }
-//    });
-//
-
     newEmitter.onCompletion(() -> removeEmitter(userId, newEmitter, "SSE 연결종료"));
     newEmitter.onTimeout(() -> removeEmitter(userId, newEmitter, "SSE 타임아웃"));
-    newEmitter.onError((e) -> {
-      log.error("SSE 연결 에러 발생 : userId = {}, error = {}", userId, e.getMessage());
-      //emitters.remove(userId);
-      removeEmitter(userId, newEmitter, "SSE 연결 에러");
-    });
+    newEmitter.onError((e) -> removeEmitter(userId, newEmitter, "SSE 연결 에러"));
 
     log.info("SSE 구독 완료: userId = {}, 현재 emitter 수 = {}", userId, emitters.size());
     return newEmitter;
