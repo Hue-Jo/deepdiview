@@ -170,7 +170,10 @@ public class AuthService {
     // SecurityContext 초기화
     SecurityContextHolder.clearContext();
     log.info("SecurityContext 초기화");
+
     notificationService.disconnectEmitter(user.getId());
+    log.info("SSE 연결 종료(로그아웃) : userId = {}", user.getId());
+
 
     log.info("로그아웃 성공");
   }
@@ -244,6 +247,7 @@ public class AuthService {
     log.info("리프레시 토큰 삭제");
 
     notificationService.disconnectEmitter(user.getId());
+    log.info("SSE 연결 종료(회원탈퇴) : userId = {}", user.getId());
     // 사용자 삭제
     userRepository.delete(user);
     log.info("회원탈퇴 완료");
