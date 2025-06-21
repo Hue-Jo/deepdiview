@@ -48,7 +48,7 @@ public class Review {
 
   private String title; // 제목
 
-  @Column(length = 1000)
+  @Column(length = 10000)
   private String content; // 내용 (1000자 이내로 제한)
 
   private Double rating; // 별점
