@@ -101,7 +101,7 @@ public class MovieApiService {
 
     // DB에는 있지만 API에서 사라진 영화는 isAvailable = false로 변경
     for (Movie movie : existingMovies.values()) {
-      if (!fetchedTmdbIds.contains(movie.getTmdbId())) {
+      if (!fetchedTmdbIds.contains(movie.getTmdbId()) && movie.isAvailable()) {
         movie.changeAsUnavailable();
         movieRepository.save(movie);
       }
