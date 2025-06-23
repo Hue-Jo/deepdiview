@@ -53,7 +53,6 @@ public class AuthService {
       throw new DeepdiviewException(ErrorCode.EMAIL_NOT_VERIFIED);
     }
     // 같은 이메일로 중복 회원가입 불가
-    //if (userRepository.findByEmail(signUpDto.getEmail()).isPresent()) {
     if (userRepository.existsByEmail(signUpDto.getEmail())) {
       log.warn("중복 회원가입 불가");
       throw new DeepdiviewException(ErrorCode.ALREADY_EXIST_MEMBER);
@@ -64,7 +63,6 @@ public class AuthService {
       throw new DeepdiviewException(ErrorCode.NOT_MATCHED_PASSWORD);
     }
     // 중복 닉네임 사용불가
-    //if (userRepository.findByNickname(signUpDto.getNickname()).isPresent()) {
     if (userRepository.existsByNickname(signUpDto.getNickname())) {
       log.warn("중복 닉네임 불가");
       throw new DeepdiviewException(ErrorCode.ALREADY_EXIST_NICKNAME);

@@ -5,7 +5,6 @@ import community.ddv.domain.board.repository.ReviewRepository;
 import community.ddv.domain.certification.Certification;
 import community.ddv.domain.certification.CertificationRepository;
 import community.ddv.domain.certification.constant.CertificationStatus;
-import community.ddv.domain.notification.dto.NotificationResponseDTO;
 import community.ddv.domain.user.entity.User;
 import community.ddv.domain.user.service.UserService;
 import community.ddv.global.exception.DeepdiviewException;
@@ -95,7 +94,6 @@ public class NotificationService {
       log.error("SSE 초기 메시지 전송 실패: userId = {}, error = {}", userId, e.getMessage());
       emitter.completeWithError(e);
       removeEmitter(userId, emitter, "초기 메시지 전송 실패");
-      //emitters.remove(userId);
     }
   }
 
