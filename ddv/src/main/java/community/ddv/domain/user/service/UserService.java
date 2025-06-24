@@ -52,7 +52,7 @@ public class UserService {
   public NicknameUpdateResponseDto updateNickname(NicknameUpdateRequestDto nicknameUpdateDto) {
 
     User user = getLoginUser();
-    log.info("닉네임 수정시도 : {}", user.getEmail());
+    log.info("[UPDATE_NICKNAME] 닉네임 수정 시도: userId={}, currentNickname={}", user.getId(), user.getNickname());
 
     String newNickname = nicknameUpdateDto.getNewNickname();
 
@@ -62,10 +62,12 @@ public class UserService {
 
     //if (userRepository.findByNickname(newNickname).isPresent()) {
     if (userRepository.existsByNickname(newNickname)) {
+      log.warn("[UPDATE_NICKNAME] 중복된 닉네임으로 수정 시도");
       throw new DeepdiviewException(ErrorCode.ALREADY_EXIST_NICKNAME);
     }
 
     user.updateNickname(newNickname);
+    log.info("[UPDATE_NICKNAME] 닉네임 수정 완료: userId={}, newNickname={}", user.getId(), newNickname);
     return new NicknameUpdateResponseDto(newNickname);
   }
 
@@ -73,7 +75,7 @@ public class UserService {
   public void updatePassword(PasswordUpdateDto passwordUpdateDto) {
 
     User user = getLoginUser();
-    log.info("비밀번호 수정시도 : {}", user.getEmail());
+    log.info("[UPDATE_PASSWORD] 비밀번호 변경 시도: userId={}", user.getId());
 
     String currentPassword = passwordUpdateDto.getCurrentPassword();
     String newPassword = passwordUpdateDto.getNewPassword();
@@ -81,6 +83,7 @@ public class UserService {
 
     // 사용중인 비밀번호 입력여부 확인
     if (currentPassword == null || currentPassword.isBlank()) {
+      log.warn("[UPDATE_PASSWORD] 현재 사용중인 비밀번호 불일치");
       throw new DeepdiviewException(ErrorCode.EMPTY_PASSWORD);
     }
     // 사용중인 비밀번호 일치여부 확인
@@ -90,18 +93,20 @@ public class UserService {
 
     // 비밀번호 변경 시도 여부 확인
     if ((newPassword != null && !newPassword.isBlank()) || (newConfirmPassword != null && !newConfirmPassword.isBlank())) {
-      log.info("비밀번호 변경시도");
+      log.info("[UPDATE_PASSWORD] 새 비밀번호 변경 시도");
+
       // 값이 제대로 입력됐는지 (둘 중 하나라도 비어있으면 예외) 확인
       if (newPassword == null || newConfirmPassword == null || newPassword.isBlank() || newConfirmPassword.isBlank()) {
+        log.warn("[UPDATE_PASSWORD] 새 비밀번호 / 확인 값이 입력되지 않음");
         throw new DeepdiviewException(ErrorCode.EMPTY_PASSWORD);
       }
       if (!newPassword.equals(newConfirmPassword)) {
+        log.warn("[UPDATE_PASSWORD] 새 비밀번호와 확인 값이 일치하지 않음");
         throw new DeepdiviewException(ErrorCode.NOT_MATCHED_PASSWORD);
       }
       user.updatePassword(passwordEncoder.encode(newPassword));
     }
-    log.info("회원정보 수정완료");
-
+    log.info("[UPDATE_PASSWORD] 비밀번호 변경 완료");
   }
 
 
@@ -113,7 +118,7 @@ public class UserService {
   public OneLineIntroResponseDto updateOneLineIntro(OneLineIntroRequestDto oneLineIntro) {
 
     User user = getLoginUser();
-    log.info("한줄소개 수정 시도 : {}", user.getEmail());
+    log.info("[ONE_LINE_INTRO] 한줄소개 수정 시도 : userId={}", user.getId());
 
     String newOneLineIntro = oneLineIntro.getOneLineIntro();
     String newONeLineIntroResponse = (newOneLineIntro == null || newOneLineIntro.isEmpty()) ? null : newOneLineIntro;
@@ -122,16 +127,16 @@ public class UserService {
     if (user.getOneLineIntroduction() == null) {
       if (newONeLineIntroResponse != null) {
         user.updateOneLineIntroduction(newONeLineIntroResponse);
-        log.info("한줄소개 설정 완료");
+        log.info("[ONE_LINE_INTRO] 한줄소개 설정 완료");
       }
     } else {
       // 기존의 한줄 소개가 존재하는 경우
       if (newONeLineIntroResponse == null) {
         user.updateOneLineIntroduction(null);
-        log.info("한줄소개 삭제 완료");
+        log.info("[ONE_LINE_INTRO] 한줄소개 삭제 완료");
       } else {
         user.updateOneLineIntroduction(newONeLineIntroResponse);
-        log.info("한줄소개 수정 완료");
+        log.info("[ONE_LINE_INTRO] 한줄소개 수정 완료");
       }
     }
     userRepository.save(user);
@@ -146,6 +151,7 @@ public class UserService {
   public UserInfoResponseDto getMyInfo() {
 
     User user = getLoginUser();
+    log.info("[MY_INFO] 내 정보 조회: userId={}, email={}", user.getId(), user.getEmail());
 
     int reviewCount = reviewRepository.countByUser_Id(user.getId());
     int commentCount = commentRepository.countByUser_Id(user.getId());
@@ -178,6 +184,7 @@ public class UserService {
         certification != null && certification.getStatus() == CertificationStatus.REJECTED
             ? certification.getRejectionReason() : null;
 
+    log.info("[MY_INFO] 내 정보 조회 완료");
     return UserInfoResponseDto.builder()
         .nickname(user.getNickname())
         .email((user.getEmail()))
@@ -199,14 +206,20 @@ public class UserService {
   public UserInfoResponseDto getOthersInfo(Long userId) {
 
     getLoginUser();
+    log.info("[GET_OTHERS_INFO] 타인 정보 조회 시도: userId={}", userId);
     User user = userRepository.findById(userId)
-        .orElseThrow(() -> new DeepdiviewException(ErrorCode.USER_NOT_FOUND));
+        .orElseThrow(() -> {
+          log.warn("[GET_OTHERS_INFO] 사용자 정보 조회 실패: userId={}", userId);
+          return new DeepdiviewException(ErrorCode.USER_NOT_FOUND);
+        });
 
     int reviewCount = reviewRepository.countByUser_Id(userId);
     int commentCount = commentRepository.countByUser_Id(userId);
 
     List<Review> reviews = reviewRepository.findAllByUser_Id(user.getId());
     ReviewRatingDTO ratingStats = getRatingStats(reviews);
+
+    log.info("[GET_OTHERS_INFO] 타인 정보 조회 완료: userId={}", userId);
 
     return UserInfoResponseDto.builder()
         .nickname(user.getNickname())
