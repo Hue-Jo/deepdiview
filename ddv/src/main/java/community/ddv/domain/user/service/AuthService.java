@@ -97,7 +97,7 @@ public class AuthService {
 
     // 비밀번호 검증
     if (!passwordEncoder.matches(loginDto.getPassword(), user.getPassword())) {
-      log.warn("[LOGIN] 비밀번호 불일치: email = {}", loginDto.getEmail());
+      log.warn("[LOGIN] 비밀번호 불일치");
       throw new DeepdiviewException(ErrorCode.NOT_VALID_PASSWORD);
     }
 
@@ -112,7 +112,7 @@ public class AuthService {
       log.info("[TOKEN] 유효한 리프레시 토큰 사용");
     }
 
-    log.info("[LOGIN] 로그인 성공: userId = {}, email = {}", user.getId(), user.getEmail());
+    log.info("[LOGIN] 로그인 성공: userId = {}", user.getId());
     return LoginResponseDto.builder()
         .accessToken(accessToken)
         .refreshToken(refreshToken)
@@ -151,7 +151,7 @@ public class AuthService {
     Boolean deletedRefreshToken = redisStringTemplate.delete(email);
     // NullPointException 방지를 위해 Boolean 객체 사용
     if (Boolean.TRUE.equals(deletedRefreshToken)) {
-      log.info("[LOGOUT] 리프레시 토큰 삭제 완료: email = {}", email);
+      log.info("[LOGOUT] 리프레시 토큰 삭제 완료");
     } else {
       log.warn("[LOGOUT] 리프레시 토큰 삭제 실패: email = {}", email);
     }
@@ -179,7 +179,7 @@ public class AuthService {
     notificationService.disconnectEmitter(user.getId());
     log.info("[LOGOUT] SSE 연결 종료 : userId = {}", user.getId());
 
-    log.info("[LOGOUT] 로그아웃 완료: userId = {}, email = {}", user.getId(), user.getEmail());
+    log.info("[LOGOUT] 로그아웃 완료: userId = {}", user.getId());
   }
 
   /**

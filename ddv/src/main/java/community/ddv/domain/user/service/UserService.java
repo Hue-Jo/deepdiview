@@ -151,7 +151,7 @@ public class UserService {
   public UserInfoResponseDto getMyInfo() {
 
     User user = getLoginUser();
-    log.info("[MY_INFO] 내 정보 조회: userId = {}, email = {}", user.getId(), user.getEmail());
+    log.info("[MY_INFO] 내 정보 조회: userId = {}", user.getId());
 
     int reviewCount = reviewRepository.countByUser_Id(user.getId());
     int commentCount = commentRepository.countByUser_Id(user.getId());
@@ -206,7 +206,7 @@ public class UserService {
   public UserInfoResponseDto getOthersInfo(Long userId) {
 
     getLoginUser();
-    log.info("[GET_OTHERS_INFO] 타인 정보 조회 시도: userId={}", userId);
+    log.info("[GET_OTHERS_INFO] 타인 정보 조회 시도: userId = {}", userId);
     User user = userRepository.findById(userId)
         .orElseThrow(() -> {
           log.warn("[GET_OTHERS_INFO] 사용자 정보 조회 실패: userId = {}", userId);

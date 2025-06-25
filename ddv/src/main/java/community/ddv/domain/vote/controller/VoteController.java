@@ -32,9 +32,10 @@ public class VoteController {
 
   @Operation(summary = "투표 생성", description = "관리자 전용, 일요일만 투표 생성 가능")
   @PostMapping
-  public ResponseEntity<VoteOptionsDto> createVote() {
-    VoteOptionsDto voteCreateDtos = voteService.createVote();
-    return ResponseEntity.status(HttpStatus.CREATED).body(voteCreateDtos);
+  public ResponseEntity<Void> createVote() {
+    //VoteOptionsDto voteCreateDtos = voteService.createVote();
+    voteService.createVote();
+    return ResponseEntity.noContent().build();
   }
 
   @Operation(summary = "현재 진행중인 투표의 선택지 조회", description = "현재 투표가 진행중일 때만 조회 가능합니다.")
@@ -45,9 +46,10 @@ public class VoteController {
 
   @Operation(summary = "현재 진행중인 투표에 참여하기")
   @PostMapping("/participate")
-  public ResponseEntity<VoteResultDTO> participateVote(
+  public ResponseEntity<Void> participateVote(
       @Valid @RequestBody VoteParticipationRequestDto voteParticipationRequestDto) {
-    return ResponseEntity.ok(voteService.participateVote(voteParticipationRequestDto));
+    voteService.participateVote(voteParticipationRequestDto);
+    return ResponseEntity.noContent().build();
   }
 
   @Operation(summary = "현재 진행중인 투표 결과 확인", description = "현재 투표가 진행중일 때만 결과 확인 가능합니다.")

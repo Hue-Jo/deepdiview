@@ -54,11 +54,11 @@ public class VoteService {
    * 투표 종료일 : 해당 주 토요일 23시 59분 59초
    */
   @Transactional
-  public VoteOptionsDto createVote() {
+  public void createVote() {
 
     // 로그인된 관리자만 투표 생성 가능
     User admin = userService.getLoginUser();
-    log.info("[CREATE_VOTE] 투표 생성 시도: userId={}", admin.getId());
+    log.info("[CREATE_VOTE] 투표 생성 시도: userId = {}", admin.getId());
     if (!admin.getRole().equals(Role.ADMIN)) {
       log.error("관리자만 투표를 생성할 수 있습니다.");
       throw new DeepdiviewException(ErrorCode.ONLY_ADMIN_CAN);
@@ -117,12 +117,12 @@ public class VoteService {
       vote.getVoteMovies().add(voteMovie);
     }
     Vote savedVote = voteRepository.save(vote);
-
-    List<Long> tmdbIds = savedVote.getVoteMovies().stream()
-        .map(voteMovie -> voteMovie.getMovie().getTmdbId())
-        .toList();
     log.info("[CREATE_VOTE] 투표 생성 완료 : voteId = {}, 시작시간 = {}, 종료시간 = {}", savedVote.getId(), savedVote.getStartDate(), savedVote.getEndDate());
-    return new VoteOptionsDto(tmdbIds);
+
+//    List<Long> tmdbIds = savedVote.getVoteMovies().stream()
+//        .map(voteMovie -> voteMovie.getMovie().getTmdbId())
+//        .toList();
+//    return new VoteOptionsDto(tmdbIds);
 
   }
 
@@ -179,10 +179,10 @@ public class VoteService {
    * @param voteParticipationRequestDto
    */
   @Transactional
-  public VoteResultDTO participateVote(VoteParticipationRequestDto voteParticipationRequestDto) {
+  public void participateVote(VoteParticipationRequestDto voteParticipationRequestDto) {
 
     User user = userService.getLoginUser();
-    log.info("[VOTE] 투표 시도: userId={}", user.getId());
+    log.info("[VOTE] 투표 시도: userId = {}", user.getId());
 
     LocalDateTime now = LocalDateTime.now();
     // 현재시간 전에 투표가 시작됐어야 하고, 현재시간 후로도 투표가 진행되고 있는, 즉 끝나지 않은 투표 조회
@@ -195,7 +195,7 @@ public class VoteService {
     // 중복참여 불가
     boolean alreadyParticipated = voteParticipationRepository.existsByUserAndVote(user, vote);
     if (alreadyParticipated) {
-      log.warn("[VOTE] 이미 투표에 참여한 사용자: userId={}", user.getId());
+      log.warn("[VOTE] 이미 투표에 참여한 사용자: userId = {}", user.getId());
       throw new DeepdiviewException(ErrorCode.AlREADY_VOTED);
     }
 
@@ -214,8 +214,7 @@ public class VoteService {
     voteParticipationRepository.save(voteParticipation);
     selectedVotedMovie.plusVoteCount(); // 득표수 증가 & 최종 득표시간 업데이트
 
-    log.info("[VOTE] 투표 참여 완료: 사용자 ID = {}, 투표 ID = {}, 영화 ID = {}", user.getId(), vote.getId(), selectedVotedMovie.getMovie().getTmdbId());
-    return createVoteResultDto(vote, user.getId());
+    log.info("[VOTE] 투표 참여 완료: userId = {}, voteId = {}, tmdbId = {}", user.getId(), vote.getId(), selectedVotedMovie.getMovie().getTmdbId());
 
   }
 
