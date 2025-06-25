@@ -147,7 +147,7 @@ public class VoteService {
   public VoteOptionsDto getVoteChoices() {
 
     userService.getLoginUser();
-    log.info("투표 선택지 조회 시도");
+    log.info("[VOTE] 투표 선택지 조회 시도");
 
     // 현재 진행중인 투표 조회
     LocalDateTime now = LocalDateTime.now();
@@ -169,7 +169,7 @@ public class VoteService {
         .map(voteMovie -> voteMovie.getMovie().getTmdbId())
         .collect(Collectors.toList());
 
-    log.info("투표 선택지 조회 완료");
+    log.info("[VOTE] 투표 선택지 조회 완료");
     return new VoteOptionsDto(tmdbIds);
   }
 
@@ -278,7 +278,7 @@ public class VoteService {
    */
   @Transactional(readOnly = true)
   public VoteResultDTO getVoteResult(Long voteId, Long userId){
-    log.info("특정투표 결과 조회 시도 : voteId = {}", voteId);
+    log.info("[VOTE] 특정투표 결과 조회 시도 : voteId = {}", voteId);
 
     Vote vote = voteRepository.findById(voteId)
         .orElseThrow(() -> new DeepdiviewException(ErrorCode.VOTE_NOT_FOUND));
@@ -296,7 +296,7 @@ public class VoteService {
     Vote currentVote = voteRepository.findByStartDateBeforeAndEndDateAfter(now, now)
         .orElseThrow(() -> new DeepdiviewException(ErrorCode.VOTE_NOT_FOUND));
 
-    log.info("현재 진행중인 투표 결과 조회");
+    log.info("[VOTE] 현재 진행중인 투표 결과 조회");
     return createVoteResultDto(currentVote, userId);
   }
 
@@ -310,7 +310,7 @@ public class VoteService {
     List<Vote> latestVote = voteRepository.findTop2ByOrderByStartDateDesc();
 
     Vote previousVote = latestVote.get(1); // 두 번쨰로 최신인 투표
-    log.info("지난 투표 전체 결과 조회");
+    log.info("[VOTE] 지난 투표 전체 결과 조회");
     return getVoteResult(previousVote.getId(), null);
   }
 
@@ -320,7 +320,7 @@ public class VoteService {
   @Transactional(readOnly = true)
   @Cacheable(value = "topRankMovie", key = "'topRankMovie'")
   public Long getLastWeekTopVoteMovie() {
-    log.info("지난주 투표 1위 영화조회 시작");
+    log.info("[VOTE] 지난주 투표 1위 영화조회 시작");
 
     LocalDateTime now = LocalDateTime.now();
     // 본래 코드
@@ -340,7 +340,7 @@ public class VoteService {
 
     VoteMovieResultDTO topVoteMovie = voteResults.getResults().get(0);
     Long tmdbId = topVoteMovie.getTmdbId();
-    log.info("지난 투표 1위 영화 : tmdbId = {}, 득표수 = {}", tmdbId, topVoteMovie.getVoteCount());
+    log.info("[VOTE] 지난 투표 1위 영화 : tmdbId = {}, 득표수 = {}", tmdbId, topVoteMovie.getVoteCount());
 
     return tmdbId;
   }
@@ -355,16 +355,16 @@ public class VoteService {
     User user = userService.getLoginUser();
 
     if (!user.getRole().equals(Role.ADMIN)) {
-      log.error("관리자만 투표 삭제 가능");
+      log.error("[VOTE] 관리자만 투표 삭제 가능");
       throw new DeepdiviewException(ErrorCode.ONLY_ADMIN_CAN);
     }
 
-    log.info("투표 삭제 시도");
+    log.info("[VOTE] 투표 삭제 시도");
     Vote vote = voteRepository.findById(voteId)
         .orElseThrow(() -> new DeepdiviewException(ErrorCode.VOTE_NOT_FOUND));
 
     voteRepository.delete(vote);
-    log.info("투표 삭제 완료 voteId = {}", voteId);
+    log.info("[VOTE] 투표 삭제 완료 voteId = {}", voteId);
 
   }
 
