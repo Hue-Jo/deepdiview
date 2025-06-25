@@ -8,6 +8,7 @@ import jakarta.mail.internet.MimeMessage;
 import java.time.Duration;
 import java.util.Random;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
@@ -15,6 +16,7 @@ import org.springframework.stereotype.Service;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class EmailService {
 
   private final JavaMailSender mailSender;
@@ -23,8 +25,10 @@ public class EmailService {
 
   // 인증코드 생성 & 이메일 전송
   public void sendAuthCode(String email) {
+    log.info("[EMAIL] 이메일 인증 코드 전송 시작 - email = {}", email);
 
     if (userRepository.existsByEmail(email)) {
+      log.warn("[EMAIL] 이미 가입된 이메일로 인증 요청 - email = {}", email);
       throw new DeepdiviewException(ErrorCode.ALREADY_EXIST_MEMBER);
     }
 
@@ -39,7 +43,9 @@ public class EmailService {
       helper.setSubject("[DeepDiview] 이메일 인증 코드");
       helper.setText(buildEmailHTML(authCode), true);
       mailSender.send(message);
+      log.info("[EMAIL] 인증 코드 이메일 전송 완료 - email = {}", email);
     } catch (MessagingException e) {
+      log.error("[EMAIL] 인증 코드 이메일 전송 실패 - email = {}", email);
       throw new RuntimeException("인증 코드 전송 실패", e);
     }
   }
@@ -67,20 +73,26 @@ public class EmailService {
 
   // 인증코드 검증
   public void verifyAuthCode(String email, String authCode) {
+    log.info("[EMAIL] 인증 코드 검증 시작 - email = {}", email);
+
     String key = "authCode:" + email;
     String savedCode = redisStringTemplate.opsForValue().get(key);
 
     // 만료된 코드 입력시
     if (savedCode == null) {
+      log.warn("[EMAIL] 인증 코드 만료 - email = {}", email);
       throw new DeepdiviewException(ErrorCode.EXPIRED_CODE);
     }
     // 일치하지 않는 코드 입력시
     if (!savedCode.equals(authCode)) {
+      log.warn("[EMAIL] 인증 코드 불일치 - email = {}, 입력된 code = {}, 저장된 code = {}", email, authCode, savedCode);
       throw new DeepdiviewException(ErrorCode.INVALID_CODE);
     }
 
     redisStringTemplate.delete(key);
     redisStringTemplate.opsForValue().set("EMAIL_VERIFIED:" + email, "true", Duration.ofMinutes(10));
+    log.info("[EMAIL] 인증 코드 검증 성공 및 이메일 인증 완료 - email = {}", email);
+
   }
 
   // 인증 여부 확인 메서드
