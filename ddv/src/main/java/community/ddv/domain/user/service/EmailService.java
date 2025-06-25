@@ -52,14 +52,20 @@ public class EmailService {
 
   private String buildEmailHTML(String authCode) {
     return """
-        <div style="width: 100%%;  background-color: #141414; color: #ffffff; text-align: center; font-family: Arial, sans-serif; padding: 20px;">
-          <h2 style="color: #e50914; font-size: 24px; margin-bottom: 20px;">[DeepDiview] 이메일 인증 코드</h2>
-          <p style="font-size: 16px; color: #e0e0e0;">아래 인증 코드를 확인하여 이메일 인증을 완료해주세요.</p>
-          <div style="display: inline-block; padding: 18px 36px; background-color: #333333;
-                      border: 3px solid #e50914; border-radius: 8px; margin: 30px 0;">
+        <div style="width: 100%%; text-align: center; font-family: Arial, sans-serif;">
+          <h2 style="color: #e50914;">
+            [DeepDiview] 이메일 인증 코드
+          </h2>
+          <p>
+            아래 인증 코드를 확인하여 이메일 인증을 완료해주세요.
+          </p>
+          <div style="display: inline-block; padding: 15px; background-color: #000000;
+                      border: 3px solid #e50914; border-radius: 10px; margin: 20px;">
             <span style="font-size: 28px; font-weight: bold; color: #e50914;">%s</span>
           </div>
-          <p style="font-size: 14px; color: #e0e0e0;">인증 코드는 5분 내에 입력해주세요.</p>
+          <p>
+            인증 코드는 5분 내에 입력해주세요.
+          </p>
         </div>
         """.formatted(authCode);
   }
