@@ -135,7 +135,7 @@ public class CommentService {
   @Transactional(readOnly = true)
   public CursorPageResponse<CommentResponseDto> getCommentsByReviewId(
       Long reviewId, LocalDateTime cursorCreatedAt, Long cursorId, int size) {
-    log.info("[COMMENT] 리뷰 {}의 댓글 조회 요청", reviewId);
+    //log.info("[COMMENT] 리뷰 {}의 댓글 조회 요청", reviewId);
 
     Review review = reviewRepository.findById(reviewId)
         .orElseThrow(() -> new DeepdiviewException(ErrorCode.REVIEW_NOT_FOUND));
