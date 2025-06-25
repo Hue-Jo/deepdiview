@@ -47,13 +47,13 @@ public class LikeService {
         .build();
     likeRepository.save(newlike);
     review.increaseLikeCount();
-    log.info("좋아요 성공 (좋아요 +1)");
+    log.info("[LIKE] 좋아요 성공 - userId = {}, reviewId = {}, 총 좋아요 수 = {}", user.getId(), review.getId(), review.getLikeCount());
     notificationService.likeAdded(user.getId(), review.getId());
   }
 
   private void unlike(User user, Review review) {
     likeRepository.deleteByReviewAndUser(review, user);
     review.decreaseLikeCount();
-    log.info("좋아요 취소 (좋아요 -1)");
+    log.info("[UNLIKE] 좋아요 취소 - userId = {}, reviewId = {}, 총 좋아요 수 = {}", user.getId(), review.getId(), review.getLikeCount());
   }
 }

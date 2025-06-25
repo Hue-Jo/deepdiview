@@ -45,20 +45,21 @@ public class CertificationService {
   public CertificationWrapperDto submitCertification(MultipartFile certificationImageFile) {
 
     User user = userService.getLoginUser();
+    log.info("[CERTIFICATION] 인증샷 제출 시도 - userId = {}", user.getId());
 
     if (LocalDateTime.now().getDayOfWeek() == DayOfWeek.SUNDAY) {
-      log.warn("일요일에는 인증샷 제출 불가");
+      log.warn("[CERTIFICATION] 일요일 인증샷 제출 불가");
       throw new DeepdiviewException(ErrorCode.CERTIFICATION_NOT_ALLOWED_ON_SUNDAY);
     }
 
     // 이미 인증 승인을 받은 경우, 중복 인증 불가
     if (certificationRepository.existsByUser_IdAndStatus(user.getId(), CertificationStatus.APPROVED)) {
-      log.warn("이미 승인을 받은 사용자 : userId = {}", user.getId());
+      log.warn("[CERTIFICATION] 이미 승인된 사용자 - userId = {}", user.getId());
       throw new DeepdiviewException(ErrorCode.ALREADY_APPROVED);
     }
 
     String certificationUrl = fileStorageService.uploadFile(certificationImageFile);
-    log.info("S3에 인증샷 업로드 완료");
+    log.info("[CERTIFICATION] S3에 인증샷 업로드 완료");
 
     Certification certification = Certification.builder()
         .user(user)
@@ -68,7 +69,7 @@ public class CertificationService {
         .build();
 
     Certification savedCertification = certificationRepository.save(certification);
-    log.info("인증샷 업로드 성공 : certificationId = {}", savedCertification.getId());
+    log.info("[CERTIFICATION] 인증샷 업로드 완료 : certificationId = {}", savedCertification.getId());
 
     CertificationDetailResponseDto infoDto= convertToCertificationDto(savedCertification);
     return CertificationWrapperDto .builder()
@@ -106,9 +107,10 @@ public class CertificationService {
   public CertificationWrapperDto updateCertification(MultipartFile certificationImageFile) {
 
     User user = userService.getLoginUser();
+    log.info("[CERTIFICATION] 인증샷 수정 시도 - userId = {}", user.getId());
 
     if (LocalDateTime.now().getDayOfWeek() == DayOfWeek.SUNDAY) {
-      log.warn("일요일에는 인증샷 수정이 불가");
+      log.warn("[CERTIFICATION] 일요일에는 인증샷 수정이 불가");
       throw new DeepdiviewException(ErrorCode.CERTIFICATION_NOT_ALLOWED_ON_SUNDAY);
     }
 
@@ -117,7 +119,7 @@ public class CertificationService {
         .orElseThrow(() -> new DeepdiviewException(ErrorCode.CERTIFICATION_NOT_FOUND));
 
     if (certification.getStatus() == CertificationStatus.APPROVED) {
-      log.warn("이미 승인 받은 사용자는 인증샷 수정 불가");
+      log.warn("[CERTIFICATION] 이미 승인 받은 사용자는 인증샷 수정 불가");
       throw new DeepdiviewException(ErrorCode.ALREADY_APPROVED);
     }
 
@@ -131,7 +133,7 @@ public class CertificationService {
     certification.updateCertification(newCertificationUrl);
 
     Certification updatedCertification = certificationRepository.save(certification);
-    log.info("인증샷 수정 완료 : certificationId = {}", updatedCertification.getId());
+    log.info("[CERTIFICATION] 인증샷 수정 완료 : certificationId = {}", updatedCertification.getId());
 
     return certificationResponse(updatedCertification, user.getId());
   }
@@ -143,6 +145,7 @@ public class CertificationService {
   public void deleteCertification() {
 
     User user = userService.getLoginUser();
+    log.info("[CERTIFICATION] 인증샷 삭제 시도 - userId = {}", user.getId());
 
     // 인증샷 조회
     Certification certification = certificationRepository.findTopByUser_IdOrderByCreatedAtDesc(user.getId())
@@ -150,7 +153,7 @@ public class CertificationService {
 
     // 이미 승인 받은 상태면 삭제 불가
     if (certification.getStatus() == CertificationStatus.APPROVED) {
-      log.warn("승인된 사용자는 인증샷 삭제 불가");
+      log.warn("[CERTIFICATION] 승인된 사용자는 인증샷 삭제 불가");
       throw new DeepdiviewException(ErrorCode.ALREADY_APPROVED);
     }
 
@@ -162,7 +165,7 @@ public class CertificationService {
 
     // DB에서 인증샷 삭제
     certificationRepository.delete(certification);
-    log.info("인증샷 삭제 완료 : certificationId = {}", certification.getId());
+    log.info("[CERTIFICATION] 인증샷 삭제 완료 : certificationId = {}", certification.getId());
   }
 
   /**
@@ -175,10 +178,11 @@ public class CertificationService {
 
     validateSunday(); // 일요일에는 확인 불가
 
-    log.info("관리자의 인증 목록 조회 시작");
     User admin = userService.getLoginUser();
+    log.info("[CERTIFICATION] 관리자의 인증 목록 조회 시작 - userId = {}", admin.getId());
+
     if (!admin.getRole().equals(Role.ADMIN)) {
-      log.error("관리자만 처리 가능합니다.");
+      log.error("[CERTIFICATION] 관리자만 처리 가능합니다.");
       throw new DeepdiviewException(ErrorCode.ONLY_ADMIN_CAN);
     }
 
@@ -238,29 +242,29 @@ public class CertificationService {
    */
   @Transactional
   public CertificationWrapperDto proceedCertification(Long certificationId, boolean approve, RejectionReason rejectionReason) {
-    log.info("인증 처리 시작 : certificationId = {}", certificationId);
+    log.info("[CERTIFICATION] 인증 처리 시작 : certificationId = {}", certificationId);
     User admin = userService.getLoginUser();
     if (!admin.getRole().equals(Role.ADMIN)) {
-      log.error("관리자만 처리 가능합니다.");
+      log.error("[CERTIFICATION] 관리자만 처리 가능합니다.");
       throw new DeepdiviewException(ErrorCode.ONLY_ADMIN_CAN);
     }
 
     Certification certification = certificationRepository.findById(certificationId)
         .orElseThrow(() -> {
-          log.error("인증 정보를 찾을 수 없음");
+          log.error("[CERTIFICATION] 인증 정보 없음 - certificationId = {}", certificationId);
           return new DeepdiviewException(ErrorCode.CERTIFICATION_NOT_FOUND);
         });
 
     if (approve) {
       if (rejectionReason != null) {
-        log.warn("승인 요청에 거절 사유 포함 : certificationId = {}", certificationId);
+        log.warn("[CERTIFICATION] 승인 요청에 거절 사유 포함 : certificationId = {}", certificationId);
         throw new DeepdiviewException(ErrorCode.APPROVAL_SHOULD_NOT_HAVE_REASON);
       }
       certification.approve();
-      log.info("인증 승인 : certificationId = {}", certificationId);
+      log.info("[CERTIFICATION] 인증 승인 완료 - certificationId = {}", certificationId);
     } else {
       certification.reject(rejectionReason);
-      log.info("인증 거절 : certificationId = {}, 거절 사유 = {}", certificationId, rejectionReason);
+      log.info("[CERTIFICATION] 인증 거절 완료 : certificationId = {}, 거절 사유 = {}", certificationId, rejectionReason);
     }
     log.info("인증 상태 변경 완료 : certificationId = {}, newStatus = {} ", certificationId, certification.getStatus());
 
@@ -313,8 +317,6 @@ public class CertificationService {
   @Transactional
   public void resetCertificationStatus() {
 
-    log.info("새로운 주가 됨에 따라 인증상태 초기화");
-
     // 이번주 월-토에 들어온 인증들
     LocalDateTime startOfWeek = LocalDate.now().with(DayOfWeek.MONDAY).atStartOfDay();
     LocalDateTime endOfWeek = LocalDate.now().with(DayOfWeek.SATURDAY).atTime(LocalTime.MAX);
@@ -323,7 +325,7 @@ public class CertificationService {
 
     List<Certification> certifications = certificationRepository.findAllByCreatedAtBetween(startOfWeek, endOfWeek);
     if (certifications.isEmpty()) {
-      log.warn("이번 주 인증 데이터가 없어 초기화를 스킵합니다.");
+      log.warn("[CERTIFICATION] 이번 주 인증 데이터가 없어 초기화를 스킵합니다.");
       return;
     }
 
@@ -336,6 +338,7 @@ public class CertificationService {
       }
     }
     certificationRepository.resetAllCertifications();
+    log.info("[CERTIFICATION] 인증 상태 초기화 완료 - 초기화 개수 = {}", certifications.size());
   }
 
   // 사용자가 특정 영화에 대해 인증된 상태인지 확인

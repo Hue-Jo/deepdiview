@@ -63,7 +63,7 @@ public class NotificationService {
     newEmitter.onTimeout(() -> removeEmitter(userId, newEmitter, "SSE 타임아웃"));
     newEmitter.onError((e) -> removeEmitter(userId, newEmitter, "SSE 연결 에러"));
 
-    log.info("SSE 구독 완료: userId = {}, 현재 emitter 수 = {}", userId, emitters.size());
+    log.info("[SSE] 구독 완료: userId = {}, 현재 emitter 수 = {}", userId, emitters.size());
     return newEmitter;
   }
 
@@ -73,9 +73,9 @@ public class NotificationService {
         try {
           emitter.complete();
         } catch (Exception e) {
-          log.warn("Emitter 종료 중 예외 발생: userId = {}, error = {}", userId, e.getMessage());
+          log.warn("[SSE] Emitter 종료 중 예외 발생: userId = {}, error = {}", userId, e.getMessage());
         }
-        log.debug("Emitter 제거 완료: userId = {}, 이유 = {}", userId, reason);
+        log.debug("[SSE] Emitter 제거 완료: userId = {}, 이유 = {}", userId, reason);
         return null;
       }
       return currentEmitter;
@@ -91,7 +91,7 @@ public class NotificationService {
           .data("SSE connect success"));
       //log.info("SSE 초기 메시지 전송 완료");
     } catch (IOException e) {
-      log.error("SSE 초기 메시지 전송 실패: userId = {}, error = {}", userId, e.getMessage());
+      log.error("[SSE] 초기 메시지 전송 실패: userId = {}, error = {}", userId, e.getMessage());
       emitter.completeWithError(e);
       removeEmitter(userId, emitter, "초기 메시지 전송 실패");
     }
@@ -112,7 +112,7 @@ public class NotificationService {
             .name("ping")
             .data("keep-alive"));
       } catch (IOException | IllegalStateException e) {
-        log.warn("Ping 전송 실패 : userId = {}, error = {}", userId, e.getMessage());
+        log.warn("[SSE] Ping 전송 실패 : userId = {}, error = {}", userId, e.getMessage());
         emitter.completeWithError(e); // 오류 발생 시 연결 종료
         removeEmitter(userId, emitter, "ping 전송 실패 또는 타임아웃");
       }
@@ -139,13 +139,13 @@ public class NotificationService {
       try {
         emitter.send(notificationResponseDTO);
       } catch (IOException e) {
-        log.info("알림 전송 실패 : userId = {}", userId);
+        log.info("[NOTIFICATION] 알림 전송 실패 : userId = {}", userId);
         emitter.completeWithError(e);
         emitters.remove(userId);
-        log.info("SSE Emitter 제거 : userId = {}", userId);
+        log.info("[SSE] Emitter 제거 : userId = {}", userId);
       }
     } else {
-      log.warn("SSE Emitter가 존재하지 않습니다 : userId = {}", userId);
+      log.warn("[SSE] Emitter 없음 : userId = {}", userId);
     }
   }
 
@@ -155,16 +155,16 @@ public class NotificationService {
    * @param reviewId
    */
   public void commentAdded(Long commenterId, Long reviewId) {
-    log.info("댓글 추가 알림 생성 시작: reviewId = {}", reviewId);
+    log.info("[NOTIFICATION] 댓글 추가 알림 생성 시작 - reviewId = {}", reviewId);
 
     Review review = reviewRepository.findById(reviewId)
         .orElseThrow(() -> new DeepdiviewException(ErrorCode.REVIEW_NOT_FOUND));
 
     User reviewer = review.getUser(); // 리뷰 작성자 (댓글 알림 받는 사람)
-    log.info("리뷰 작성자 : userId = {}", reviewer.getId());
+    //log.info("리뷰 작성자 : userId = {}", reviewer.getId());
 
     if (commenterId.equals(reviewer.getId())) {
-      log.info("자신의 리뷰에 댓글 작성 - 알림 X");
+      log.info("[NOTIFICATION] 자신의 리뷰에 댓글 작성 - 알림 X");
       return;
     }
 
@@ -180,8 +180,8 @@ public class NotificationService {
 
     NotificationResponseDTO responseDTO = responseDTO(notification);
 
-    log.info("댓글이 달렸다는 알림 전송 완료 ");
     sendNotification(reviewer.getId(), responseDTO);
+    log.info("[NOTIFICATION] 댓글 알림 전송 완료 - reviewId = {}", reviewId);
   }
 
 
@@ -190,16 +190,16 @@ public class NotificationService {
    * @param reviewId
    */
   public void likeAdded(Long likerId, Long reviewId) {
-    log.info("좋아요 알림 생성 시작: reviewId = {}", reviewId);
+    log.info("[NOTIFICATION] 좋아요 알림 생성 시작 - reviewId = {}", reviewId);
 
     Review review = reviewRepository.findById(reviewId)
         .orElseThrow(() -> new DeepdiviewException(ErrorCode.REVIEW_NOT_FOUND));
 
     User reviewer = review.getUser(); // 리뷰 작성자 (좋아요 알림 받는 사람)
-    log.info("리뷰 작성자 : userId = {}", reviewer.getId());
+    //log.info("리뷰 작성자 : userId = {}", reviewer.getId());
 
     if (likerId.equals(reviewer.getId())) {
-      log.info("자신의 리뷰에 좋아요 - 알림 X");
+      log.info("[NOTIFICATION] 자신의 리뷰에 좋아요 - 알림 X");
       return;
     }
 
@@ -215,7 +215,7 @@ public class NotificationService {
 
     NotificationResponseDTO responseDTO = responseDTO(notification);
 
-    log.info("좋아요가 달렸다는 알림 전송 완료");
+    log.info("[NOTIFICATION] 좋아요 알림 전송 완료 - reviewId = {}", reviewId);
 
     sendNotification(reviewer.getId(), responseDTO);
   }
@@ -227,13 +227,13 @@ public class NotificationService {
    * @param status
    */
   public void certificateResult(Long certificationId, CertificationStatus status) {
-    log.info("인증 결과 알림 생성 시작");
+    log.info("[NOTIFICATION] 인증 결과 알림 생성 시작 - certificationId = {}", certificationId);
 
     Certification certification = certificationRepository.findById(certificationId)
         .orElseThrow(() -> new DeepdiviewException(ErrorCode.CERTIFICATION_NOT_FOUND));
 
     User user = certification.getUser();
-    log.info("인증 요청자 : userId = {}", user.getId());
+    //log.info("인증 요청자 : userId = {}", user.getId());
 
     NotificationType  notificationType =
         status == CertificationStatus.APPROVED
@@ -247,20 +247,18 @@ public class NotificationService {
         .isRead(false)
         .createdAt(LocalDateTime.now())
         .build();
-
     notificationRepository.save(notification);
-    log.info("인증 결과 알림 전송");
 
     NotificationResponseDTO responseDTO = responseDTO(notification);
-
     sendNotification(user.getId(), responseDTO);
+    log.info("[NOTIFICATION] 인증 결과 알림 전송 완료 - status = {}, userId = {}", status, user.getId());
   }
 
   // 알림 목록 조회
   @Transactional(readOnly = true)
   public CursorPageResponse<NotificationResponseDTO> getNotifications(
       LocalDateTime cursorCreatedAt, Long cursorId, int size) {
-    log.info("알림 목록 조회 요청");
+    //log.info("알림 목록 조회 요청");
     User user = userService.getLoginUser();
 
     // 30일 전의 알림만 가져오기
@@ -301,6 +299,54 @@ public class NotificationService {
   }
 
 
+  /**
+   * 특정 알림 읽음 처리
+   * @param notificationId
+   */
+  public boolean markNotificationAsRead(Long notificationId) {
+    User user = userService.getLoginUser();
+    //log.info("알림 읽음 시도 : userId = {}", user.getId());
+    Notification notification = notificationRepository.findByIdAndUser_Id(notificationId,user.getId())
+        .orElseThrow(() -> new DeepdiviewException(ErrorCode.NOTIFICATION_NOT_FOUND));
+
+    if (!notification.isRead()) {
+      notification.markAsRead();
+      notificationRepository.save(notification);
+    //  log.info("알림 읽음처리 완료");
+    }
+
+    return notificationRepository.existsByUser_IdAndIsReadFalse(user.getId());
+  }
+
+  /**
+   * 전체 알림 읽음 처리
+   */
+  public void markAllNotificationAsRead() {
+    User user = userService.getLoginUser();
+    //log.info("전체 알림 읽음 시도 : userId = {}", user.getId());
+
+    List<Notification> notifications = notificationRepository.findByUser_IdAndIsReadFalseOrderByCreatedAtDesc(user.getId());
+
+    if (notifications.isEmpty()) {
+    //  log.info("읽지 않은 알림이 더이상 없습니다");
+      return;
+    }
+
+    notifications.forEach(Notification::markAsRead);
+    notificationRepository.saveAll(notifications);
+    //log.info("전체 알림 읽음 처리 완료");
+  }
+
+  /**
+   * 읽지 않은 알림이 있는지 여부 반환
+   * @return
+   */
+  @Transactional(readOnly = true)
+  public boolean isNotReadNotification() {
+    User user = userService.getLoginUser();
+    return notificationRepository.existsByUser_IdAndIsReadFalse(user.getId());
+  }
+
   private NotificationResponseDTO convertToNotificationResponseDTO(Notification notification) {
     return NotificationResponseDTO.builder()
         .notificationId(notification.getId())
@@ -321,53 +367,6 @@ public class NotificationService {
         notification.isRead(),
         notification.getCreatedAt()
     );
-  }
-  /**
-   * 특정 알림 읽음 처리
-   * @param notificationId
-   */
-  public boolean markNotificationAsRead(Long notificationId) {
-    User user = userService.getLoginUser();
-    log.info("알림 읽음 시도 : userId = {}", user.getId());
-    Notification notification = notificationRepository.findByIdAndUser_Id(notificationId,user.getId())
-        .orElseThrow(() -> new DeepdiviewException(ErrorCode.NOTIFICATION_NOT_FOUND));
-
-    if (!notification.isRead()) {
-      notification.markAsRead();
-      notificationRepository.save(notification);
-      log.info("알림 읽음처리 완료");
-    }
-
-    return notificationRepository.existsByUser_IdAndIsReadFalse(user.getId());
-  }
-
-  /**
-   * 전체 알림 읽음 처리
-   */
-  public void markAllNotificationAsRead() {
-    User user = userService.getLoginUser();
-    log.info("전체 알림 읽음 시도 : userId = {}", user.getId());
-
-    List<Notification> notifications = notificationRepository.findByUser_IdAndIsReadFalseOrderByCreatedAtDesc(user.getId());
-
-    if (notifications.isEmpty()) {
-      log.info("읽지 않은 알림이 더이상 없습니다");
-      return;
-    }
-
-    notifications.forEach(Notification::markAsRead);
-    notificationRepository.saveAll(notifications);
-    log.info("전체 알림 읽음 처리 완료");
-  }
-
-  /**
-   * 읽지 않은 알림이 있는지 여부 반환
-   * @return
-   */
-  @Transactional(readOnly = true)
-  public boolean isNotReadNotification() {
-    User user = userService.getLoginUser();
-    return notificationRepository.existsByUser_IdAndIsReadFalse(user.getId());
   }
 
 }
