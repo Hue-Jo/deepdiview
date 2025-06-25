@@ -52,7 +52,7 @@ public class UserService {
   public NicknameUpdateResponseDto updateNickname(NicknameUpdateRequestDto nicknameUpdateDto) {
 
     User user = getLoginUser();
-    log.info("[UPDATE_NICKNAME] 닉네임 수정 시도: userId={}, currentNickname={}", user.getId(), user.getNickname());
+    log.info("[UPDATE_NICKNAME] 닉네임 수정 시도: userId = {}, currentNickname = {}", user.getId(), user.getNickname());
 
     String newNickname = nicknameUpdateDto.getNewNickname();
 
@@ -67,7 +67,7 @@ public class UserService {
     }
 
     user.updateNickname(newNickname);
-    log.info("[UPDATE_NICKNAME] 닉네임 수정 완료: userId={}, newNickname={}", user.getId(), newNickname);
+    log.info("[UPDATE_NICKNAME] 닉네임 수정 완료: userId = {}, newNickname = {}", user.getId(), newNickname);
     return new NicknameUpdateResponseDto(newNickname);
   }
 
@@ -75,7 +75,7 @@ public class UserService {
   public void updatePassword(PasswordUpdateDto passwordUpdateDto) {
 
     User user = getLoginUser();
-    log.info("[UPDATE_PASSWORD] 비밀번호 변경 시도: userId={}", user.getId());
+    log.info("[UPDATE_PASSWORD] 비밀번호 변경 시도: userId = {}", user.getId());
 
     String currentPassword = passwordUpdateDto.getCurrentPassword();
     String newPassword = passwordUpdateDto.getNewPassword();
@@ -118,7 +118,7 @@ public class UserService {
   public OneLineIntroResponseDto updateOneLineIntro(OneLineIntroRequestDto oneLineIntro) {
 
     User user = getLoginUser();
-    log.info("[ONE_LINE_INTRO] 한줄소개 수정 시도 : userId={}", user.getId());
+    log.info("[ONE_LINE_INTRO] 한줄소개 수정 시도 : userId = {}", user.getId());
 
     String newOneLineIntro = oneLineIntro.getOneLineIntro();
     String newONeLineIntroResponse = (newOneLineIntro == null || newOneLineIntro.isEmpty()) ? null : newOneLineIntro;
@@ -151,7 +151,7 @@ public class UserService {
   public UserInfoResponseDto getMyInfo() {
 
     User user = getLoginUser();
-    log.info("[MY_INFO] 내 정보 조회: userId={}, email={}", user.getId(), user.getEmail());
+    log.info("[MY_INFO] 내 정보 조회: userId = {}, email = {}", user.getId(), user.getEmail());
 
     int reviewCount = reviewRepository.countByUser_Id(user.getId());
     int commentCount = commentRepository.countByUser_Id(user.getId());
@@ -209,7 +209,7 @@ public class UserService {
     log.info("[GET_OTHERS_INFO] 타인 정보 조회 시도: userId={}", userId);
     User user = userRepository.findById(userId)
         .orElseThrow(() -> {
-          log.warn("[GET_OTHERS_INFO] 사용자 정보 조회 실패: userId={}", userId);
+          log.warn("[GET_OTHERS_INFO] 사용자 정보 조회 실패: userId = {}", userId);
           return new DeepdiviewException(ErrorCode.USER_NOT_FOUND);
         });
 
@@ -219,7 +219,7 @@ public class UserService {
     List<Review> reviews = reviewRepository.findAllByUser_Id(user.getId());
     ReviewRatingDTO ratingStats = getRatingStats(reviews);
 
-    log.info("[GET_OTHERS_INFO] 타인 정보 조회 완료: userId={}", userId);
+    log.info("[GET_OTHERS_INFO] 타인 정보 조회 완료: userId = {}", userId);
 
     return UserInfoResponseDto.builder()
         .nickname(user.getNickname())

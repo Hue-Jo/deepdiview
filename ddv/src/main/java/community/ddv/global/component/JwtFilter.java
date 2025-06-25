@@ -40,7 +40,7 @@ public class JwtFilter extends OncePerRequestFilter {
       if (token != null) {
         String isBlacked = redisStringTemplate.opsForValue().get(token);
         if ("logout".equals(isBlacked)) {
-          log.warn("블랙리스트로 등록된 토큰. 접근 거부");
+          log.warn("[TOKEN] 블랙리스트로 등록된 토큰. 접근 거부");
           setErrorResponse(response, HttpServletResponse.SC_UNAUTHORIZED, "로그아웃된 토큰입니다.");
           return;
         }
@@ -60,10 +60,10 @@ public class JwtFilter extends OncePerRequestFilter {
       filterChain.doFilter(request, response);
 
     } catch (ExpiredJwtException e) {
-      log.info("만료된 JWT 토큰: {}", e.getMessage());
+      log.info("[TOKEN] 만료된 JWT 토큰: {}", e.getMessage());
       setErrorResponse(response, HttpServletResponse.SC_UNAUTHORIZED, "토큰이 만료되었습니다.");
     } catch (JwtException e) {
-      log.warn("잘못된 JWT 토큰: {}", e.getMessage());
+      log.warn("[TOKEN] 잘못된 JWT 토큰: {}", e.getMessage());
       setErrorResponse(response, HttpServletResponse.SC_UNAUTHORIZED, "유효하지 않은 토큰입니다.");
     }
   }

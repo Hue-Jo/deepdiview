@@ -39,11 +39,11 @@ public class CommentService {
   public CommentResponseDto createComment(Long reviewId, CommentRequestDto commentRequestDto) {
 
     User user = userService.getLoginUser();
-    log.info("[CREATE_COMMENT] 댓글 작성 시도 - reviewId={}, userId={} ", reviewId, user.getId());
+    log.info("[CREATE_COMMENT] 댓글 작성 시도 - reviewId = {}, userId = {} ", reviewId, user.getId());
 
     Review review = reviewRepository.findById(reviewId)
         .orElseThrow(() -> {
-          log.warn("[CREATE_COMMENT] 존재하지 않는 리뷰 - reviewId={}", reviewId);
+          log.warn("[CREATE_COMMENT] 존재하지 않는 리뷰 - reviewId = {}", reviewId);
           return new DeepdiviewException(ErrorCode.REVIEW_NOT_FOUND);
         });
 
@@ -56,7 +56,7 @@ public class CommentService {
         .build();
 
     Comment newComment = commentRepository.save(comment);
-    log.info("[CREATE_COMMENT] 댓글 작성 완료 - commentId={}, reviewId={}, userId={}", newComment.getId(), reviewId, user.getId());
+    log.info("[CREATE_COMMENT] 댓글 작성 완료 - commentId = {}, reviewId = {}, userId = {}", newComment.getId(), reviewId, user.getId());
 
     notificationService.commentAdded(user.getId(), reviewId);
 
@@ -68,23 +68,23 @@ public class CommentService {
   public CommentResponseDto updateComment(Long reviewId, Long commentId, CommentRequestDto commentRequestDto) {
 
     User user = userService.getLoginUser();
-    log.info("[UPDATE_COMMENT] 댓글 수정 시도 - commentId={}, reviewId={}, userId={}", commentId, reviewId, user.getId());
+    log.info("[UPDATE_COMMENT] 댓글 수정 시도 - commentId = {}, reviewId = {}, userId = {}", commentId, reviewId, user.getId());
 
     reviewRepository.findById(reviewId)
         .orElseThrow(() -> {
-          log.warn("[UPDATE_COMMENT] 존재하지 않는 리뷰 - reviewId={}", reviewId);
+          log.warn("[UPDATE_COMMENT] 존재하지 않는 리뷰 - reviewId = {}", reviewId);
           return new DeepdiviewException(ErrorCode.REVIEW_NOT_FOUND);
         });
 
     Comment comment = commentRepository.findById(commentId)
         .orElseThrow(() -> {
-          log.warn("[UPDATE_COMMENT] 존재하지 않는 댓글 - commentId={}", commentId);
+          log.warn("[UPDATE_COMMENT] 존재하지 않는 댓글 - commentId = {}", commentId);
           return new DeepdiviewException(ErrorCode.COMMENT_NOT_FOUND);
         });
 
     // 댓글 작성자만 수정 가능
     if (!comment.getUser().getId().equals(user.getId())) {
-      log.warn("[UPDATE_COMMENT] 댓글 수정은 작성자만 수정 가능합니다. 작성자 userId : {}, 수정 요청자 userId : {}", comment.getUser().getId(), user.getId());
+      log.warn("[UPDATE_COMMENT] 댓글 수정은 작성자만 수정 가능합니다. 작성자 userId = {}, 수정 요청자 userId = {}", comment.getUser().getId(), user.getId());
       throw new DeepdiviewException(ErrorCode.INVALID_USER);
     }
 
@@ -93,7 +93,7 @@ public class CommentService {
 
     comment.updateContent(filteredContent);
     commentRepository.flush();
-    log.info("[UPDATE_COMMENT] 댓글 수정 완료 - commentId={}", commentId);
+    log.info("[UPDATE_COMMENT] 댓글 수정 완료 - commentId = {}", commentId);
     return convertToCommentResponse(comment);
   }
 
@@ -102,23 +102,23 @@ public class CommentService {
   public void deleteComment(Long reviewId, Long commentId) {
 
     User user = userService.getLoginUser();
-    log.info("[DELETE_COMMENT] 댓글 삭제 시도 - commentId={}, reviewId={}, userId={}", commentId, reviewId, user.getId());
+    log.info("[DELETE_COMMENT] 댓글 삭제 시도 - commentId = {}, reviewId = {}, userId = {}", commentId, reviewId, user.getId());
 
     Review review = reviewRepository.findById(reviewId)
         .orElseThrow(() -> {
-          log.warn("[DELETE_COMMENT] 존재하지 않는 리뷰 - reviewId={}", reviewId);
+          log.warn("[DELETE_COMMENT] 존재하지 않는 리뷰 - reviewId = {}", reviewId);
           return new DeepdiviewException(ErrorCode.REVIEW_NOT_FOUND);
         });
 
     Comment comment = commentRepository.findById(commentId)
         .orElseThrow(() -> {
-          log.warn("[DELETE_COMMENT] 존재하지 않는 댓글 - commentId={}", commentId);
+          log.warn("[DELETE_COMMENT] 존재하지 않는 댓글 - commentId = {}", commentId);
           return new DeepdiviewException(ErrorCode.COMMENT_NOT_FOUND);
         });
 
     // 댓글 작성자만 삭제 가능
     if (!comment.getUser().getId().equals(user.getId())) {
-      log.warn("[DELETE_COMMENT] 댓글 삭제는 작성자만 삭제 가능합니다. - 작성자 userId : {}, 삭제 요청자 userId : {}", comment.getUser().getId(), user.getId());
+      log.warn("[DELETE_COMMENT] 댓글 삭제는 작성자만 삭제 가능합니다. - 작성자 userId = {}, 삭제 요청자 userId = {}", comment.getUser().getId(), user.getId());
       throw new DeepdiviewException(ErrorCode.INVALID_USER);
     }
 
@@ -127,7 +127,7 @@ public class CommentService {
     }
 
     commentRepository.delete(comment);
-    log.info("[DELETE_COMMENT] 댓글 삭제 완료 - commentId={}", commentId);
+    log.info("[DELETE_COMMENT] 댓글 삭제 완료 - commentId = {}", commentId);
 
   }
 
@@ -135,7 +135,7 @@ public class CommentService {
   @Transactional(readOnly = true)
   public CursorPageResponse<CommentResponseDto> getCommentsByReviewId(
       Long reviewId, LocalDateTime cursorCreatedAt, Long cursorId, int size) {
-    log.info("리뷰 {}의 댓글 조회 요청", reviewId);
+    log.info("[COMMENT] 리뷰 {}의 댓글 조회 요청", reviewId);
 
     Review review = reviewRepository.findById(reviewId)
         .orElseThrow(() -> new DeepdiviewException(ErrorCode.REVIEW_NOT_FOUND));
@@ -181,7 +181,7 @@ public class CommentService {
 
   @Transactional(readOnly = true)
   public Page<CommentResponseDto> getCommentsByUserId(Long userId, Pageable pageable) {
-    log.info("특정 이용자 {}가 작성한 댓글 조회 요청", userId);
+    log.info("[COMMENT] userId = {}가 작성한 댓글 조회 요청", userId);
     userService.getLoginUser();
 
     return commentRepository.findByUser_Id(userId, pageable)

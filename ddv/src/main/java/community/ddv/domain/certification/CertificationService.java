@@ -334,7 +334,7 @@ public class CertificationService {
       try {
         fileStorageService.deleteFile(certification.getCertificationUrl());
       } catch (RuntimeException e) {
-        log.info("인증샷 파일을 S3에서 삭제 실패 : url = {}", certification.getCertificationUrl());
+        log.info("인증샷 파일을 S3에서 삭제 실패, url = {}", certification.getCertificationUrl());
       }
     }
     certificationRepository.resetAllCertifications();

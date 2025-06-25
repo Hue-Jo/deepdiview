@@ -40,7 +40,7 @@ public class MovieService {
    */
   public List<MovieDTO> getTopMovies(int size) {
     List<Movie> topMovies = movieRepository.findAllByAvailableIsTrueOrderByPopularityDesc(size);
-    log.info("인기도 탑{} 영화 조회 성공", size);
+    log.info("[MOVIE] 인기도 탑{} 영화 조회 성공", size);
     return topMovies.stream()
         .map(movie -> convertToDto(movie, null, reviewService.getRatingsByMovie(movie)))
         .collect(Collectors.toList());
@@ -65,11 +65,11 @@ public class MovieService {
 
     Page<Movie> movies = movieRepository.findByTitleFlexible(title, page);
     if (movies.isEmpty()) {
-      log.warn("키워드 '{}'를 포함하는 영화가 존재하지 않습니다.", title);
+      log.warn("[MOVIE] 키워드 '{}'를 포함하는 영화가 존재하지 않습니다.", title);
       return Page.empty(page);
     }
 
-    log.info("영화 제목 '{}'으로 영화의 세부정보 조회 성공", title);
+    log.info("[MOVIE] 영화 제목 '{}'으로 영화의 세부정보 조회 성공", title);
     return movies
         .map(movie -> {
           ReviewRatingDTO ratingStats = reviewService.getRatingsByMovie(movie);
@@ -87,7 +87,7 @@ public class MovieService {
 
     Movie movie = movieRepository.findByTmdbId(tmdbId)
         .orElseThrow(() -> {
-          log.warn("영화 Id '{}'에 해당하는 영화가 없습니다.", tmdbId);
+          log.warn("[MOVIE] 영화 Id '{}'에 해당하는 영화가 없습니다.", tmdbId);
           return new DeepdiviewException(ErrorCode.MOVIE_NOT_FOUND);
         });
 
