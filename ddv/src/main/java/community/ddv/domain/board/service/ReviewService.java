@@ -48,12 +48,13 @@ public class ReviewService {
   public ReviewIdResponseDto createReview(ReviewDTO reviewDTO) {
 
     User user = userService.getLoginUser();
+    log.info("[CREATE_REVIEW] 리뷰 작성 시도 - userId={}, tmdbId={}", user.getId(), reviewDTO.getTmdbId());
 
     Movie movie = movieRepository.findByTmdbId(reviewDTO.getTmdbId())
         .orElseThrow(() -> new DeepdiviewException(ErrorCode.MOVIE_NOT_FOUND));
 
     if (reviewRepository.existsByUserAndMovie(user, movie)) {
-      log.warn("리뷰 작성 실패 (이미 리뷰를 작성함) - User Id : {}, TMDB Id: {} ", user.getId(), reviewDTO.getTmdbId());
+      log.warn("[CREATE_REVIEW] 리뷰 작성 실패 (이미 리뷰를 작성함) - userId : {}, tmdbId: {} ", user.getId(), reviewDTO.getTmdbId());
       throw new DeepdiviewException(ErrorCode.ALREADY_COMMITTED_REVIEW);
     }
 
@@ -72,7 +73,7 @@ public class ReviewService {
         .build();
 
     reviewRepository.save(review);
-    log.info("리뷰 작성 성공 - 사용자 ID: {}, 리뷰 ID: {}", user.getId(), review.getId());
+    log.info("[CREATE_REVIEW] 리뷰 작성 성공 - userId: {}, reviewID: {}", user.getId(), review.getId());
     return new ReviewIdResponseDto(review.getId());
   }
 
@@ -84,16 +85,18 @@ public class ReviewService {
   public void deleteReview(Long reviewId) {
 
     User user = userService.getLoginUser();
+    log.info("[DELETE_REVIEW] 리뷰 삭제 시도 - reviewId={}, userId={}", reviewId, user.getId());
 
     Review review = reviewRepository.findById(reviewId)
         .orElseThrow(() -> new DeepdiviewException(ErrorCode.REVIEW_NOT_FOUND));
 
     if (!review.getUser().equals(user)) {
-      log.warn("리뷰 삭제 권한 없음 - 리뷰 ID: {}, 삭제 요청 유저 ID: {}, 리뷰 작성자 ID: {}", reviewId, user.getId(),
+      log.warn("[DELETE_REVIEW] 리뷰 삭제 권한 없음 - 리뷰 ID: {}, 삭제 요청자 userId: {}, 리뷰 작성자 userId: {}", reviewId, user.getId(),
           review.getUser().getId());
       throw new DeepdiviewException(ErrorCode.INVALID_USER);
     }
     reviewRepository.delete(review);
+    log.info("[DELETE_REVIEW] 리뷰 삭제 완료 - reviewId={}", reviewId);
   }
 
   /**
@@ -106,12 +109,13 @@ public class ReviewService {
   public ReviewIdResponseDto updateReview(Long reviewId, ReviewUpdateDTO reviewUpdateDTO) {
 
     User user = userService.getLoginUser();
+    log.info("[UPDATE_REVIEW] 리뷰 수정 시도 - reviewId={}, userId={}", reviewId, user.getId());
 
     Review review = reviewRepository.findById(reviewId)
         .orElseThrow(() -> new DeepdiviewException(ErrorCode.REVIEW_NOT_FOUND));
 
     if (!review.getUser().equals(user)) {
-      log.warn("리뷰 수정 권한 없음 - 유저 ID: {}, 리뷰 ID: {}, ", user.getId(), reviewId);
+      log.warn("[UPDATE_REVIEW] 리뷰 수정 권한 없음 - userId: {}, reviewId: {}, ", user.getId(), reviewId);
       throw new DeepdiviewException(ErrorCode.INVALID_USER);
     }
 
@@ -123,7 +127,7 @@ public class ReviewService {
         filteredContent,
         reviewUpdateDTO.getRating()
     );
-    log.info("리뷰 수정 성공 - 리뷰 ID: {}", reviewId);
+    log.info("[UPDATE_REVIEW] 리뷰 수정 완료 - reviewId={}", reviewId);
     return new ReviewIdResponseDto(review.getId());
 
   }
@@ -159,7 +163,6 @@ public class ReviewService {
    */
   @Transactional(readOnly = true)
   public ReviewResponseDTO getReviewById(Long reviewId) {
-    //Review review = reviewRepository.findById(reviewId)
     Review review = reviewRepository.findWithCommentsById(reviewId)
         .orElseThrow(() -> new DeepdiviewException(ErrorCode.REVIEW_NOT_FOUND));
     return convertToReviewResponseDto(review);

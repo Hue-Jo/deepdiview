@@ -45,28 +45,26 @@ public class AuthService {
    */
   @Transactional
   public void signUp(SignUpDto signUpDto) {
-    log.info("회원가입 시도");
+    log.info("[SIGNUP] 회원가입 시도: email={}", signUpDto.getEmail());
 
     // 이메일 인증여부 확인
     if (!emailService.isVerified(signUpDto.getEmail())) {
-      log.warn("이메일 인증하지 않음");
-      throw new DeepdiviewException(ErrorCode.EMAIL_NOT_VERIFIED);
+      log.warn("[SIGNUP] 이메일 인증하지 않음: {}", signUpDto.getEmail());
+    throw new DeepdiviewException(ErrorCode.EMAIL_NOT_VERIFIED);
     }
     // 같은 이메일로 중복 회원가입 불가
-    //if (userRepository.findByEmail(signUpDto.getEmail()).isPresent()) {
     if (userRepository.existsByEmail(signUpDto.getEmail())) {
-      log.warn("중복 회원가입 불가");
+      log.warn("[SIGNUP] 중복 이메일 회원가입 시도: {}", signUpDto.getEmail());
       throw new DeepdiviewException(ErrorCode.ALREADY_EXIST_MEMBER);
     }
     // 비밀번호 확인 로직 통과 여부
     if (!signUpDto.getPassword().equals(signUpDto.getConfirmPassword())) {
-      log.warn("비밀번호 확인 로직 통과 X");
+      log.warn("[SIGNUP] 비밀번호 확인 로직 통과 X");
       throw new DeepdiviewException(ErrorCode.NOT_MATCHED_PASSWORD);
     }
     // 중복 닉네임 사용불가
-    //if (userRepository.findByNickname(signUpDto.getNickname()).isPresent()) {
     if (userRepository.existsByNickname(signUpDto.getNickname())) {
-      log.warn("중복 닉네임 불가");
+      log.warn("[SIGNUP] 중복 닉네임 사용불가");
       throw new DeepdiviewException(ErrorCode.ALREADY_EXIST_NICKNAME);
     }
 
@@ -80,7 +78,7 @@ public class AuthService {
 
     userRepository.save(user);
     redisStringTemplate.delete("EMAIL_VERIFIED:" + signUpDto.getEmail());
-    log.info("회원가입 완료");
+    log.info("[SIGNUP] 회원가입 성공: userId={}, email={}", user.getId(), user.getEmail());
   }
 
   /**
@@ -88,14 +86,18 @@ public class AuthService {
    * @param loginDto - 이메일, 비밀번호
    */
   public LoginResponseDto logIn(LoginDto loginDto) {
-    log.info("로그인 시도 : {} ", loginDto.getEmail());
+    log.info("[LOGIN] 로그인 시도: email={}", loginDto.getEmail());
 
     // 해당 이메일로 가입된 유저가 존재하는지 확인
     User user = userRepository.findByEmail(loginDto.getEmail())
-        .orElseThrow(() -> new DeepdiviewException(ErrorCode.USER_NOT_FOUND));
+        .orElseThrow(() -> {
+          log.warn("[LOGIN] 존재하지 않는 사용자: email={}", loginDto.getEmail());
+          return new DeepdiviewException(ErrorCode.USER_NOT_FOUND);
+        });
 
     // 비밀번호 검증
     if (!passwordEncoder.matches(loginDto.getPassword(), user.getPassword())) {
+      log.warn("[LOGIN] 비밀번호 불일치: email={}", loginDto.getEmail());
       throw new DeepdiviewException(ErrorCode.NOT_VALID_PASSWORD);
     }
 
@@ -110,7 +112,7 @@ public class AuthService {
       log.info("유효한 리프레시 토큰 사용");
     }
 
-    log.info("로그인 성공");
+    log.info("[LOGIN] 로그인 성공: userId={}, email={}", user.getId(), user.getEmail());
     return LoginResponseDto.builder()
         .accessToken(accessToken)
         .refreshToken(refreshToken)
@@ -136,19 +138,22 @@ public class AuthService {
   public void logout(HttpServletRequest request) {
     Authentication auth = SecurityContextHolder.getContext().getAuthentication();
     String email = auth.getName();
-    log.info("로그아웃 요청");
+    log.info("[LOGOUT] 로그아웃 요청");
 
     // 현재 인증된 사용자 이메일과 요청에 포함된 이메일이 동일한지 확인
     User user = userRepository.findByEmail(email)
-        .orElseThrow(() -> new DeepdiviewException(ErrorCode.USER_NOT_FOUND));
+        .orElseThrow(() -> {
+          log.warn("[LOGOUT] 존재하지 않는 사용자: email={}", email);
+          return new DeepdiviewException(ErrorCode.USER_NOT_FOUND);
+        });
 
     // 리프레시 토큰 삭제
     Boolean deletedRefreshToken = redisStringTemplate.delete(email);
     // NullPointException 방지를 위해 Boolean 객체 사용
     if (Boolean.TRUE.equals(deletedRefreshToken)) {
-      log.info("리프레시 토큰 삭제 완료");
+      log.info("[LOGOUT] 리프레시 토큰 삭제 완료: email={}", email);
     } else {
-      log.warn("로그아웃 실패");
+      log.warn("[LOGOUT] 리프레시 토큰 삭제 실패: email={}", email);
     }
 
     // 기존의 엑세스토큰은 블랙리스트로 등록
@@ -161,21 +166,20 @@ public class AuthService {
       if (remainTime > 0) {
         // 남은 시간동안 블랙리스트로 등록
         redisStringTemplate.opsForValue().set(accessToken, "logout", remainTime, TimeUnit.MILLISECONDS);
-        log.info("엑세스토큰 블랙리스트로 등록 완료");
+        log.info("[LOGOUT] 엑세스토큰 블랙리스트로 등록 완료");
       } else {
-        log.info("만료된 엑세스 토큰");
+        log.info("[LOGOUT] 만료된 엑세스 토큰");
       }
     }
 
     // SecurityContext 초기화
     SecurityContextHolder.clearContext();
-    log.info("SecurityContext 초기화");
+    log.info("LOGOUT SecurityContext 초기화");
 
     notificationService.disconnectEmitter(user.getId());
-    log.info("SSE 연결 종료(로그아웃) : userId = {}", user.getId());
+    log.info("[LOGOUT] SSE 연결 종료 : userId = {}", user.getId());
 
-
-    log.info("로그아웃 성공");
+    log.info("[LOGOUT] 로그아웃 완료: userId={}, email={}", user.getId(), user.getEmail());
   }
 
   /**
@@ -183,7 +187,7 @@ public class AuthService {
    * @param refreshToken
    */
   public TokenDto reissueAccessToken(String refreshToken) {
-    log.info("리프레시 토큰으로 엑세스 토큰 재발급 요청");
+    log.info("[REISSUE] 리프레시 토큰으로 엑세스 토큰 재발급 요청");
 
     // 리프레시 토큰이 유효한지 확인
     if (!jwtProvider.isTokenValid(refreshToken)) {
@@ -204,7 +208,7 @@ public class AuthService {
     // 새 엑세스 토큰 생성/발급
     String newAccessToken = jwtProvider.generateAccessToken(user.getEmail(), user.getRole());
 
-    log.info("엑세스 토큰 재발급 완료");
+    log.info("[REISSUE] 엑세스 토큰 재발급 완료");
     return new TokenDto(newAccessToken);
   }
 
@@ -216,14 +220,16 @@ public class AuthService {
   public void deleteAccount(AccountDeleteDto accountDeleteDto, HttpServletRequest request) {
 
     User user = userService.getLoginUser();
-    log.info("회원탈퇴 요청 : {}", user.getEmail());
+    log.info("[DELETE_ACCOUNT] 회원탈퇴 요청: userId={}, email={}", user.getId(), user.getEmail());
 
     if (user.getRole() == Role.ADMIN) {
+      log.warn("[DELETE_ACCOUNT] 관리자 탈퇴 차단");
       throw new DeepdiviewException(ErrorCode.ADMIN_CANNOT_BE_DELETED);
     }
 
     // 비밀번호 확인
     if (!passwordEncoder.matches(accountDeleteDto.getPassword(), user.getPassword())) {
+      log.warn("[DELETE_ACCOUNT] 비밀번호 불일치: userId={}, email={}", user.getId(), user.getEmail());
       throw new DeepdiviewException(ErrorCode.NOT_VALID_PASSWORD);
     }
 
@@ -239,21 +245,21 @@ public class AuthService {
         // 남은 시간동안 블랙리스트로 등록
         redisStringTemplate.opsForValue()
             .set(accessToken, "logout", remainTime, TimeUnit.MILLISECONDS);
-        log.info("엑세스 토큰 블랙리스트로 등록 완료");
+        log.info("[DELETE_ACCOUNT] 엑세스 토큰 블랙리스트로 등록 완료");
       }
     }
 
     redisStringTemplate.delete(user.getEmail());
-    log.info("리프레시 토큰 삭제");
+    log.info("[DELETE_ACCOUNT] 리프레시 토큰 삭제");
 
     notificationService.disconnectEmitter(user.getId());
-    log.info("SSE 연결 종료(회원탈퇴) : userId = {}", user.getId());
+    log.info("[DELETE_ACCOUNT] SSE 연결 종료 : userId = {}", user.getId());
     // 사용자 삭제
     userRepository.delete(user);
-    log.info("회원탈퇴 완료");
+    log.info("[DELETE_ACCOUNT] 회원탈퇴 완료: userId={}, email={}", user.getId(), user.getEmail());
 
     SecurityContextHolder.clearContext();
-    log.info("SecurityContext 초기화");
+    log.info("[DELETE_ACCOUNT] SecurityContext 초기화");
   }
 
 }

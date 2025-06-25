@@ -1,6 +1,5 @@
-package community.ddv.domain.notification.dto;
+package community.ddv.domain.notification;
 
-import community.ddv.domain.notification.NotificationType;
 import java.time.LocalDateTime;
 import lombok.AllArgsConstructor;
 import lombok.Builder;

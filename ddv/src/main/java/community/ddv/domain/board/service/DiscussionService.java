@@ -41,24 +41,24 @@ public class DiscussionService {
     // 1. 인증 상태 확인
     User user = userService.getLoginUser();
     if (!certificationService.isUserCertified(user.getId())) {
-      log.warn("인증되지 않은 사용자 : userId = {}", user.getId());
+      log.warn("[CREATE_DISCUSSION] 인증되지 않은 사용자 - userId = {}", user.getId());
       throw new DeepdiviewException(ErrorCode.NOT_CERTIFIED_YET);
     }
-    log.info("인증 상태 확인 완료 : userId = {}", user.getId());
+    log.info("[CREATE_DISCUSSION] 사용자 인증 상태 확인 완료");
 
     // 2. 지난주 1위를 한 영화인지 확인
     Long lastWeekTopMovieTmdbId = voteService.getLastWeekTopVoteMovie();
     Movie lastWeekTopMovie = movieRepository.findByTmdbId(lastWeekTopMovieTmdbId)
         .orElseThrow(() -> new DeepdiviewException(ErrorCode.MOVIE_NOT_FOUND));
-    log.info("지난 주 투표 1위 영화 확인 - TMDBId = {}, title = {}", lastWeekTopMovieTmdbId, lastWeekTopMovie.getTitle());
+    log.info("[CREATE_DISCUSSION] 지난주 투표 1위 영화 확인 - tmdbId = {}, title = {}", lastWeekTopMovieTmdbId, lastWeekTopMovie.getTitle());
 
     // 3. 리뷰 작성 가능 기간 확인 (월-토)
     LocalDateTime now = LocalDateTime.now();
     if (now.getDayOfWeek() == DayOfWeek.SUNDAY) {
-      log.warn("일요일은 리뷰 작성 불가");
+      log.warn("[CREATE_DISCUSSION] 일요일에는 리뷰 작성 불가");
       throw new DeepdiviewException(ErrorCode.INVALID_REVIEW_PERIOD);
     }
-    log.info("리뷰 작성 가능 기간 확인 완료");
+    log.info("[CREATE_DISCUSSION] 리뷰 작성 가능 기간 확인 완료");
 
     // 4. 중복 리뷰 확인 -> 기존에 작성한 리뷰가 있으면 수정
     // (사용하지 않는 것으로 수정. 봤던 영화를 또 다시 보고 인증 받고 리뷰를 다시 작성하는 경우가 많이 없을 것으로 판단)

@@ -1,6 +1,5 @@
 package community.ddv.domain.notification;
 
-import community.ddv.domain.notification.dto.NotificationResponseDTO;
 import community.ddv.domain.user.service.UserService;
 import community.ddv.global.response.CursorPageResponse;
 import io.swagger.v3.oas.annotations.Operation;
