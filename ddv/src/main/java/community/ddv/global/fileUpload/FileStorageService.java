@@ -71,12 +71,12 @@ public class FileStorageService {
     try (InputStream inputStream = file.getInputStream()) {
       PutObjectRequest putObjectRequest = new PutObjectRequest(bucket, fileName, inputStream, metadata);
       amazonS3.putObject(putObjectRequest);
-      log.info("S3에 파일 업로드 성공");
+      log.info("[FILE] S3에 파일 업로드 성공");
     } catch (IOException e) {
-      log.error("파일 업로드 중 IOException 발생: {}", e.getMessage());
+      log.error("[FILE] 파일 업로드 중 IOException 발생: {}", e.getMessage());
       throw new DeepdiviewException(ErrorCode.FILE_UPLOAD_FAILED);
     } catch (AmazonServiceException e) {
-      log.error("Amazon Service Exception: {}", e.getMessage());
+      log.error("[FILE] Amazon Service Exception: {}", e.getMessage());
       throw new DeepdiviewException(ErrorCode.FILE_UPLOAD_FAILED);
     }
 
@@ -92,9 +92,9 @@ public class FileStorageService {
       String fileName = fileUrl.substring(fileUrl.lastIndexOf("/") + 1);
       try {
         amazonS3.deleteObject(bucket, fileName);
-        log.info("S3에서 파일 삭제 성공");
+        log.info("[FILE] S3에서 파일 삭제 성공");
       } catch (AmazonServiceException e) {
-        log.error("S3에서 파일 삭제 중 오류 발생");
+        log.error("[FILE] S3에서 파일 삭제 중 오류 발생");
         throw new DeepdiviewException(ErrorCode.FILE_DELETE_FAILED);
       }
     }

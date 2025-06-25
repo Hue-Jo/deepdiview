@@ -119,7 +119,7 @@ public class JwtProvider {
     } catch (ExpiredJwtException e) {
       throw e;
     } catch (JwtException e) {
-      log.warn("잘못된 JWT 토큰");
+      log.warn("[TOKEN] 잘못된 JWT 토큰");
       throw e;
     }
   }

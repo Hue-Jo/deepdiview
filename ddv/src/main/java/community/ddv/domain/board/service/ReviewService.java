@@ -48,13 +48,13 @@ public class ReviewService {
   public ReviewIdResponseDto createReview(ReviewDTO reviewDTO) {
 
     User user = userService.getLoginUser();
-    log.info("[CREATE_REVIEW] 리뷰 작성 시도 - userId={}, tmdbId={}", user.getId(), reviewDTO.getTmdbId());
+    log.info("[CREATE_REVIEW] 리뷰 작성 시도 - userId = {}, tmdbId = {}", user.getId(), reviewDTO.getTmdbId());
 
     Movie movie = movieRepository.findByTmdbId(reviewDTO.getTmdbId())
         .orElseThrow(() -> new DeepdiviewException(ErrorCode.MOVIE_NOT_FOUND));
 
     if (reviewRepository.existsByUserAndMovie(user, movie)) {
-      log.warn("[CREATE_REVIEW] 리뷰 작성 실패 (이미 리뷰를 작성함) - userId : {}, tmdbId: {} ", user.getId(), reviewDTO.getTmdbId());
+      log.warn("[CREATE_REVIEW] 리뷰 작성 실패 (이미 리뷰를 작성함) - userId: {}", user.getId());
       throw new DeepdiviewException(ErrorCode.ALREADY_COMMITTED_REVIEW);
     }
 
@@ -73,7 +73,7 @@ public class ReviewService {
         .build();
 
     reviewRepository.save(review);
-    log.info("[CREATE_REVIEW] 리뷰 작성 성공 - userId: {}, reviewID: {}", user.getId(), review.getId());
+    log.info("[CREATE_REVIEW] 리뷰 작성 성공 - userId = {}, reviewId = {}", user.getId(), review.getId());
     return new ReviewIdResponseDto(review.getId());
   }
 
@@ -85,18 +85,18 @@ public class ReviewService {
   public void deleteReview(Long reviewId) {
 
     User user = userService.getLoginUser();
-    log.info("[DELETE_REVIEW] 리뷰 삭제 시도 - reviewId={}, userId={}", reviewId, user.getId());
+    log.info("[DELETE_REVIEW] 리뷰 삭제 시도 - reviewId = {}, userId = {}", reviewId, user.getId());
 
     Review review = reviewRepository.findById(reviewId)
         .orElseThrow(() -> new DeepdiviewException(ErrorCode.REVIEW_NOT_FOUND));
 
     if (!review.getUser().equals(user)) {
-      log.warn("[DELETE_REVIEW] 리뷰 삭제 권한 없음 - 리뷰 ID: {}, 삭제 요청자 userId: {}, 리뷰 작성자 userId: {}", reviewId, user.getId(),
+      log.warn("[DELETE_REVIEW] 리뷰 삭제 권한 없음 - reviewId = {}, 삭제 요청자 userId = {}, 리뷰 작성자 userId = {}", reviewId, user.getId(),
           review.getUser().getId());
       throw new DeepdiviewException(ErrorCode.INVALID_USER);
     }
     reviewRepository.delete(review);
-    log.info("[DELETE_REVIEW] 리뷰 삭제 완료 - reviewId={}", reviewId);
+    log.info("[DELETE_REVIEW] 리뷰 삭제 완료 - reviewId = {}", reviewId);
   }
 
   /**
@@ -109,13 +109,13 @@ public class ReviewService {
   public ReviewIdResponseDto updateReview(Long reviewId, ReviewUpdateDTO reviewUpdateDTO) {
 
     User user = userService.getLoginUser();
-    log.info("[UPDATE_REVIEW] 리뷰 수정 시도 - reviewId={}, userId={}", reviewId, user.getId());
+    log.info("[UPDATE_REVIEW] 리뷰 수정 시도 - reviewId = {}, userId = {}", reviewId, user.getId());
 
     Review review = reviewRepository.findById(reviewId)
         .orElseThrow(() -> new DeepdiviewException(ErrorCode.REVIEW_NOT_FOUND));
 
     if (!review.getUser().equals(user)) {
-      log.warn("[UPDATE_REVIEW] 리뷰 수정 권한 없음 - userId: {}, reviewId: {}, ", user.getId(), reviewId);
+      log.warn("[UPDATE_REVIEW] 리뷰 수정 권한 없음 - userId = {}, reviewId = {}, ", user.getId(), reviewId);
       throw new DeepdiviewException(ErrorCode.INVALID_USER);
     }
 
@@ -127,7 +127,7 @@ public class ReviewService {
         filteredContent,
         reviewUpdateDTO.getRating()
     );
-    log.info("[UPDATE_REVIEW] 리뷰 수정 완료 - reviewId={}", reviewId);
+    log.info("[UPDATE_REVIEW] 리뷰 수정 완료 - reviewId = {}", reviewId);
     return new ReviewIdResponseDto(review.getId());
 
   }
@@ -141,14 +141,14 @@ public class ReviewService {
 
     Movie movie = movieRepository.findByTmdbId(tmdbId)
         .orElseThrow(() -> {
-          log.warn("영화 조회 실패 - TMDB ID : {}", tmdbId);
+          log.warn("[MOVIE] 영화 조회 실패 - tmdbId = {}", tmdbId);
           return new DeepdiviewException(ErrorCode.MOVIE_NOT_FOUND);
         });
 
     Page<Review> reviews;
 
     if (certifiedFilter) {
-      log.info("인증된 리뷰만 조회");
+      log.info("[REVIEW] 인증된 리뷰만 조회");
       reviews = reviewRepository.findByMovieAndCertifiedTrue(movie, pageable);
     } else {
       reviews = reviewRepository.findByMovie(movie, pageable);
@@ -180,10 +180,10 @@ public class ReviewService {
     Page<Review> reviews;
 
     if (certifiedFilter) {
-      log.info("특정 사용자의 인증된 리뷰만 조회");
+      log.info("[REVIEW] userId = {}의 인증된 리뷰만 조회", userId);
       reviews = reviewRepository.findByUser_IdAndCertifiedTrue(userId, pageable);
     } else {
-      log.info("특정 사용자의 모든 리뷰 조회");
+      log.info("[REVIEW] userId = {}의 모든 리뷰 조회", userId);
       reviews = reviewRepository.findByUser_Id(userId, pageable);
     }
 

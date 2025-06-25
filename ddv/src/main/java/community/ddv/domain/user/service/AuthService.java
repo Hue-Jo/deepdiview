@@ -45,7 +45,7 @@ public class AuthService {
    */
   @Transactional
   public void signUp(SignUpDto signUpDto) {
-    log.info("[SIGNUP] 회원가입 시도: email={}", signUpDto.getEmail());
+    log.info("[SIGNUP] 회원가입 시도: {}", signUpDto.getEmail());
 
     // 이메일 인증여부 확인
     if (!emailService.isVerified(signUpDto.getEmail())) {
@@ -78,7 +78,7 @@ public class AuthService {
 
     userRepository.save(user);
     redisStringTemplate.delete("EMAIL_VERIFIED:" + signUpDto.getEmail());
-    log.info("[SIGNUP] 회원가입 성공: userId={}, email={}", user.getId(), user.getEmail());
+    log.info("[SIGNUP] 회원가입 성공: userId = {}, email = {}", user.getId(), user.getEmail());
   }
 
   /**
@@ -86,18 +86,18 @@ public class AuthService {
    * @param loginDto - 이메일, 비밀번호
    */
   public LoginResponseDto logIn(LoginDto loginDto) {
-    log.info("[LOGIN] 로그인 시도: email={}", loginDto.getEmail());
+    log.info("[LOGIN] 로그인 시도: email = {}", loginDto.getEmail());
 
     // 해당 이메일로 가입된 유저가 존재하는지 확인
     User user = userRepository.findByEmail(loginDto.getEmail())
         .orElseThrow(() -> {
-          log.warn("[LOGIN] 존재하지 않는 사용자: email={}", loginDto.getEmail());
+          log.warn("[LOGIN] 존재하지 않는 사용자: email = {}", loginDto.getEmail());
           return new DeepdiviewException(ErrorCode.USER_NOT_FOUND);
         });
 
     // 비밀번호 검증
     if (!passwordEncoder.matches(loginDto.getPassword(), user.getPassword())) {
-      log.warn("[LOGIN] 비밀번호 불일치: email={}", loginDto.getEmail());
+      log.warn("[LOGIN] 비밀번호 불일치: email = {}", loginDto.getEmail());
       throw new DeepdiviewException(ErrorCode.NOT_VALID_PASSWORD);
     }
 
@@ -109,10 +109,10 @@ public class AuthService {
     if (refreshToken == null || !jwtProvider.isTokenValid(refreshToken)) {
       refreshToken = generateAndStoreRefreshToken(user);
     } else {
-      log.info("유효한 리프레시 토큰 사용");
+      log.info("[TOKEN] 유효한 리프레시 토큰 사용");
     }
 
-    log.info("[LOGIN] 로그인 성공: userId={}, email={}", user.getId(), user.getEmail());
+    log.info("[LOGIN] 로그인 성공: userId = {}, email = {}", user.getId(), user.getEmail());
     return LoginResponseDto.builder()
         .accessToken(accessToken)
         .refreshToken(refreshToken)
@@ -143,7 +143,7 @@ public class AuthService {
     // 현재 인증된 사용자 이메일과 요청에 포함된 이메일이 동일한지 확인
     User user = userRepository.findByEmail(email)
         .orElseThrow(() -> {
-          log.warn("[LOGOUT] 존재하지 않는 사용자: email={}", email);
+          log.warn("[LOGOUT] 존재하지 않는 사용자: email = {}", email);
           return new DeepdiviewException(ErrorCode.USER_NOT_FOUND);
         });
 
@@ -151,9 +151,9 @@ public class AuthService {
     Boolean deletedRefreshToken = redisStringTemplate.delete(email);
     // NullPointException 방지를 위해 Boolean 객체 사용
     if (Boolean.TRUE.equals(deletedRefreshToken)) {
-      log.info("[LOGOUT] 리프레시 토큰 삭제 완료: email={}", email);
+      log.info("[LOGOUT] 리프레시 토큰 삭제 완료: email = {}", email);
     } else {
-      log.warn("[LOGOUT] 리프레시 토큰 삭제 실패: email={}", email);
+      log.warn("[LOGOUT] 리프레시 토큰 삭제 실패: email = {}", email);
     }
 
     // 기존의 엑세스토큰은 블랙리스트로 등록
@@ -174,12 +174,12 @@ public class AuthService {
 
     // SecurityContext 초기화
     SecurityContextHolder.clearContext();
-    log.info("LOGOUT SecurityContext 초기화");
+    log.info("[LOGOUT] SecurityContext 초기화");
 
     notificationService.disconnectEmitter(user.getId());
     log.info("[LOGOUT] SSE 연결 종료 : userId = {}", user.getId());
 
-    log.info("[LOGOUT] 로그아웃 완료: userId={}, email={}", user.getId(), user.getEmail());
+    log.info("[LOGOUT] 로그아웃 완료: userId = {}, email = {}", user.getId(), user.getEmail());
   }
 
   /**
@@ -187,7 +187,7 @@ public class AuthService {
    * @param refreshToken
    */
   public TokenDto reissueAccessToken(String refreshToken) {
-    log.info("[REISSUE] 리프레시 토큰으로 엑세스 토큰 재발급 요청");
+    //log.info("[REISSUE] 리프레시 토큰으로 엑세스 토큰 재발급 요청");
 
     // 리프레시 토큰이 유효한지 확인
     if (!jwtProvider.isTokenValid(refreshToken)) {
@@ -220,7 +220,7 @@ public class AuthService {
   public void deleteAccount(AccountDeleteDto accountDeleteDto, HttpServletRequest request) {
 
     User user = userService.getLoginUser();
-    log.info("[DELETE_ACCOUNT] 회원탈퇴 요청: userId={}, email={}", user.getId(), user.getEmail());
+    log.info("[DELETE_ACCOUNT] 회원탈퇴 요청: userId = {}, email = {}", user.getId(), user.getEmail());
 
     if (user.getRole() == Role.ADMIN) {
       log.warn("[DELETE_ACCOUNT] 관리자 탈퇴 차단");
@@ -229,7 +229,7 @@ public class AuthService {
 
     // 비밀번호 확인
     if (!passwordEncoder.matches(accountDeleteDto.getPassword(), user.getPassword())) {
-      log.warn("[DELETE_ACCOUNT] 비밀번호 불일치: userId={}, email={}", user.getId(), user.getEmail());
+      log.warn("[DELETE_ACCOUNT] 비밀번호 불일치: userId = {}, email = {}", user.getId(), user.getEmail());
       throw new DeepdiviewException(ErrorCode.NOT_VALID_PASSWORD);
     }
 
@@ -256,7 +256,7 @@ public class AuthService {
     log.info("[DELETE_ACCOUNT] SSE 연결 종료 : userId = {}", user.getId());
     // 사용자 삭제
     userRepository.delete(user);
-    log.info("[DELETE_ACCOUNT] 회원탈퇴 완료: userId={}, email={}", user.getId(), user.getEmail());
+    log.info("[DELETE_ACCOUNT] 회원탈퇴 완료: userId = {}, email = {}", user.getId(), user.getEmail());
 
     SecurityContextHolder.clearContext();
     log.info("[DELETE_ACCOUNT] SecurityContext 초기화");
