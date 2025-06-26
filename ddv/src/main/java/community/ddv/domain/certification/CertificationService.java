@@ -203,11 +203,11 @@ public class CertificationService {
     List<Certification> certifications;
     if (status == null) {
       // 전체 조회
-      log.info("인증 전체 조회");
+      log.info("[CERTIFICATION] 인증 전체 조회");
       certifications = certificationRepository.findAllWithCursor(cursorCreatedAt, cursorId, endOfWeek, pageable);
     } else {
       // 인증 상태에 따른 조회
-      log.info("인증 상태에 따른 조회 : status = {}", status);
+      log.info("[CERTIFICATION] 인증 상태에 따른 조회 : status = {}", status);
       certifications = certificationRepository.findByStatusWithCursor(status,cursorCreatedAt, cursorId, endOfWeek, pageable);
     }
 
@@ -266,7 +266,7 @@ public class CertificationService {
       certification.reject(rejectionReason);
       log.info("[CERTIFICATION] 인증 거절 완료 : certificationId = {}, 거절 사유 = {}", certificationId, rejectionReason);
     }
-    log.info("인증 상태 변경 완료 : certificationId = {}, newStatus = {} ", certificationId, certification.getStatus());
+    log.info("[CERTIFICATION] 인증 상태 변경 완료 : certificationId = {}, newStatus = {} ", certificationId, certification.getStatus());
 
     certificationRepository.save(certification);
 
@@ -334,7 +334,7 @@ public class CertificationService {
       try {
         fileStorageService.deleteFile(certification.getCertificationUrl());
       } catch (RuntimeException e) {
-        log.info("인증샷 파일을 S3에서 삭제 실패, url = {}", certification.getCertificationUrl());
+        log.info("[CERTIFICATION] 인증샷 파일을 S3에서 삭제 실패, url = {}", certification.getCertificationUrl());
       }
     }
     certificationRepository.resetAllCertifications();
