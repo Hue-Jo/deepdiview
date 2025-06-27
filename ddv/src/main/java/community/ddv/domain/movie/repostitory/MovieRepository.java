@@ -29,6 +29,7 @@ public interface MovieRepository extends JpaRepository<Movie, Long> {
       SELECT m
       FROM Movie m
       WHERE REPLACE(m.title, ' ', '') LIKE CONCAT('%', REPLACE(:title, ' ', ''), '%')
+      OR REPLACE(m.originalTitle, ' ', '') LIKE CONCAT('%', REPLACE(:title, ' ', ''), '%')
       ORDER BY m.popularity DESC
       """)
   Page<Movie> findByTitleFlexible(@Param("title") String title, Pageable pageable);

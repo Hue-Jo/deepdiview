@@ -14,7 +14,7 @@ public class SwaggerConfig {
     return new OpenAPI()
         .info(new Info()
             .title("DeepDiview")
-            .version("1.0")
+            .version("1.2.145")
             .description("DeepDiview API 명세서"))
         .addServersItem(new Server().url("https://www.deepdiview.site").description("DeepDiview BE Server"));
   }
