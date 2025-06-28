@@ -58,7 +58,7 @@ public class MovieApiService {
         ResponseEntity<MovieResponse> response = restTemplate.getForEntity(url, MovieResponse.class);
 
         if (!response.getStatusCode().is2xxSuccessful() && response.getBody() == null) {
-          log.error("API로부터 응답을 받아오지 못했습니다.");
+          log.error("[TMDB_API_CALL] API로부터 응답을 받아오지 못했습니다.");
           break;
         }
 
@@ -91,10 +91,10 @@ public class MovieApiService {
         hasNext = currentPage <= totalPages;
 
       } catch (RestClientException e) {
-        log.error("API 호출 실패", e);
+        log.error("[TMDB_API_CALL] API 호출 실패", e);
         break;
       } catch (RuntimeException e) {
-        log.error("예상치 못한 예외 발생", e);
+        log.error("[TMDB_API_CALL] 예상치 못한 예외 발생", e);
         break;
       }
     }
@@ -106,12 +106,10 @@ public class MovieApiService {
         movieRepository.save(movie);
       }
     }
-    log.info("모든 영화 데이터 저장/업데이트 완료 ");
   }
 
   @Transactional
   public void fetchMovieRunTime() {
-    log.info("영화 런타임 업데이트 시작");
     List<Movie> movies = movieRepository.findAll();
 
     for (Movie movie : movies) {
@@ -129,18 +127,17 @@ public class MovieApiService {
           movie.updateRuntime(runtime);
           movieRepository.save(movie);
         } else {
-          log.warn("런타임 응답 실패 - " + movie.getTmdbId());
+          log.warn("[TMDB_API_CALL] 런타임 응답 실패 - " + movie.getTmdbId());
         }
 
       } catch (HttpClientErrorException e) {
-        log.warn("런타임 정보를 찾을 수 없음: TMDB ID {}", movie.getTmdbId());
+        log.warn("[TMDB_API_CALL] 런타임 정보를 찾을 수 없음: TMDB ID {}", movie.getTmdbId());
       } catch (RestClientException e) {
-        log.error("런타임 정보 요청 실패: TMDB ID {}", movie.getTmdbId(), e);
+        log.error("[TMDB_API_CALL] 런타임 정보 요청 실패: TMDB ID {}", movie.getTmdbId(), e);
       } catch (Exception e) {
-        log.error("예기치 못한 예외 발생: TMDB ID {}", movie.getTmdbId(), e);
+        log.error("[TMDB_API_CALL] 예기치 못한 예외 발생: TMDB ID {}", movie.getTmdbId(), e);
       }
     }
-    log.info("런타임 정보 업데이트 완료");
   }
 
 
@@ -159,7 +156,7 @@ public class MovieApiService {
     for (Long genreId : movieDTO.getGenre_ids()) {
       Genre genre = genreMap.get(genreId);
       if (genre == null) {
-        throw new RuntimeException("장르를 찾을 수 없습니다. ID: " + genreId);
+        throw new RuntimeException("[GENRE] 장르를 찾을 수 없습니다. ID: " + genreId);
       }
       movie.addGenre(genre);
     }
