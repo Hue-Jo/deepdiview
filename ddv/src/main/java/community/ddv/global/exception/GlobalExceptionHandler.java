@@ -3,6 +3,7 @@ package community.ddv.global.exception;
 import java.util.HashMap;
 import java.util.Map;
 import lombok.AllArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.FieldError;
@@ -10,12 +11,14 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.context.request.async.AsyncRequestTimeoutException;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 import org.springframework.web.multipart.MaxUploadSizeExceededException;
 import org.springframework.web.servlet.View;
 
 @RestControllerAdvice
 @AllArgsConstructor
+@Slf4j
 public class GlobalExceptionHandler {
 
   private final View error;
@@ -39,7 +42,7 @@ public class GlobalExceptionHandler {
   public ResponseEntity<ErrorResponse> handleValidationExceptions(MethodArgumentNotValidException e) {
     Map<String, String> fieldErrors = new HashMap<>();
 
-    for(FieldError error : e.getBindingResult().getFieldErrors()) {
+    for (FieldError error : e.getBindingResult().getFieldErrors()) {
       fieldErrors.put(error.getField(), error.getDefaultMessage());
     }
 
@@ -66,5 +69,10 @@ public class GlobalExceptionHandler {
     ErrorResponse errorResponse = new ErrorResponse(errorCode.name(), errorCode.getDescription());
     return ResponseEntity.status(errorCode.getHttpStatus())
         .body(errorResponse);
+  }
+
+  @ExceptionHandler(AsyncRequestTimeoutException.class)
+  public void handleAsyncRequestTimeoutException() {
+    log.debug("[SSE] 클라이언트 연결 종료");
   }
 }
