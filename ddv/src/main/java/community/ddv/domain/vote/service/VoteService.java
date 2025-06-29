@@ -2,13 +2,12 @@ package community.ddv.domain.vote.service;
 
 import community.ddv.domain.movie.entity.Movie;
 import community.ddv.domain.movie.repostitory.MovieRepository;
-import community.ddv.domain.movie.service.MovieService;
 import community.ddv.domain.user.constant.Role;
 import community.ddv.domain.user.entity.User;
 import community.ddv.domain.user.service.UserService;
 import community.ddv.domain.vote.dto.VoteDTO.VoteResultDTO;
 import community.ddv.domain.vote.dto.VoteMovieResultDTO;
-import community.ddv.domain.vote.dto.VoteParticipationDTO.VoteOptionsDto;
+import community.ddv.domain.vote.dto.VoteOptionsDTO;
 import community.ddv.domain.vote.dto.VoteParticipationDTO.VoteParticipationRequestDto;
 import community.ddv.domain.vote.entity.Vote;
 import community.ddv.domain.vote.entity.VoteMovie;
@@ -144,7 +143,7 @@ public class VoteService {
    * 현재 진행중인 투표의 선택지 조회 tmdbIds 반환
    */
   @Transactional(readOnly = true)
-  public VoteOptionsDto getVoteChoices() {
+  public VoteOptionsDTO getVoteChoices() {
 
     userService.getLoginUser();
     log.info("[VOTE] 투표 선택지 조회 시도");
@@ -159,7 +158,7 @@ public class VoteService {
     }
     // 일요일에 투표가 생성되지 않은 경우에는 빈 리스트 반환
     if (activatingVote.isEmpty()) {
-      return new VoteOptionsDto(Collections.emptyList());
+      return new VoteOptionsDTO(Collections.emptyList());
     }
 
     Vote vote = activatingVote.get();
@@ -170,7 +169,7 @@ public class VoteService {
         .collect(Collectors.toList());
 
     log.info("[VOTE] 투표 선택지 조회 완료");
-    return new VoteOptionsDto(tmdbIds);
+    return new VoteOptionsDTO(tmdbIds);
   }
 
   /**
