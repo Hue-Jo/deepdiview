@@ -2,16 +2,15 @@ package community.ddv.domain.vote.controller;
 
 import community.ddv.domain.user.entity.User;
 import community.ddv.domain.user.service.UserService;
-import community.ddv.domain.vote.dto.VoteDTO.VoteResultDTO;
-import community.ddv.domain.vote.dto.VoteParticipationDTO.VoteOptionsDto;
-import community.ddv.domain.vote.dto.VoteParticipationDTO.VoteParticipationRequestDto;
+import community.ddv.domain.vote.dto.VoteResultDTO;
+import community.ddv.domain.vote.dto.VoteOptionsDTO;
+import community.ddv.domain.vote.dto.VoteParticipationDTO;
 import community.ddv.domain.vote.service.VoteService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import java.util.Map;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -33,21 +32,20 @@ public class VoteController {
   @Operation(summary = "투표 생성", description = "관리자 전용, 일요일만 투표 생성 가능")
   @PostMapping
   public ResponseEntity<Void> createVote() {
-    //VoteOptionsDto voteCreateDtos = voteService.createVote();
     voteService.createVote();
     return ResponseEntity.noContent().build();
   }
 
   @Operation(summary = "현재 진행중인 투표의 선택지 조회", description = "현재 투표가 진행중일 때만 조회 가능합니다.")
   @GetMapping("/options")
-  public ResponseEntity<VoteOptionsDto> getActivatingVote() {
+  public ResponseEntity<VoteOptionsDTO> getActivatingVote() {
     return ResponseEntity.ok(voteService.getVoteChoices());
   }
 
   @Operation(summary = "현재 진행중인 투표에 참여하기")
   @PostMapping("/participate")
   public ResponseEntity<Void> participateVote(
-      @Valid @RequestBody VoteParticipationRequestDto voteParticipationRequestDto) {
+      @Valid @RequestBody VoteParticipationDTO voteParticipationRequestDto) {
     voteService.participateVote(voteParticipationRequestDto);
     return ResponseEntity.noContent().build();
   }
