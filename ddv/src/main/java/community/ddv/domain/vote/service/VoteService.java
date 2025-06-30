@@ -5,10 +5,10 @@ import community.ddv.domain.movie.repostitory.MovieRepository;
 import community.ddv.domain.user.constant.Role;
 import community.ddv.domain.user.entity.User;
 import community.ddv.domain.user.service.UserService;
-import community.ddv.domain.vote.dto.VoteDTO.VoteResultDTO;
+import community.ddv.domain.vote.dto.VoteResultDTO;
 import community.ddv.domain.vote.dto.VoteMovieResultDTO;
 import community.ddv.domain.vote.dto.VoteOptionsDTO;
-import community.ddv.domain.vote.dto.VoteParticipationDTO.VoteParticipationRequestDto;
+import community.ddv.domain.vote.dto.VoteParticipationDTO;
 import community.ddv.domain.vote.entity.Vote;
 import community.ddv.domain.vote.entity.VoteMovie;
 import community.ddv.domain.vote.entity.VoteParticipation;
@@ -178,7 +178,7 @@ public class VoteService {
    * @param voteParticipationRequestDto
    */
   @Transactional
-  public void participateVote(VoteParticipationRequestDto voteParticipationRequestDto) {
+  public void participateVote(VoteParticipationDTO voteParticipationRequestDto) {
 
     User user = userService.getLoginUser();
     log.info("[VOTE] 투표 시도: userId = {}", user.getId());

@@ -7,7 +7,7 @@ import lombok.Getter;
 @Getter
 @AllArgsConstructor
 public class VoteOptionsDTO {
-  private List<Long> tmdbIds; // 5개 선택지
 
+  private List<Long> tmdbIds; // 5개 선택지
 
 }
