@@ -2,7 +2,6 @@ package community.ddv.domain.board.service;
 
 import community.ddv.domain.board.dto.ReviewDTO;
 import community.ddv.domain.board.dto.ReviewIdResponseDto;
-import community.ddv.domain.board.dto.ReviewResponseDTO;
 import community.ddv.domain.certification.CertificationService;
 import community.ddv.domain.movie.entity.Movie;
 import community.ddv.domain.movie.repostitory.MovieRepository;

@@ -2,7 +2,6 @@ package community.ddv.domain.board.controller;
 
 import community.ddv.domain.board.dto.ReviewDTO;
 import community.ddv.domain.board.dto.ReviewIdResponseDto;
-import community.ddv.domain.board.dto.ReviewResponseDTO;
 import community.ddv.domain.board.service.DiscussionService;
 import community.ddv.domain.vote.service.VoteService;
 import io.swagger.v3.oas.annotations.Operation;
